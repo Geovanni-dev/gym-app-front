@@ -1,6 +1,6 @@
 import axios from 'axios'; // importa a biblioteca axios para fazer requisições HTTP
 
-const api = axios.create({ // cria uma instância do axios com uma configuração base
+const api = axios.create({ // cria uma instância do axios com uma configuração base de URL
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
 });
 
