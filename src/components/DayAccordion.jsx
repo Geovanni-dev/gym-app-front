@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 
+// serve para criar o accordion
 export const DayAccordion = ({ register, dayIndex, removeDay }) => {
   return (
     <div className="bg-black/40 border border-white/5 rounded-2xl p-4">

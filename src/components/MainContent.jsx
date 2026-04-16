@@ -1963,7 +1963,10 @@ export const MainContent = () => {
                       autoComplete="off"
                       error={formRegister.formState.errors.email?.message}
                       {...formRegister.register('email')}
-                    /> <StatusMessage type={uiMessage.type} message={uiMessage.text} />
+                    />
+
+                    <StatusMessage type={uiMessage.type} message={uiMessage.text} />
+                    
                     <InputField
                       label="Senha"
                       type="password"

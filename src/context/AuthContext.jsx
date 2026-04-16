@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import api from '../services/api'; // imports basicos
 
-const AuthContext = createContext({});
+const AuthContext = createContext({}); // cria o contexto
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => { // cria o provider
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('@superfrango:token'));
 
-  useEffect(() => {
+  useEffect(() => { // adiciona o interceptor para incluir o token de autenticação em todas as requisições
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const login = async (data) => {
+  const login = async (data) => { // cria a funcao de login
     try {
       const response = await api.post('/users/login', data);
       const { token: receivedToken, user: userData } = response.data;
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
-  // FUNÇÃO NOVA: Para o ProfileSideMenu atualizar a foto sem dar refresh na página
+  // funçao ara o ProfileSideMenu atualizar a foto sem dar refresh na página
   const updateUserData = (newData) => {
     setUser(prev => {
       const updated = { ...prev, ...newData };
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const logout = () => {
+  const logout = () => { // cria a funcao de logout
     setToken(null);
     setUser(null);
     localStorage.removeItem('@superfrango:token');
@@ -73,4 +73,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext); // cria a funcao para usar o contexto

@@ -1,4 +1,4 @@
-// src/hooks/useScrollToInput.js
+// useScrollToInput.js
 import { useEffect } from 'react';
 
 export const useScrollToInput = () => {
