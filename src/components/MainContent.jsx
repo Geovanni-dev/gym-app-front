@@ -1944,14 +1944,13 @@ export const MainContent = () => {
                     </p>
                   </div>
                 </div>
-
                 <form onSubmit={formRegister.handleSubmit(onRegisterSubmit)} className="space-y-6">
                   <div className="space-y-3.5">
                     <InputField
                       label="Nome"
                       type="text"
                       icon={User}
-                      placeholder="NOME"
+                      placeholder=""
                       autoComplete="off"
                       error={formRegister.formState.errors.name?.message}
                       {...formRegister.register('name')}
@@ -1964,7 +1963,7 @@ export const MainContent = () => {
                       autoComplete="off"
                       error={formRegister.formState.errors.email?.message}
                       {...formRegister.register('email')}
-                    />
+                    /> <StatusMessage type={uiMessage.type} message={uiMessage.text} />
                     <InputField
                       label="Senha"
                       type="password"
@@ -1996,10 +1995,11 @@ export const MainContent = () => {
                   >
                     Faça login
                   </button>
-                </div>
+                </div> 
               </div>
             </div>
           </div>
+          
         );
       default:
         return <LandingPage onStart={(mode) => setView(mode)} />;
