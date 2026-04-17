@@ -210,271 +210,274 @@ export const PlanDetailsView = ({
       className={`space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-right-6 duration-500 pb-28 relative`}
     >
 
-      {/* MODAL ADICIONAR EXERCÍCIO */}
+            {/* MODAL ADICIONAR EXERCÍCIO */}
       {addingToDay && !isGenerated && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-sm animate-in fade-in zoom-in-95 duration-200">
-          <div className="bg-[#111111] border border-white/5 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] w-full max-w-[95%] sm:max-w-[420px] space-y-6 sm:space-y-8 shadow-2xl">
-            <div className="space-y-2 text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <Plus size={20} className="sm:size-[24px]" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-white">
-                Novo Exercício
-              </h3>
-              <p className="text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                Adicionando ao plano de {addingToDay}
-              </p>
-            </div>
-            <form onSubmit={handleAddNewEx} className="space-y-4 sm:space-y-5">
-              <div className="space-y-3 sm:space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[9px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                    Nome
-                  </label>
-                  <input
-                    autoFocus
-                    className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-sm sm:text-base focus:border-[#ff6600] outline-none"
-                    value={newExData.name}
-                    onChange={(e) => setNewExData({ ...newExData, name: e.target.value })}
-                    placeholder="Ex: Supino Reto"
-                  />
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm overflow-y-auto">
+          <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6">
+            <div className="bg-[#111111] border border-white/5 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] w-full max-w-[95%] sm:max-w-[420px] space-y-6 sm:space-y-8 shadow-2xl my-auto">
+              <div className="space-y-2 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Plus size={20} className="sm:size-[24px]" />
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                      Séries
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-center focus:border-[#ff6600] outline-none no-spinners text-sm sm:text-base"
-                      value={newExData.sets}
-                      onChange={(e) => setNewExData({ ...newExData, sets: e.target.value })}
-                      placeholder="4"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                      Reps
-                    </label>
-                    <input
-                      className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-center focus:border-[#ff6600] outline-none text-sm sm:text-base"
-                      value={newExData.reps}
-                      onChange={(e) => setNewExData({ ...newExData, reps: e.target.value })}
-                      placeholder="12"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                      Carga
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full bg-black/50 border border-[#ff6600]/20 rounded-xl p-3 sm:p-4 text-[#ff6600] font-black text-center focus:border-[#ff6600] outline-none no-spinners text-sm sm:text-base"
-                      value={newExData.weight}
-                      onChange={(e) => setNewExData({ ...newExData, weight: e.target.value })}
-                      placeholder="KG"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-3 pt-2 sm:pt-4">
-                <button
-                  type="submit"
-                  className="px-15 py-3 sm:px-10 sm:py-3.5 bg-[#ff6600] text-black font-black uppercase text-[9px] sm:text-[10px] tracking-widest rounded-xl hover:bg-[#ff5500] transition-all shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95"
-                >
-                  Adicionar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAddingToDay(null)}
-                  className="py-2 text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors"
-                >
-                  Voltar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {confirmTarget && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/98 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
-          <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] transition-all duration-300 my-auto">
-
-            <div
-              className="absolute inset-0 transition-opacity duration-300"
-              style={{
-                opacity: holdProgress > 0 ? 0.8 : 0,
-                background: `conic-gradient(from 0deg, #dc2626 ${holdProgress}%, transparent ${holdProgress}%)`,
-              }}
-            />
-
-            <div className="relative bg-[#0a0a0a] p-8 rounded-[30px] z-10 border border-white/5 overflow-hidden">
-
-              <div className="absolute -right-10 -bottom-10 opacity-10">
-                {confirmTarget.type === 'plan' ? (
-                  <Dumbbell size={140} strokeWidth={1} className="text-[#dc2626]" />
-                ) : confirmTarget.type === 'day' ? (
-                  <Zap size={140} strokeWidth={1} className="text-[#dc2626]" />
-                ) : (
-                  <Flame size={140} strokeWidth={1} className="text-[#dc2626]" />
-                )}
-              </div>
-
-              <button
-                onClick={() => {
-                  setConfirmTarget(null);
-                  setHoldProgress(0);
-                  if (timerRef.current) clearInterval(timerRef.current);
-                }}
-                className="absolute top-6 right-6 text-gray-600 hover:text-[#dc2626] transition-colors z-20"
-              >
-                <X size={20} />
-              </button>
-
-              <div className="flex flex-col items-center text-center relative z-10">
-                <div className={`mb-6 h-16 w-16 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center transition-all duration-500 ${holdProgress > 0 ? 'text-[#dc2626] shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-105' : 'text-red-700'}`}>
-                  <Trash2 size={28} strokeWidth={1.5} />
-                </div>
-
-                <h3 className="text-xl font-black text-white tracking-tighter uppercase">
-                  {confirmTarget.type === 'plan' ? 'EXCLUIR PLANO?' :
-                    confirmTarget.type === 'day' ? 'EXCLUIR DIA?' :
-                      'EXCLUIR EXERCÍCIO?'}
+                <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-white">
+                  Novo Exercício
                 </h3>
-
-                <p className="mt-3 text-[12px] text-gray-500 leading-relaxed font-medium">
-                  {confirmTarget.type === 'plan' ? 'Todos os dias e exercícios serão perdidos.' :
-                    confirmTarget.type === 'day' ? 'Os exercícios deste dia serão removidos.' :
-                      'Este exercício será removido permanentemente.'}
+                <p className="text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                  Adicionando ao plano de {addingToDay}
                 </p>
               </div>
-
-              <div className="mt-8 relative z-10">
-                <button
-                  onMouseDown={startHold}
-                  onMouseUp={stopHold}
-                  onMouseLeave={stopHold}
-                  onTouchStart={startHold}
-                  onTouchEnd={stopHold}
-                  className={`relative w-full h-14 rounded-2xl border bg-black/80 border-white/5 transition-all duration-300 select-none cursor-pointer overflow-hidden
-              ${holdProgress > 0
-                      ? 'shadow-[0_0_40px_rgba(220,38,38,0.2)] scale-[0.98] border-[#dc2626]/50'
-                      : 'shadow-none'
-                    }`}
-                >
-                  <div
-                    className="absolute inset-y-0 left-0 bg-[#dc2626] transition-all duration-75 ease-linear shadow-[5px_0_15px_rgba(0,0,0,0.3)]"
-                    style={{ width: `${holdProgress}%` }}
-                  />
-
-                  <span className={`relative z-10 text-[11px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${holdProgress > 50 ? 'text-white' : 'text-gray-400'}`}>
-                    {holdProgress >= 100 ? 'EXCLUÍDO' : 'EXCLUIR'}
-                  </span>
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL EDITAR EXERCÍCIO */}
-      {editingExercise && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
-          <div className="bg-[#111111] border border-white/5 p-6 rounded-2xl w-full max-w-[420px] space-y-6 shadow-2xl">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
-                <Edit3 size={24} />
-              </div>
-              <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">
-                EDITAR EXERCÍCIO
-              </h3>
-              <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                MODIFIQUE OS PARÂMETROS DO EXERCÍCIO
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {!isGenerated ? (
-                <>
+              <form onSubmit={handleAddNewEx} className="space-y-4 sm:space-y-5">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                      Nome do Exercício
+                    <label className="text-[9px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
+                      Nome
                     </label>
                     <input
                       autoFocus
-                      className="w-full bg-black/40 border border-[#ff6600]/30 rounded-xl p-3.5 text-white font-black uppercase italic outline-none focus:border-[#ff6600] text-sm"
-                      value={editingExercise.data.name}
-                      onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, name: e.target.value } })}
+                      className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-sm sm:text-base focus:border-[#ff6600] outline-none"
+                      value={newExData.name}
+                      onChange={(e) => setNewExData({ ...newExData, name: e.target.value })}
+                      placeholder="Ex: Supino Reto"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                      <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
                         Séries
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-center text-white font-black text-sm outline-none no-spinners"
-                        value={editingExercise.data.sets}
-                        onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, sets: Number(e.target.value) } })}
+                        className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-center focus:border-[#ff6600] outline-none no-spinners text-sm sm:text-base"
+                        value={newExData.sets}
+                        onChange={(e) => setNewExData({ ...newExData, sets: e.target.value })}
+                        placeholder="4"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                      <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
                         Reps
                       </label>
                       <input
-                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-center text-white font-black text-sm outline-none"
-                        value={editingExercise.data.reps}
-                        onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, reps: e.target.value } })}
+                        className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-center focus:border-[#ff6600] outline-none text-sm sm:text-base"
+                        value={newExData.reps}
+                        onChange={(e) => setNewExData({ ...newExData, reps: e.target.value })}
+                        placeholder="12"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                        Carga (KG)
+                      <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
+                        Carga
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-black/40 border border-[#ff6600]/20 rounded-xl p-3.5 text-center text-[#ff6600] font-black text-sm outline-none no-spinners"
-                        value={editingExercise.data.weight}
-                        onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, weight: Number(e.target.value) } })}
+                        className="w-full bg-black/50 border border-[#ff6600]/20 rounded-xl p-3 sm:p-4 text-[#ff6600] font-black text-center focus:border-[#ff6600] outline-none no-spinners text-sm sm:text-base"
+                        value={newExData.weight}
+                        onChange={(e) => setNewExData({ ...newExData, weight: e.target.value })}
+                        placeholder="KG"
                       />
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-[#ff6600] uppercase tracking-widest ml-1">
-                    Recorde Pessoal (KG)
-                  </label>
-                  <input
-                    type="number"
-                    autoFocus
-                    className="w-full bg-black/60 border border-[#ff6600]/20 rounded-xl p-4 text-center text-[#ff6600] font-black text-3xl outline-none no-spinners"
-                    value={editingExercise.data.weight}
-                    onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, weight: Number(e.target.value) } })}
-                  />
                 </div>
-              )}
+                <div className="flex flex-col items-center gap-3 pt-2 sm:pt-4">
+                  <button
+                    type="submit"
+                    className="px-15 py-3 sm:px-10 sm:py-3.5 bg-[#ff6600] text-black font-black uppercase text-[9px] sm:text-[10px] tracking-widest rounded-xl hover:bg-[#ff5500] transition-all shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95"
+                  >
+                    Adicionar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAddingToDay(null)}
+                    className="py-2 text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors"
+                  >
+                    Voltar
+                  </button>
+                </div>
+              </form>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="flex flex-col items-center gap-3 pt-4 border-t border-white/10">
-              <button
-                onClick={() => {
-                  onUpdateExercise(plan._id || plan.id, editingExercise.day, editingExercise.exerciseName, editingExercise.data, isGenerated);
-                  setEditingExercise(null);
+        {confirmTarget && (
+        <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
+          <div className="min-h-full flex flex-col items-center justify-center p-4">
+            <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] transition-all duration-300 my-auto">
+              <div
+                className="absolute inset-0 transition-opacity duration-300"
+                style={{
+                  opacity: holdProgress > 0 ? 0.8 : 0,
+                  background: `conic-gradient(from 0deg, #dc2626 ${holdProgress}%, transparent ${holdProgress}%)`,
                 }}
-                className="px-12 py-3 sm:px-16 sm:py-3.5 bg-[#ff6600] text-black font-black uppercase text-[9px] sm:text-[10px] tracking-widest rounded-xl hover:bg-[#ff5500] transition-all shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95"  >
-                SALVAR
-              </button>
-              <button
-                onClick={() => setEditingExercise(null)}
-                className="py-2 text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors"
-              >
-                Cancelar
-              </button>
+              />
+
+              <div className="relative bg-[#0a0a0a] p-8 rounded-[30px] z-10 border border-white/5 overflow-hidden">
+                <div className="absolute -right-10 -bottom-10 opacity-10">
+                  {confirmTarget.type === 'plan' ? (
+                    <Dumbbell size={140} strokeWidth={1} className="text-[#dc2626]" />
+                  ) : confirmTarget.type === 'day' ? (
+                    <Zap size={140} strokeWidth={1} className="text-[#dc2626]" />
+                  ) : (
+                    <Flame size={140} strokeWidth={1} className="text-[#dc2626]" />
+                  )}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setConfirmTarget(null);
+                    setHoldProgress(0);
+                    if (timerRef.current) clearInterval(timerRef.current);
+                  }}
+                  className="absolute top-6 right-6 text-gray-600 hover:text-[#dc2626] transition-colors z-20"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="flex flex-col items-center text-center relative z-10">
+                  <div className={`mb-6 h-16 w-16 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center transition-all duration-500 ${holdProgress > 0 ? 'text-[#dc2626] shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-105' : 'text-red-700'}`}>
+                    <Trash2 size={28} strokeWidth={1.5} />
+                  </div>
+
+                  <h3 className="text-xl font-black text-white tracking-tighter uppercase">
+                    {confirmTarget.type === 'plan' ? 'EXCLUIR PLANO?' :
+                      confirmTarget.type === 'day' ? 'EXCLUIR DIA?' :
+                        'EXCLUIR EXERCÍCIO?'}
+                  </h3>
+
+                  <p className="mt-3 text-[12px] text-gray-500 leading-relaxed font-medium">
+                    {confirmTarget.type === 'plan' ? 'Todos os dias e exercícios serão perdidos.' :
+                      confirmTarget.type === 'day' ? 'Os exercícios deste dia serão removidos.' :
+                        'Este exercício será removido permanentemente.'}
+                  </p>
+                </div>
+
+                <div className="mt-8 relative z-10">
+                  <button
+                    onMouseDown={startHold}
+                    onMouseUp={stopHold}
+                    onMouseLeave={stopHold}
+                    onTouchStart={startHold}
+                    onTouchEnd={stopHold}
+                    className={`relative w-full h-14 rounded-2xl border bg-black/80 border-white/5 transition-all duration-300 select-none cursor-pointer overflow-hidden
+                      ${holdProgress > 0
+                        ? 'shadow-[0_0_40px_rgba(220,38,38,0.2)] scale-[0.98] border-[#dc2626]/50'
+                        : 'shadow-none'
+                      }`}
+                  >
+                    <div
+                      className="absolute inset-y-0 left-0 bg-[#dc2626] transition-all duration-75 ease-linear shadow-[5px_0_15px_rgba(0,0,0,0.3)]"
+                      style={{ width: `${holdProgress}%` }}
+                    />
+                    <span className={`relative z-10 text-[11px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${holdProgress > 50 ? 'text-white' : 'text-gray-400'}`}>
+                      {holdProgress >= 100 ? 'EXCLUÍDO' : 'EXCLUIR'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* MODAL EDITAR EXERCÍCIO */}
+      {editingExercise && (
+        <div className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md overflow-y-auto">
+          <div className="min-h-full flex flex-col items-center justify-center p-4">
+            <div className="bg-[#111111] border border-white/5 p-6 rounded-2xl w-full max-w-[420px] space-y-6 shadow-2xl my-auto">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
+                  <Edit3 size={24} />
+                </div>
+                <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">
+                  EDITAR EXERCÍCIO
+                </h3>
+                <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest leading-relaxed">
+                  MODIFIQUE OS PARÂMETROS DO EXERCÍCIO
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {!isGenerated ? (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                        Nome do Exercício
+                      </label>
+                      <input
+                        autoFocus
+                        className="w-full bg-black/40 border border-[#ff6600]/30 rounded-xl p-3.5 text-white font-black uppercase italic outline-none focus:border-[#ff6600] text-sm"
+                        value={editingExercise.data.name}
+                        onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, name: e.target.value } })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                          Séries
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-center text-white font-black text-sm outline-none no-spinners"
+                          value={editingExercise.data.sets}
+                          onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, sets: Number(e.target.value) } })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                          Reps
+                        </label>
+                        <input
+                          className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-center text-white font-black text-sm outline-none"
+                          value={editingExercise.data.reps}
+                          onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, reps: e.target.value } })}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+                          Carga (KG)
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full bg-black/40 border border-[#ff6600]/20 rounded-xl p-3.5 text-center text-[#ff6600] font-black text-sm outline-none no-spinners"
+                          value={editingExercise.data.weight}
+                          onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, weight: Number(e.target.value) } })}
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-[#ff6600] uppercase tracking-widest ml-1">
+                      Recorde Pessoal (KG)
+                    </label>
+                    <input
+                      type="number"
+                      autoFocus
+                      className="w-full bg-black/60 border border-[#ff6600]/20 rounded-xl p-4 text-center text-[#ff6600] font-black text-3xl outline-none no-spinners"
+                      value={editingExercise.data.weight}
+                      onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, weight: Number(e.target.value) } })}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col items-center gap-3 pt-4 border-t border-white/10">
+                <button
+                  onClick={() => {
+                    onUpdateExercise(plan._id || plan.id, editingExercise.day, editingExercise.exerciseName, editingExercise.data, isGenerated);
+                    setEditingExercise(null);
+                  }}
+                  className="px-12 py-3 sm:px-16 sm:py-3.5 bg-[#ff6600] text-black font-black uppercase text-[9px] sm:text-[10px] tracking-widest rounded-xl hover:bg-[#ff5500] transition-all shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95"
+                >
+                  SALVAR
+                </button>
+                <button
+                  onClick={() => setEditingExercise(null)}
+                  className="py-2 text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>

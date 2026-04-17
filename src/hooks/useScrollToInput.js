@@ -1,4 +1,4 @@
-// useScrollToInput.js
+// useScrollToInput.js - Versão melhorada
 import { useEffect } from 'react';
 
 export const useScrollToInput = () => {
@@ -6,17 +6,20 @@ export const useScrollToInput = () => {
     const handleFocus = (e) => {
       // Verifica se o elemento focado é um input ou textarea
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        // Pequeno delay para garantir que o teclado já abriu
-        setTimeout(() => {
-          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
+        // SÓ executa o scroll se o input NÃO estiver dentro de um modal com overflow-y-auto
+        // Isso evita conflito com os modais que já tem scroll próprio
+        const isInsideModal = e.target.closest('.overflow-y-auto, .overflow-y-scroll');
+        
+        if (!isInsideModal) {
+          setTimeout(() => {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        }
       }
     };
 
-    // Adiciona o evento de foco em toda a página
     document.addEventListener('focusin', handleFocus);
     
-    // Remove o evento quando o componente desmontar
     return () => document.removeEventListener('focusin', handleFocus);
   }, []);
 };

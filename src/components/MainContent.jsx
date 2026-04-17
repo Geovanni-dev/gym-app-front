@@ -1056,61 +1056,63 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
             }
           />
 
-          {isPRSearchOpen && (
-            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
-              <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative ,my-auto">
-                <button
-                  onClick={() => {
-                    setIsPRSearchOpen(false);
-                    setPRSearchResult(null);
-                    setPRSearchQuery('');
-                  }}
-                  className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
-                >
-                  <X size={20} />
-                </button>
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
-                    <Search size={24} />
+            {isPRSearchOpen && (
+            <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
+              <div className="min-h-full flex flex-col items-center justify-center p-4">
+                <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
+                  <button
+                    onClick={() => {
+                      setIsPRSearchOpen(false);
+                      setPRSearchResult(null);
+                      setPRSearchQuery('');
+                    }}
+                    className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
+                      <Search size={24} />
+                    </div>
+                    <h3 className="text-2xl font-black italic uppercase tracking-tighter">
+                      seu pr <span className="text-[#ff6600] drop-shadow-[0_0_8px_rgba(255,102,0,0.2)]">MáXIMO</span>
+                    </h3>
+                    <p className="text-gray text-[10px] font-bold uppercase tracking-widest">
+                      Busca o PR de qualquer exercício
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-black italic uppercase tracking-tighter">
-                    seu pr <span className="text-[#ff6600] drop-shadow-[0_0_8px_rgba(255,102,0,0.2)]">MáXIMO</span>
-                  </h3>
-                  <p className="text-gray text-[10px] font-bold uppercase tracking-widest">
-                    Busca o PR de qualquer exercício
-                  </p>
+                  <form onSubmit={handleSearchPR} className="space-y-4">
+                    <div className="relative">
+                      <input
+                        autoFocus
+                        className="w-full bg-black border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-sm outline-none focus:border-[#ff6600] pr-12"
+                        placeholder="NOME DO EXERCÍCIO"
+                        value={prSearchQuery}
+                        onChange={(e) => setPRSearchQuery(e.target.value)}
+                      />
+                      <button
+                        type="submit"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ff6600]"
+                      >
+                        {searchingPR ? (
+                          <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
+                        ) : (
+                          <ChevronRight size={20} />
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                  {prSearchResult !== null && (
+                    <div className="bg-white/[0.02] border border-[#ff6600]/20 rounded-2xl p-6 text-center animate-in zoom-in-95 duration-200">
+                      <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1">
+                        RECORD PESSOAL (MAX CARGA)
+                      </p>
+                      <p className="text-5xl font-black italic text-[#ff6600] tracking-tighter">
+                        {typeof prSearchResult === 'number' ? `${prSearchResult}KG` : prSearchResult}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <form onSubmit={handleSearchPR} className="space-y-4">
-                  <div className="relative">
-                    <input
-                      autoFocus
-                      className="w-full bg-black border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-sm outline-none focus:border-[#ff6600] pr-12"
-                      placeholder="NOME DO EXERCÍCIO"
-                      value={prSearchQuery}
-                      onChange={(e) => setPRSearchQuery(e.target.value)}
-                    />
-                    <button
-                      type="submit"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ff6600]"
-                    >
-                      {searchingPR ? (
-                        <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
-                      ) : (
-                        <ChevronRight size={20} />
-                      )}
-                    </button>
-                  </div>
-                </form>
-                {prSearchResult !== null && (
-                  <div className="bg-white/[0.02] border border-[#ff6600]/20 rounded-2xl p-6 text-center animate-in zoom-in-95 duration-200">
-                    <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1">
-                      RECORD PESSOAL (MAX CARGA)
-                    </p>
-                    <p className="text-5xl font-black italic text-[#ff6600] tracking-tighter">
-                      {typeof prSearchResult === 'number' ? `${prSearchResult}KG` : prSearchResult}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1293,52 +1295,54 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                           </button>
                         </div>
                       </div>
-                      {isImportModalOpen && (
-                        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
-                          <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative">
-                            <button
-                              onClick={() => {
-                                setIsImportModalOpen(false);
-                                setImportCode('');
-                              }}
-                              className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
-                            >
-                              <X size={20} />
-                            </button>
-                            <div className="text-center space-y-2">
-                              <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-                                  <polyline points="8 12 12 16 16 12" />
-                                  <line x1="12" y1="2" x2="12" y2="16" />
-                                </svg>
-                              </div>
-                              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">
-                                IMPORTAR <span className="text-[#ff6600] drop-shadow-[0_0_8px_rgba(255,102,0,0.2)]">PLANO</span>
-                              </h3>
-                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                                Cole o id do plano que deseja copiar
-                              </p>
-                            </div>
-                            <div className="space-y-4">
-                              <input
-                                autoFocus
-                                className="w-full bg-black border border-white/10 rounded-xl p-4 text-white uppercase font-mono text-sm outline-none focus:border-[#ff6600] text-center"
-                                placeholder="EX: XXXX-XXXX-XXXX"
-                                value={importCode}
-                                onChange={(e) => setImportCode(e.target.value.toUpperCase())}
-                              />
-                              <button
-                                onClick={handleImportPlan}
-                                disabled={loadingImport || !importCode.trim()}
-                                className="w-full py-4 rounded-xl font-black italic bg-[#ff6600] text-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95 transition-all disabled:opacity-50"
-                              >
-                                {loadingImport ? 'IMPORTANDO...' : 'IMPORTAR'}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+              {isImportModalOpen && (
+            <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
+              <div className="min-h-full flex flex-col items-center justify-center p-4">
+                <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
+                  <button
+                    onClick={() => {
+                      setIsImportModalOpen(false);
+                      setImportCode('');
+                    }}
+                    className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                        <polyline points="8 12 12 16 16 12" />
+                        <line x1="12" y1="2" x2="12" y2="16" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">
+                      IMPORTAR <span className="text-[#ff6600] drop-shadow-[0_0_8px_rgba(255,102,0,0.2)]">PLANO</span>
+                    </h3>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                      Cole o id do plano que deseja copiar
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <input
+                      autoFocus
+                      className="w-full bg-black border border-white/10 rounded-xl p-4 text-white uppercase font-mono text-sm outline-none focus:border-[#ff6600] text-center"
+                      placeholder="EX: XXXX-XXXX-XXXX"
+                      value={importCode}
+                      onChange={(e) => setImportCode(e.target.value.toUpperCase())}
+                    />
+                    <button
+                      onClick={handleImportPlan}
+                      disabled={loadingImport || !importCode.trim()}
+                      className="w-full py-4 rounded-xl font-black italic bg-[#ff6600] text-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {loadingImport ? 'IMPORTANDO...' : 'IMPORTAR'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
                       <MetricsGrid
                         stats={stats}
                         plans={plans}
@@ -1827,23 +1831,24 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                   </div>
 
                   {isHistoryResetOpen && (
-                    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-                      <div className="bg-[#111111] border border-red-900/20 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative">
-                        <button onClick={() => { setIsHistoryResetOpen(false); setHistoryConfirmInput(''); }} className="absolute top-6 right-6 text-gray-500 hover:text-white"><X size={20} /></button>
-                        <div className="text-center space-y-2">
-                          <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-2"><AlertTriangle size={24} /></div>
-                          <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">Limpar Histórico</h3>
-                          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Isso removerá permanentemente todos os logs de exercícios finalizados.</p>
-                        </div>
-                        <div className="space-y-4">
-                          <p className="text-[9px] text-center font-black uppercase text-gray-500">Digite <span className="text-red-500 italic">"CONFIRM"</span> abaixo para prosseguir</p>
-                          <input className="w-full bg-black border border-white/10 rounded-xl p-4 text-white text-center font-black uppercase text-sm outline-none focus:border-red-500" placeholder="DIGITE AQUI" value={historyConfirmInput} onChange={(e) => setHistoryConfirmInput(e.target.value)} />
-                          <button onClick={handleClearHistory} disabled={historyConfirmInput !== 'CONFIRM' || loading} className="w-full py-4 rounded-xl font-black italic bg-red-600 text-white uppercase text-[10px] tracking-widest hover:bg-red-700 transition-all disabled:opacity-30">{loading ? 'Apagando...' : 'DELETAR TUDO'}</button>
+                    <div className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-md overflow-y-auto">
+                      <div className="min-h-full flex flex-col items-center justify-center p-4">
+                        <div className="bg-[#111111] border border-red-900/20 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
+                          <button onClick={() => { setIsHistoryResetOpen(false); setHistoryConfirmInput(''); }} className="absolute top-6 right-6 text-gray-500 hover:text-white"><X size={20} /></button>
+                          <div className="text-center space-y-2">
+                            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-2"><AlertTriangle size={24} /></div>
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">Limpar Histórico</h3>
+                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Isso removerá permanentemente todos os logs de exercícios finalizados.</p>
+                          </div>
+                          <div className="space-y-4">
+                            <p className="text-[9px] text-center font-black uppercase text-gray-500">Digite <span className="text-red-500 italic">"CONFIRM"</span> abaixo para prosseguir</p>
+                            <input className="w-full bg-black border border-white/10 rounded-xl p-4 text-white text-center font-black uppercase text-sm outline-none focus:border-red-500" placeholder="DIGITE AQUI" value={historyConfirmInput} onChange={(e) => setHistoryConfirmInput(e.target.value)} />
+                            <button onClick={handleClearHistory} disabled={historyConfirmInput !== 'CONFIRM' || loading} className="w-full py-4 rounded-xl font-black italic bg-red-600 text-white uppercase text-[10px] tracking-widest hover:bg-red-700 transition-all disabled:opacity-30">{loading ? 'Apagando...' : 'DELETAR TUDO'}</button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
-
                   {history.length === 0 ? (
                     <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
                       <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>
