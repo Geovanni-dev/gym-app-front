@@ -93,6 +93,13 @@ export const MainContent = () => {
     const saved = localStorage.getItem('@superfrango:activeTab');
     return saved || 'dashboard';
   });
+
+  const [isManualInfoActive, setIsManualInfoActive] = useState(false);
+const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
+
+  const [activeAutoCard, setActiveAutoCard] = useState(null);
+  const [activeManualCard, setActiveManualCard] = useState(null);
+  const [isInfoActive, setIsInfoActive] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [tempEmail, setTempEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -509,11 +516,14 @@ export const MainContent = () => {
 
   const handleTabChange = (newTab) => {
     if (newTab === activeTab) return;
-
+    
+    setActiveManualCard(null);
+    setActiveAutoCard(null);
     setIsGeneratingCustom(false);
     setShowCreatePlan(false);
     setSelectedPlan(null);
-
+    setIsManualInfoActive(false); 
+    setIsAutoInfoActive(false);   
     setIsTransitioning(true);
     setTimeout(() => {
       setActiveTab(newTab);
@@ -816,7 +826,7 @@ export const MainContent = () => {
                   </span>
                   <button
                     onClick={() => setView('login')}
-                    className="text-[10px] font-bold text-[#ff6600] uppercase tracking-widest hover:scale-105 transition-transform duration-200 inline-block"
+                   className="text-[10px] font-bold text-[#ff6600] uppercase tracking-widest transition-all duration-200 active:scale-105 inline-block"
                   >
                     Voltar ao login
                   </button>
@@ -1174,21 +1184,42 @@ export const MainContent = () => {
                           </div>
                         </div>
                       </form>
-                      <div className="group relative mt-6 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/80 hover:border-[#ff6600]/40 transition-all duration-500 shadow-2xl overflow-hidden cursor-default">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff6600]/10 group-hover:bg-[#ff6600] transition-all duration-300"></div>
-                        <div className="flex items-center gap-4 relative z-10">
-                          <div className="w-9 h-9 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-gray-500 group-hover:bg-[#ff6600] group-hover:text-black group-hover:border-[#ff6600] transition-all duration-300 flex-shrink-0">
-                            <Dumbbell size={16} />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[0.15em] leading-tight group-hover:text-white transition-colors duration-300">
-                              Planos manuais <span className="text-[#ff6600]">sob medida</span>.
-                              Monte sua estrutura, depois preencha com os exercícios.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 group-hover:w-full" />
-                      </div>
+                     <div 
+  onClick={() => setIsManualInfoActive(!isManualInfoActive)}
+  className={`group relative mt-6 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+    ${isManualInfoActive 
+      ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
+      : 'border-white/10 hover:border-white/20'
+    }`}
+>
+  <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
+    ${isManualInfoActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/10'}`} 
+  />
+
+  <div className="flex items-center gap-4 relative z-10">
+    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
+      ${isManualInfoActive 
+        ? 'bg-[#ff6600] text-black border-[#ff6600] shadow-[0_0_10px_#ff6600]' 
+        : 'bg-white/[0.03] border-white/5 text-gray-500'
+      }`}
+    >
+      <Dumbbell size={16} />
+    </div>
+
+    <div className="flex-1">
+      <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
+        ${isManualInfoActive ? 'text-white' : 'text-gray-400'}`}
+      >
+        Planos manuais <span className="text-[#ff6600]">sob medida</span>.
+        Monte sua estrutura, depois preencha com os exercícios.
+      </p>
+    </div>
+  </div>
+
+  <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 
+    ${isManualInfoActive ? 'w-full' : 'w-0'}`} 
+  />
+</div>
                     </div>
                   </div>
                 </div>
@@ -1234,7 +1265,7 @@ export const MainContent = () => {
                   ) : !isCreatingPlan ? (
                     <div className="space-y-10 animate-in fade-in duration-700">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-                        <div className="space-y-1 -mt-">
+                        <div className="space-y-1 -mt-[-35px]">
                           <div className="text-[#ff6600] drop-shadow-[0_0_15px_rgba(255,102,0,0.2)] font-black italic uppercase tracking-tighter text-4xl leading-none">
                             PLANOS <br /> DE TREINOS
                           </div>
@@ -1325,47 +1356,81 @@ export const MainContent = () => {
                               <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">
                                 Sem Planos de treino
                               </h2>
-                              <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] max-w-xs"></p>
+                              <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] max-w-xs">Clique no botão acima para criar seu primeiro plano de treino manualmente</p>
                             </div>
                           </div>
                         ) : (
                           <>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-2">
                               {plans.slice(0, visiblePlans).map((plan, idx) => {
-                                const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
-                                const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
-                                return (
-                                  <div
-                                    key={plan._id || plan.id || `temp-${idx}`}
-                                    onClick={() => setSelectedPlan(plan)}
-                                    className="group relative p-8 rounded-[2.5rem] border border-[#ff6600]/10 hover:border-[#ff6600]/50 transition-all shadow-xl overflow-hidden cursor-pointer active:scale-95 min-h-[220px] flex flex-col justify-end animate-in fade-in zoom-in duration-500 w-full"
-                                  >
-                                    <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#1a0a00] to-[#2a1000] group-hover:via-[#1a1c00] transition-colors duration-500" />
-                                    <div className="absolute -right-8 -top-8 text-[#ff6600]/[0.04] group-hover:text-[#ff6600]/[0.08] transition-all duration-700 transform rotate-12">
-                                      <DecorativeIcon size={240} strokeWidth={1} />
-                                    </div>
-                                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#ff6600]/20 group-hover:bg-[#ff6600] transition-all duration-300" />
-                                    <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 group-hover:w-full" />
-                                    <div className="space-y-4 relative z-10">
-                                      <div className="space-y-1">
-                                        <div className="w-12 h-1.5 bg-[#ff6600] rounded-full mb-4 shadow-[0_0_15px_rgba(212,255,0,0.4)]"></div>
-                                        <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white leading-none group-hover:text-[#ff6600] transition-colors">
-                                          {plan.name}
-                                        </h3>
-                                      </div>
-                                      <div className="flex items-center justify-between pt-2">
-                                        <div className="flex flex-col">
-                                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Arquitetura</span>
-                                          <span className="text-xs font-bold text-white">{plan.daysCount} DIAS DE TREINO</span>
-                                        </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-black border border-white/5 flex items-center justify-center text-gray-500 group-hover:text-black group-hover:bg-[#ff6600] transition-all shadow-lg">
-                                          <ChevronRight size={24} strokeWidth={3} />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+  const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
+  const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
+  
+  const planId = plan._id || plan.id;
+  const isActive = activeManualCard === planId;
+
+  return (
+    <div
+      key={planId || `temp-${idx}`}
+      onClick={() => setActiveManualCard(isActive ? null : planId)}
+      className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer min-h-[220px] flex flex-col justify-end animate-in fade-in zoom-in w-full
+        ${isActive 
+          ? 'scale-[1.02] border-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' 
+          : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'
+        }`}
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 
+        ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
+      
+      <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 
+        ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
+        <DecorativeIcon size={240} strokeWidth={1} />
+      </div>
+
+      {/* Barras de Neon */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/20'}`} />
+      <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0'}`} />
+
+      <div className="space-y-4 relative z-10">
+        <div className="space-y-1">
+          <div className={`w-12 h-1.5 rounded-full mb-4 transition-all duration-500 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-white/10'}`}></div>
+          <h3 className={`text-2xl font-black italic uppercase tracking-tighter leading-none transition-colors ${isActive ? 'text-[#ff6600]' : 'text-white'}`}>
+            {plan.name}
+          </h3>
+        </div>
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Arquitetura</span>
+            <span className="text-xs font-bold text-white">{plan.daysCount} DIAS DE TREINO</span>
+          </div>
+          {/* Botão de Ação */}
+          {/* Botão de Ação (Chevron) */}
+<div 
+  onClick={(e) => { 
+    e.stopPropagation(); 
+    setSelectedPlan(plan); // ou workout no caso da aba auto
+  }}
+  className={`w-12 h-12 rounded-2xl border transition-all duration-200 flex items-center justify-center shadow-lg
+    
+    /* Animação apenas de crescer no clique */
+    active:scale-125 
+    
+    ${isActive 
+      ? 'bg-[#ff6600] border-[#ff6600] text-black scale-110' 
+      : 'bg-black border-white/5 text-gray-500'
+    }`}
+>
+  <ChevronRight 
+    size={24} 
+    strokeWidth={3} 
+    className="transition-transform duration-200"
+  />
+</div>
+        </div>
+      </div>
+    </div>
+  );
+})}
                             </div>
 
                             {plans.length > 6 && (
@@ -1500,7 +1565,7 @@ export const MainContent = () => {
                   ) : (
                     <>
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-                        <div className="space-y-1 -mt-">
+                        <div className="space-y-1 -mt-[-35px]">
                           <div className="text-[#ff6600] drop-shadow-[0_0_15px_rgba(255,102,0,0.2)] font-black italic uppercase tracking-tighter text-4xl leading-none">
                             TREINOS <br /> AUTOMÁTICOS
                           </div>
@@ -1524,43 +1589,96 @@ export const MainContent = () => {
                         generatedWorkouts={generatedWorkouts}
                         setIsPRSearchOpen={setIsPRSearchOpen}
                       />
-
+                      
+                      
+{/* ... dentro do bloco activeTab === 'generator' ... */}
+{generatedWorkouts.length === 0 ? (
+  <div className="bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem] min-h-[400px] flex flex-col items-center justify-center p-12 text-center space-y-6 backdrop-blur-sm mx-2">
+    <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700">
+      <Zap size={32} />
+    </div>
+    <div className="space-y-2">
+      <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">
+        SEM TREINOS <br /> GERADOS
+      </h2>
+      <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] max-w-xs">
+        Clique no botão acima para gerar um treino automático
+      </p>
+    </div>
+  </div>
+) : (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500 px-2 w-full">
+    {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
+       // ... seu map atual dos cards ...
+    })}
+  </div>
+)}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500 px-2 w-full">
-                        {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
-                          const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
-                          const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
-                          return (
-                            <div
-                              key={workout._id || workout.id || idx}
-                              onClick={() => setSelectedPlan(workout)}
-                              className="group relative p-8 rounded-[2.5rem] border border-[#ff6600]/10 hover:border-[#ff6600]/50 transition-all shadow-xl overflow-hidden cursor-pointer active:scale-95 min-h-[220px] flex flex-col justify-end w-full"
-                            >
-                              <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#1a0a00] to-[#2a1000] group-hover:via-[#1a1c00] transition-colors duration-500" />
-                              <div className="absolute -right-8 -top-8 text-[#ff6600]/[0.04] group-hover:text-[#ff6600]/[0.08] transition-all duration-700 transform rotate-12">
-                                <DecorativeIcon size={240} strokeWidth={1} />
-                              </div>
-                              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#ff6600]/20 group-hover:bg-[#ff6600] transition-all duration-300" />
-                              <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 group-hover:w-full" />
-                              <div className="space-y-4 relative z-10">
-                                <div className="space-y-1">
-                                  <div className="w-12 h-1.5 bg-[#ff6600] rounded-full mb-4 shadow-[0_0_15px_rgba(212,255,0,0.4)]"></div>
-                                  <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white leading-none group-hover:text-[#ff6600] transition-colors">
-                                    {workout.name}
-                                  </h3>
-                                </div>
-                                <div className="flex items-center justify-between pt-2">
-                                  <div className="flex flex-col">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Treino Gerado</span>
-                                    <span className="text-xs font-bold text-white uppercase">{workout.goal} • {workout.daysCount} DIAS</span>
-                                  </div>
-                                  <div className="w-12 h-12 rounded-2xl bg-black border border-white/5 flex items-center justify-center text-gray-500 group-hover:text-black group-hover:bg-[#ff6600] transition-all shadow-lg">
-                                    <ChevronRight size={24} strokeWidth={3} />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+                      {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
+  const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
+  const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
+  
+  const workoutId = workout._id || workout.id;
+  const isActive = activeAutoCard === workoutId;
+
+  return (
+    <div
+      key={workoutId || idx}
+      onClick={() => setActiveAutoCard(isActive ? null : workoutId)}
+      className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer min-h-[220px] flex flex-col justify-end w-full
+        ${isActive 
+          ? 'scale-[1.02] border-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' 
+          : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'
+        }`}
+    >
+      {/* Background dinâmico */}
+      <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 
+        ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
+
+      {/* Ícone Decorativo */}
+      <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 
+        ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
+        <DecorativeIcon size={240} strokeWidth={1} />
+      </div>
+
+      {/* Barras Neon */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/20'}`} />
+      <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0'}`} />
+
+      <div className="space-y-4 relative z-10">
+        <div className="space-y-1">
+          <div className={`w-12 h-1.5 rounded-full mb-4 transition-all duration-500 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-white/10'}`}></div>
+          <h3 className={`text-2xl font-black italic uppercase tracking-tighter leading-none transition-colors ${isActive ? 'text-[#ff6600]' : 'text-white'}`}>
+            {workout.name}
+          </h3>
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Treino Gerado</span>
+            <span className="text-xs font-bold text-white uppercase">{workout.goal} • {workout.daysCount} DIAS</span>
+          </div>
+
+          {/* Botão Chevron com animação de crescer no click */}
+          <div 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setSelectedPlan(workout); 
+            }}
+            className={`w-12 h-12 rounded-2xl border transition-all duration-200 flex items-center justify-center shadow-lg
+              active:scale-125
+              ${isActive 
+                ? 'bg-[#ff6600] border-[#ff6600] text-black scale-110' 
+                : 'bg-black border-white/5 text-gray-500'
+              }`}
+          >
+            <ChevronRight size={24} strokeWidth={3} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+})}
                       </div>
 
                       {generatedWorkouts.length > 6 && (
@@ -1655,28 +1773,49 @@ export const MainContent = () => {
 
                             </div>
                           </form>
-                          <div className="group relative mt-6 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/80 hover:border-[#ff6600]/40 transition-all duration-500 shadow-2xl overflow-hidden cursor-default">
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff6600]/10 group-hover:bg-[#ff6600] transition-all duration-300"></div>
-                            <div className="flex items-center gap-4 relative z-10">
-                              <div className="w-9 h-9 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center text-gray-500 group-hover:bg-[#ff6600] group-hover:text-black group-hover:border-[#ff6600] transition-all duration-300 flex-shrink-0">
-                                <Zap size={16} />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[0.15em] leading-tight group-hover:text-white transition-colors duration-300">
-                                  Treinos automatizados de <span className="text-[#ff6600] group-hover:text-[#ff6600] transition-colors">alta performance</span>.
-                                  Escolha seu objetivo e dias para gerar um plano de treino automático.
-                                </p>
-                              </div>
-                            </div>
-                            <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 group-hover:w-full" />
-                          </div>
+                         <div 
+  onClick={() => setIsAutoInfoActive(!isAutoInfoActive)}
+  className={`group relative mt-6 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+    ${isAutoInfoActive 
+      ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
+      : 'border-white/10 hover:border-white/20'
+    }`}
+>
+  <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
+    ${isAutoInfoActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/10'}`} 
+  />
+
+  <div className="flex items-center gap-4 relative z-10">
+    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
+      ${isAutoInfoActive 
+        ? 'bg-[#ff6600] text-black border-[#ff6600] shadow-[0_0_10px_#ff6600]' 
+        : 'bg-white/[0.03] border-white/5 text-gray-500'
+      }`}
+    >
+      <Zap size={16} />
+    </div>
+
+    <div className="flex-1">
+      <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
+        ${isAutoInfoActive ? 'text-white' : 'text-gray-400'}`}
+      >
+        Treinos automatizados de <span className="text-[#ff6600]">alta performance</span>.
+        Escolha seu objetivo e dias para gerar um plano de treino automático.
+      </p>
+    </div>
+  </div>
+
+  <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 
+    ${isAutoInfoActive ? 'w-full' : 'w-0'}`} 
+  />
+</div>
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in duration-500 px-2 pb-10">
+                <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in duration-500 px-2 pb-10 -mt-[-35px]">
                   <div className="text-center space-y-2 relative flex flex-col items-center">
                     <h1 className="text-5xl font-black italic uppercase tracking-tighter text-[#ff6600]">EVOLUÇÃO</h1>
                     <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
@@ -1884,7 +2023,7 @@ export const MainContent = () => {
                         <button
                           type="button"
                           onClick={() => setView('forgotPassword')}
-                          className="text-[9px] font-bold text-[#ff6600] uppercase tracking-widest "
+                          className="text-[9px] font-bold text-[#ff6600] uppercase tracking-widest transition-all duration-200 hover:scale-105 active:scale-105 origin-right"
                         >
                           Esqueci minha senha
                         </button>
@@ -1908,7 +2047,7 @@ export const MainContent = () => {
                   </span>
                   <button
                     onClick={() => setView('register')}
-                    className="text-[10px] font-bold text-[#ff6600] uppercase tracking-widest hover:scale-105 transition-transform duration-200 inline-block"
+                    className="text-[10px] font-bold text-[#ff6600] uppercase tracking-widest transition-all duration-200 hover:scale-105 active:scale-105 inline-block"
                   >
                     Crie sua conta
                   </button>
@@ -1994,7 +2133,7 @@ export const MainContent = () => {
                   </span>
                   <button
                     onClick={() => setView('login')}
-                    className="text-[10px] font-bold text-[#ff6600] uppercase tracking-widest hover:scale-105 transition-transform duration-200 inline-block"
+                    className="text-[10px] font-bold text-[#ff6600] uppercase tracking-widest transition-all duration-200 hover:scale-105 active:scale-105 inline-block"
                   >
                     Faça login
                   </button>
@@ -2002,7 +2141,6 @@ export const MainContent = () => {
               </div>
             </div>
           </div>
-          
         );
       default:
         return <LandingPage onStart={(mode) => setView(mode)} />;

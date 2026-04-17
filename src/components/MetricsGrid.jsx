@@ -1,5 +1,5 @@
-import React from 'react';
-import { Trophy, Activity, CheckSquare, ClipboardList, Dumbbell, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trophy, Activity, CheckSquare, ClipboardList, Dumbbell, ChevronRight, Search, ExternalLink } from 'lucide-react';
 
 const MetricsGridAuto = ({
   stats = { maxWeight: 0, sessionVolume: 0, completedCount: 0 },
@@ -12,7 +12,9 @@ const MetricsGridAuto = ({
     sessionVolume: stats?.sessionVolume || 0,
     completedCount: stats?.completedCount || 0,
   };
-  
+
+  const [activeCard, setActiveCard] = useState(null);
+
   const cards = [
     {
       title: 'GYM RATS',
@@ -21,7 +23,7 @@ const MetricsGridAuto = ({
       image: '/images/logo-gymrats2.jpg',
       position: 'bg-center',
       isGymRats: true,
-      onClick: () => window.open('https://share.gymrats.app/join?code=AMKWULSI', '_blank'),
+      externalLink: 'https://share.gymrats.app/join?code=AMKWULSI',
     },
     {
       title: 'EXERCÍCIOS',
@@ -31,21 +33,23 @@ const MetricsGridAuto = ({
             {safeStats.completedCount}
           </span>
           <span className="text-base font-black text-white uppercase tracking-[0.15em]">
-           CONCLUÍDOS
+            CONCLUÍDOS
           </span>
         </div>
       ),
       icon: CheckSquare,
       image: 'https://images.unsplash.com/photo-1556817411-31ae72fa3ea0?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       position: 'bg-top',
+      isMetric: true,
     },
     {
       title: 'MAX CARGA',
       value: `${safeStats.maxWeight}kg`,
       icon: Trophy,
       image: 'https://images.unsplash.com/photo-1546817372-628669db4655?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      onClick: () => setIsPRSearchOpen(true),
       position: 'bg-[position:50%_20%]',
+      hasSearch: true,
+      isMetric: true,
     },
     {
       title: 'VOLUME TOTAL',
@@ -53,36 +57,68 @@ const MetricsGridAuto = ({
       icon: Activity,
       image: 'https://images.unsplash.com/photo-1621750627159-cf77b0b91aac?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       position: 'bg-center',
+      isMetric: true,
     },
     {
       title: 'PLANOS',
-      value:
-        (Array.isArray(plans) ? plans.length : 0) +
-        (Array.isArray(generatedWorkouts) ? generatedWorkouts.length : 0),
+      value: (Array.isArray(plans) ? plans.length : 0) + (Array.isArray(generatedWorkouts) ? generatedWorkouts.length : 0),
       icon: ClipboardList,
       image: 'https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?q=80&w=800',
       position: 'bg-center',
+      isMetric: true,
     },
   ];
+
+  const handleCardClick = (index) => {
+    setActiveCard(activeCard === index ? null : index);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-2">
       {cards.map((card, index) => (
         <div
           key={index}
-          onClick={card.onClick}
-          className="relative group overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 hover:scale-[1.02] border border-[#ff6600]/20 hover:border-[#ff6600] h-28"
+          onClick={() => handleCardClick(index)}
+          className={`relative group overflow-hidden rounded-2xl cursor-pointer transition-all duration-500 border h-28 ${
+            activeCard === index 
+              ? 'border-[#ff6600] scale-[1.02]' 
+              : 'border-[#ff6600]/20 hover:border-[#ff6600] hover:scale-[1.02]'
+          }`}
         >
-         <div
-  className={`absolute inset-0 bg-cover ${card.position} transition-all duration-1000 ${
-    card.isGymRats 
-      ? 'grayscale-0 group-hover:grayscale' 
-      : 'grayscale brightness-[0.7] contrast-[1.1] group-hover:grayscale-0 group-hover:brightness-[0.9]'
-  } group-hover:scale-110`}
-  style={{ backgroundImage: `url('${card.image}')` }}
-/>
+          <div
+            className={`absolute inset-0 bg-cover ${card.position} transition-all duration-1000 ${
+              card.isGymRats 
+                ? '' 
+                : `grayscale brightness-[0.7] contrast-[1.1] ${activeCard === index ? 'grayscale-0 brightness-[0.9]' : 'group-hover:grayscale-0 group-hover:brightness-[0.9]'}`
+            } group-hover:scale-110`}
+            style={{ backgroundImage: `url('${card.image}')` }}
+          />
 
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/30 group-hover:from-black/80 transition-all duration-500" />
+
+          {card.hasSearch && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPRSearchOpen(true);
+              }}
+              className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-[#ff6600] hover:text-white transition-all z-20"
+            >
+              <Search size={14} />
+            </button>
+          )}
+
+          {card.isGymRats && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(card.externalLink, '_blank');
+              }}
+              className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-[#ff6600] hover:text-white transition-all z-20"
+            >
+              <ExternalLink size={14} />
+            </button>
+          )}
 
           <div className="relative p-4 z-10 flex flex-row items-center gap-3 h-full">
             <div className="p-2 border border-[#ff6600]/30 rounded-lg bg-black/60 backdrop-blur-md group-hover:border-[#ff6600] flex-shrink-0">
@@ -97,18 +133,22 @@ const MetricsGridAuto = ({
                 <p className="text-[12px] text-white uppercase tracking-[0.15em] font-black opacity-90 whitespace-nowrap">
                   {card.title}
                 </p>
-                <div className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-[#ff6600] shadow-[0_0_6px_#ff6600] transition-all duration-300 group-hover:w-full" />
+                <div className={`absolute -bottom-0.5 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_6px_#ff6600] transition-all duration-300 ${
+                  activeCard === index ? 'w-full' : 'w-0 group-hover:w-full'
+                }`} />
               </div>
-             <div className={`flex items-center gap-2 ${card.isGymRats ? 'mt-0' : '-mt-1'}`}>
-  <span className="text-base font-black text-white italic uppercase tracking-tighter drop-shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:origin-left whitespace-nowrap">
-    {card.value}
-  </span>
-  {card.isGymRats && <ChevronRight size={14} className="text-[#ff6600]" />}
-</div>
+              <div className={`flex items-center gap-2 ${card.isGymRats ? 'mt-0' : '-mt-1'}`}>
+                <span className="text-base font-black text-white italic uppercase tracking-tighter drop-shadow-lg transition-all duration-300 whitespace-nowrap">
+                  {card.value}
+                </span>
+                {card.isGymRats && <ChevronRight size={14} className="text-[#ff6600]" />}
+              </div>
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 h-[3px] w-0 bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 group-hover:w-full" />
+          <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${
+            activeCard === index ? 'w-full' : 'w-0 group-hover:w-full'
+          }`} />
         </div>
       ))}
     </div>

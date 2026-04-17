@@ -481,7 +481,7 @@ export const PlanDetailsView = ({
       )}
 
       {/* CABEÇALHO DO PLANO */}
-      <div className="flex items-center justify-between px-2 gap-2 sm:gap-4">
+      <div className="flex items-center justify-between px-2 gap-2 sm:gap-4 -mt-[-25px]">
         <div className="flex items-center gap-3 sm:gap-6 overflow-hidden flex-1 min-w-0">
           <button
             onClick={onBack}
