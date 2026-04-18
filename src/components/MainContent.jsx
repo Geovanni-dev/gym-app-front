@@ -1161,9 +1161,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                       onFinishWorkout={onFinishWorkout}
                       onClearDayExercises={onClearDayExercises}
                       onForceRefresh={async () => {
-                        await fetchPlans();
-                        await fetchGeneratedWorkouts();
-                        await fetchHistory();
 
                         if (selectedPlan) {
                           const planId = selectedPlan._id || selectedPlan.id;
