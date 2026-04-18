@@ -173,7 +173,7 @@ if (showEditExercisePage) {
           caret-color: white;
         }
       `}</style>
-     <MainContent 
+<MainContent 
   onOpenPRPage={() => setShowPRPage(true)}
   onOpenImportPage={() => setShowImportPage(true)}
   onOpenAddExercisePage={(planId, dayName, onAdd) => {
@@ -181,6 +181,15 @@ if (showEditExercisePage) {
     setAddExerciseDayName(dayName);
     setOnAddExerciseCallback(() => onAdd);
     setShowAddExercisePage(true);
+  }}
+  onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated) => {
+    setEditExercisePlanId(planId);
+    setEditExerciseDayName(dayName);
+    setEditExerciseName(exerciseName);
+    setEditExerciseData(exerciseData);
+    setEditExerciseIsGenerated(isGenerated);
+    setOnUpdateExerciseCallback(() => onUpdateExercise);
+    setShowEditExercisePage(true);
   }}
 />
     </AuthProvider>
