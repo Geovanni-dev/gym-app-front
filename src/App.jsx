@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { MainContent } from './components/MainContent';
 import { PRSearchPage } from './components/Modals/PRSearchPage';
+import { ImportPlanPage } from './components/Modals/ImportPlanPage';
 import { useScrollToInput } from './hooks/useScrollToInput';
 
 function App() {
   useScrollToInput();
   
-  // Estado que controla se a página PR está aberta
+  // Estados que controlam as páginas
   const [showPRPage, setShowPRPage] = useState(false);
+  const [showImportPage, setShowImportPage] = useState(false);
   
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
@@ -19,7 +21,16 @@ function App() {
     );
   }
   
-  // Senão, mostra o app normal com TODO o seu CSS
+  // Se a página de importar estiver aberta, mostra SOMENTE ela
+  if (showImportPage) {
+    return (
+      <AuthProvider>
+        <ImportPlanPage onClose={() => setShowImportPage(false)} />
+      </AuthProvider>
+    );
+  }
+  
+  // Senão, mostra o app normal
   return (
     <AuthProvider>
       <style>{`
@@ -118,7 +129,10 @@ function App() {
           caret-color: white;
         }
       `}</style>
-      <MainContent onOpenPRPage={() => setShowPRPage(true)} />
+      <MainContent 
+        onOpenPRPage={() => setShowPRPage(true)}
+        onOpenImportPage={() => setShowImportPage(true)}
+      />
     </AuthProvider>
   );
 }
