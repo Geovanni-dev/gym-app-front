@@ -731,7 +731,7 @@ export const PlanDetailsView = ({
                   {/* BOTÃO ADICIONAR EXERCÍCIO */}
                   <div className="mt-4">
                     <button
-  onClick={() => onOpenAddExercisePage(day.name)}
+  onClick={() => onOpenAddExercisePage(day.name, onAddExercise)}
   className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 sm:gap-3 group cursor-pointer text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600]"
 >
   <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">

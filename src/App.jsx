@@ -14,6 +14,7 @@ function App() {
   const [showImportPage, setShowImportPage] = useState(false);
   const [showAddExercisePage, setShowAddExercisePage] = useState(false);
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
+  const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
   
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
@@ -39,6 +40,7 @@ if (showAddExercisePage) {
     <AuthProvider>
       <AddExercisePage 
         onClose={() => setShowAddExercisePage(false)}
+        onAdd={onAddExerciseCallback}
         dayName={addExerciseDayName}
       />
     </AuthProvider>
@@ -145,11 +147,12 @@ if (showAddExercisePage) {
           caret-color: white;
         }
       `}</style>
-      <MainContent 
+     <MainContent 
   onOpenPRPage={() => setShowPRPage(true)}
   onOpenImportPage={() => setShowImportPage(true)}
-  onOpenAddExercisePage={(dayName) => {
+  onOpenAddExercisePage={(dayName, onAdd) => {
     setAddExerciseDayName(dayName);
+    setOnAddExerciseCallback(() => onAdd);
     setShowAddExercisePage(true);
   }}
 />
