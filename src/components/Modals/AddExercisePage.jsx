@@ -40,7 +40,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
     };
   }, []);
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newExData.name.trim()) {
       setError('Digite o nome do exercício');
@@ -51,7 +51,6 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       return;
     }
     
-    // Mostra loading no botão (opcional)
     setLoading(true);
     
     try {
@@ -60,7 +59,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
         sets: Number(newExData.sets),
         weight: Number(newExData.weight) || 0,
       });
-      // Só fecha se deu certo
+      // Fecha a página apenas depois de tudo certo
       onClose();
     } catch (error) {
       setError('Erro ao adicionar exercício');

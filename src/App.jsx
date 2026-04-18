@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { MainContent } from './components/MainContent';
 import { PRSearchPage } from './components/Modals/PRSearchPage';
@@ -9,6 +9,8 @@ import { useScrollToInput } from './hooks/useScrollToInput';
 function App() {
   useScrollToInput();
   
+  const [isLoading, setIsLoading] = useState(true);
+  
   // Estados que controlam as páginas
   const [showPRPage, setShowPRPage] = useState(false);
   const [showImportPage, setShowImportPage] = useState(false);
@@ -16,6 +18,19 @@ function App() {
   const [addExercisePlanId, setAddExercisePlanId] = useState(null);
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
+  
+  useEffect(() => {
+    // Aguarda o localStorage ser carregado pelo MainContent
+    setTimeout(() => setIsLoading(false), 100);
+  }, []);
+  
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-white text-2xl font-black">CARREGANDO...</div>
+      </div>
+    );
+  }
   
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
@@ -48,10 +63,9 @@ function App() {
       </AuthProvider>
     );
   }
+  
   // Senão, mostra o app normal
   return (
-
-    
     <AuthProvider>
       <style>{`
         /* Reset básico para mobile */
@@ -149,16 +163,16 @@ function App() {
           caret-color: white;
         }
       `}</style>
-     <MainContent 
-  onOpenPRPage={() => setShowPRPage(true)}
-  onOpenImportPage={() => setShowImportPage(true)}
-  onOpenAddExercisePage={(planId, dayName, onAdd) => {
-    setAddExercisePlanId(planId);
-    setAddExerciseDayName(dayName);
-    setOnAddExerciseCallback(() => onAdd);
-    setShowAddExercisePage(true);
-  }}
-/>
+      <MainContent 
+        onOpenPRPage={() => setShowPRPage(true)}
+        onOpenImportPage={() => setShowImportPage(true)}
+        onOpenAddExercisePage={(planId, dayName, onAdd) => {
+          setAddExercisePlanId(planId);
+          setAddExerciseDayName(dayName);
+          setOnAddExerciseCallback(() => onAdd);
+          setShowAddExercisePage(true);
+        }}
+      />
     </AuthProvider>
   );
 }
