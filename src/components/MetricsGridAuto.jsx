@@ -5,7 +5,7 @@ const MetricsGridAuto = ({
   stats = { maxWeight: 0, sessionVolume: 0, completedCount: 0 },
   plans = [],
   generatedWorkouts = [],
-  setIsPRSearchOpen = () => {},
+  onOpenPRPage = () => {},
 }) => {
   const safeStats = {
     maxWeight: stats?.maxWeight || 0,
@@ -97,17 +97,17 @@ const MetricsGridAuto = ({
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/30 group-hover:from-black/80 transition-all duration-500" />
 
           {/* Botão de busca para MAX CARGA */}
-          {card.hasSearch && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsPRSearchOpen(true);
-              }}
-              className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-[#ff6600] hover:text-white transition-all z-20"
-            >
-              <Search size={14} />
-            </button>
-          )}
+         {card.hasSearch && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onOpenPRPage();  // ← CORRETO
+    }}
+    className="..."
+  >
+    <Search size={14} />
+  </button>
+)}
 
           {/* Botão de link externo para GYM RATS */}
           {card.isGymRats && (

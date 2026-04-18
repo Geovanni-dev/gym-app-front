@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { PRSearchPage } from './Modals/PRSearchPage';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
@@ -83,7 +82,8 @@ import {
   PlanDetailsView,
 } from './index';
 
-export const MainContent = () => {
+export const MainContent = ({ onOpenPRPage }) => {
+
   const { isAuthenticated, login, logout, user } = useAuth();
 
   const [view, setView] = useState(() => {
@@ -122,11 +122,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
 
   const [history, setHistory] = useState([]);
   const [selectedExerciseHistory, setSelectedExerciseHistory] = useState(null);
-
-  const [isPRSearchOpen, setIsPRSearchOpen] = useState(false);
-  const [prSearchQuery, setPRSearchQuery] = useState('');
-  const [prSearchResult, setPRSearchResult] = useState(null);
-  const [searchingPR, setSearchingPR] = useState(false);
 
   const [completedExercises, setCompletedExercises] = useState(() => {
     const saved = localStorage.getItem('@superfrango:completed');
@@ -224,16 +219,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
     });
   };
 
-  useEffect(() => {
-    if (isPRSearchOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isPRSearchOpen]);
 
   const handleImportPlan = async () => {
     if (!importCode.trim()) return;
@@ -532,23 +517,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
         setIsTransitioning(false);
       }, 150);
     }, 150);
-  };
-
-  const handleSearchPR = async (e) => {
-    e.preventDefault();
-    if (!prSearchQuery.trim()) return;
-    setSearchingPR(true);
-    try {
-      const response = await api.get('/workouts/pr', {
-        params: { exercise: prSearchQuery.trim() },
-      });
-      const pr = response.data.personalRecord || response.data.weight;
-      setPRSearchResult(pr !== undefined && pr !== null ? `${pr}KG` : 'N/A');
-    } catch (e) {
-      setPRSearchResult('N/A');
-    } finally {
-      setSearchingPR(false);
-    }
   };
 
   const formLogin = useForm({ resolver: zodResolver(loginSchema) });
@@ -1057,9 +1025,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
             }
           />
         
-     {isPRSearchOpen && (
-  <PRSearchPage onClose={() => setIsPRSearchOpen(false)} />
-)}
 
           <main className="max-w-7xl mx-auto w-full pt-13 pb-8 md:pt-8 relative z-10">
             <StatusMessage type={uiMessage.type} message={uiMessage.text} />
@@ -1240,12 +1205,12 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                         </div>
                       </div>
             
-                      <MetricsGrid
-                        stats={stats}
-                        plans={plans}
-                        generatedWorkouts={generatedWorkouts}
-                        setIsPRSearchOpen={setIsPRSearchOpen}
-                      />
+                     <MetricsGrid
+  stats={stats}
+  plans={plans}
+  generatedWorkouts={generatedWorkouts}
+  onOpenPRPage={onOpenPRPage}   // ← NOVO
+/>
 
                       <div className="space-y-6">
                         {plans.length === 0 ? (
@@ -1485,11 +1450,11 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                       </div>
 
                       <MetricsGridAuto
-                        stats={stats}
-                        plans={plans}
-                        generatedWorkouts={generatedWorkouts}
-                        setIsPRSearchOpen={setIsPRSearchOpen}
-                      />
+  stats={stats}
+  plans={plans}
+  generatedWorkouts={generatedWorkouts}
+  onOpenPRPage={onOpenPRPage}
+/>
                       
                       
 {/* ... dentro do bloco activeTab === 'generator' ... */}

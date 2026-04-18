@@ -5,7 +5,7 @@ const MetricsGridAuto = ({
   stats = { maxWeight: 0, sessionVolume: 0, completedCount: 0 },
   plans = [],
   generatedWorkouts = [],
-  setIsPRSearchOpen = () => {},
+  onOpenPRPage = () => {},
 }) => {
   const safeStats = {
     maxWeight: stats?.maxWeight || 0,
@@ -100,7 +100,7 @@ const MetricsGridAuto = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setIsPRSearchOpen(true);
+                onOpenPRPage()
               }}
               className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-[#ff6600] hover:text-white transition-all z-20"
             >

@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { MainContent } from './components/MainContent';
+import { PRSearchPage } from './components/Modals/PRSearchPage';
 import { useScrollToInput } from './hooks/useScrollToInput';
 
 function App() {
   useScrollToInput();
+  
+  // Estado que controla se a página PR está aberta
+  const [showPRPage, setShowPRPage] = useState(false);
+  
+  // Se a página PR estiver aberta, mostra SOMENTE ela
+  if (showPRPage) {
+    return (
+      <AuthProvider>
+        <PRSearchPage onClose={() => setShowPRPage(false)} />
+      </AuthProvider>
+    );
+  }
+  
+  // Senão, mostra o app normal com TODO o seu CSS
   return (
     <AuthProvider>
       <style>{`
@@ -103,7 +118,7 @@ function App() {
           caret-color: white;
         }
       `}</style>
-      <MainContent />
+      <MainContent onOpenPRPage={() => setShowPRPage(true)} />
     </AuthProvider>
   );
 }
