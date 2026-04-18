@@ -6,6 +6,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
   const [newExData, setNewExData] = useState({ name: '', sets: '', reps: '', weight: '' });
   const [error, setError] = useState('');
   const containerRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -39,7 +40,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newExData.name.trim()) {
       setError('Digite o nome do exercício');
@@ -50,15 +51,22 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       return;
     }
     
-    // Fecha a página primeiro
-    onClose();
+    // Mostra loading no botão (opcional)
+    setLoading(true);
     
-    // Depois chama a API
-    await onAdd(planId, dayName, {
-      ...newExData,
-      sets: Number(newExData.sets),
-      weight: Number(newExData.weight) || 0,
-    });
+    try {
+      await onAdd(planId, dayName, {
+        ...newExData,
+        sets: Number(newExData.sets),
+        weight: Number(newExData.weight) || 0,
+      });
+      // Só fecha se deu certo
+      onClose();
+    } catch (error) {
+      setError('Erro ao adicionar exercício');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -159,11 +167,12 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
                 )}
                 
                 <button
-                  type="submit"
-                  className="w-full py-4 rounded-xl font-black italic bg-[#ff6600] text-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95 transition-all"
-                >
-                  ADICIONAR EXERCÍCIO
-                </button>
+  type="submit"
+  disabled={loading}
+  className="w-full py-4 rounded-xl font-black italic bg-[#ff6600] text-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95 transition-all disabled:opacity-50"
+>
+  {loading ? 'ADICIONANDO...' : 'ADICIONAR EXERCÍCIO'}
+</button>
               </form>
             </div>
 
