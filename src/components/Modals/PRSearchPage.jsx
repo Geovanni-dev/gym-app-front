@@ -1,5 +1,5 @@
 // src/components/Modals/PRSearchPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
 
@@ -7,26 +7,33 @@ export const PRSearchPage = ({ onClose }) => {
   const [prSearchQuery, setPRSearchQuery] = useState('');
   const [prSearchResult, setPRSearchResult] = useState(null);
   const [searchingPR, setSearchingPR] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const containerRef = useRef(null);
 
-  // Trava a tela completamente + fix para iOS
+  // Solução definitiva para iOS
   useEffect(() => {
+    // Salva posição atual
     const scrollY = window.scrollY;
     
-    // Trava o body
+    // Trava o body de forma agressiva
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
     document.body.style.left = '0';
     document.body.style.right = '0';
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
+    document.body.style.webkitOverflowScrolling = 'none';
     
-    // iOS: força altura fixa quando teclado abre/fecha
-    const handleResize = () => {
-      setViewportHeight(window.innerHeight);
+    // Força o container a ocupar a tela inteira
+    if (containerRef.current) {
+      containerRef.current.style.height = `${window.innerHeight}px`;
+    }
+    
+    // iOS: previne qualquer scroll
+    const preventTouchMove = (e) => {
+      e.preventDefault();
     };
     
-    window.addEventListener('resize', handleResize);
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
     
     return () => {
       document.body.style.position = '';
@@ -35,8 +42,9 @@ export const PRSearchPage = ({ onClose }) => {
       document.body.style.right = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
+      document.body.style.webkitOverflowScrolling = '';
       window.scrollTo(0, scrollY);
-      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('touchmove', preventTouchMove);
     };
   }, []);
 
@@ -59,15 +67,22 @@ export const PRSearchPage = ({ onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black text-white" 
-      style={{ 
+      ref={containerRef}
+      className="bg-black text-white"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
         overflow: 'hidden',
-        height: viewportHeight,
-        maxHeight: viewportHeight
+        zIndex: 9999,
       }}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto px-4 pt-8 pb-20">
+      <div className="h-full overflow-hidden">
+        <div className="h-full overflow-y-auto px-4 pt-8 pb-20" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="max-w-7xl mx-auto">
             
             {/* Botão Voltar */}
