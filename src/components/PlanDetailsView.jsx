@@ -729,6 +729,7 @@ export const PlanDetailsView = ({
                     </div>
                   </div>
                   {/* BOTÃO ADICIONAR EXERCÍCIO */}
+                  {!isGenerated && (
                   <div className="mt-4">
                     <button
   onClick={() => onOpenAddExercisePage(plan._id || plan.id, day.name, onAddExercise)}
@@ -740,6 +741,7 @@ export const PlanDetailsView = ({
   Adicionar Exercício
 </button>
                   </div>
+                  )}
                 </>
               )}
             </div>
