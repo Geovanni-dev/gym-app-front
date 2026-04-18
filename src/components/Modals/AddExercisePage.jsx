@@ -50,12 +50,15 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       return;
     }
     
+    // Fecha a página primeiro
+    onClose();
+    
+    // Depois chama a API
     await onAdd(planId, dayName, {
       ...newExData,
       sets: Number(newExData.sets),
       weight: Number(newExData.weight) || 0,
     });
-    onClose();
   };
 
   return (
