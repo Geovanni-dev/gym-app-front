@@ -97,13 +97,13 @@ const MetricsGridAuto = ({
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/30 group-hover:from-black/80 transition-all duration-500" />
 
           {/* Botão de busca para MAX CARGA */}
-         {card.hasSearch && (
+{card.hasSearch && (
   <button
     onClick={(e) => {
       e.stopPropagation();
-      onOpenPRPage();  // ← CORRETO
+      onOpenPRPage();
     }}
-    className="..."
+    className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-md text-[#ff6600] hover:text-white transition-all z-20"
   >
     <Search size={14} />
   </button>
