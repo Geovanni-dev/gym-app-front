@@ -13,6 +13,7 @@ function App() {
   const [showPRPage, setShowPRPage] = useState(false);
   const [showImportPage, setShowImportPage] = useState(false);
   const [showAddExercisePage, setShowAddExercisePage] = useState(false);
+  const [addExercisePlanId, setAddExercisePlanId] = useState(null);
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
   
@@ -35,17 +36,18 @@ function App() {
   }
   
   // Se a página de adicionar exercício estiver aberta, mostra SOMENTE ela
-if (showAddExercisePage) {
-  return (
-    <AuthProvider>
-      <AddExercisePage 
-        onClose={() => setShowAddExercisePage(false)}
-        onAdd={onAddExerciseCallback}
-        dayName={addExerciseDayName}
-      />
-    </AuthProvider>
-  );
-}
+  if (showAddExercisePage) {
+    return (
+      <AuthProvider>
+        <AddExercisePage 
+          onClose={() => setShowAddExercisePage(false)}
+          onAdd={onAddExerciseCallback}
+          planId={addExercisePlanId}
+          dayName={addExerciseDayName}
+        />
+      </AuthProvider>
+    );
+  }
   // Senão, mostra o app normal
   return (
 
@@ -150,7 +152,8 @@ if (showAddExercisePage) {
      <MainContent 
   onOpenPRPage={() => setShowPRPage(true)}
   onOpenImportPage={() => setShowImportPage(true)}
-  onOpenAddExercisePage={(dayName, onAdd) => {
+  onOpenAddExercisePage={(planId, dayName, onAdd) => {
+    setAddExercisePlanId(planId);
     setAddExerciseDayName(dayName);
     setOnAddExerciseCallback(() => onAdd);
     setShowAddExercisePage(true);
