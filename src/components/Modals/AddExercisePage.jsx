@@ -1,8 +1,8 @@
 // src/components/Modals/AddExercisePage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
-export const AddExercisePage = ({ onClose, onAdd, dayName }) => {
+export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
   const [newExData, setNewExData] = useState({ name: '', sets: '', reps: '', weight: '' });
   const [error, setError] = useState('');
   const containerRef = useRef(null);
@@ -50,7 +50,7 @@ export const AddExercisePage = ({ onClose, onAdd, dayName }) => {
       return;
     }
     
-    onAdd({
+    onAdd(planId, dayName, {
       ...newExData,
       sets: Number(newExData.sets),
       weight: Number(newExData.weight) || 0,
