@@ -7,10 +7,10 @@ export const PRSearchPage = ({ onClose }) => {
   const [prSearchQuery, setPRSearchQuery] = useState('');
   const [prSearchResult, setPRSearchResult] = useState(null);
   const [searchingPR, setSearchingPR] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
 
-  // Trava a tela completamente
+  // Trava a tela completamente + fix para iOS
   useEffect(() => {
-    // Salva o scroll atual
     const scrollY = window.scrollY;
     
     // Trava o body
@@ -21,8 +21,14 @@ export const PRSearchPage = ({ onClose }) => {
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
     
+    // iOS: força altura fixa quando teclado abre/fecha
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
     return () => {
-      // Restaura ao sair
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
@@ -30,6 +36,7 @@ export const PRSearchPage = ({ onClose }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -51,8 +58,15 @@ export const PRSearchPage = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black text-white" style={{ overflow: 'hidden' }}>
-      <div className="h-screen flex flex-col" style={{ height: '100vh', height: '100dvh' }}>
+    <div 
+      className="fixed inset-0 bg-black text-white" 
+      style={{ 
+        overflow: 'hidden',
+        height: viewportHeight,
+        maxHeight: viewportHeight
+      }}
+    >
+      <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto px-4 pt-8 pb-20">
           <div className="max-w-7xl mx-auto">
             
