@@ -372,9 +372,15 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
     setLoading(true);
     try {
       const response = await api.post(`/workout-plans/${planId}/exercise`, { dayName, ...data });
-      if (response.data.workoutPlan) setSelectedPlan(response.data.workoutPlan);
-      fetchPlans();
+      if (response.data.workoutPlan) {
+        setSelectedPlan(response.data.workoutPlan);
+        // Atualiza também o plano na lista de plans
+        setPlans(prevPlans => prevPlans.map(p => 
+          (p._id || p.id) === planId ? response.data.workoutPlan : p
+        ));
+      }
     } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }

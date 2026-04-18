@@ -39,7 +39,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
     };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newExData.name.trim()) {
       setError('Digite o nome do exercício');
@@ -50,7 +50,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       return;
     }
     
-    onAdd(planId, dayName, {
+    await onAdd(planId, dayName, {
       ...newExData,
       sets: Number(newExData.sets),
       weight: Number(newExData.weight) || 0,
