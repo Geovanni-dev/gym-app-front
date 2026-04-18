@@ -1186,16 +1186,11 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-  onClick={onOpenImportPage}
-  className="p-3 rounded-2xl bg-white text-black hover:bg-[#ff6600] hover:text-black transition-all active:scale-95"
-  title="Importar plano"
->
-  <svg width="25" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-    <polyline points="8 12 12 16 16 12" />
-    <line x1="12" y1="2" x2="12" y2="16" />
-  </svg>
-</button>
+                            onClick={() => setShowCreatePlan(true)}
+                            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-[#ff6600] transition-all shadow-xl active:scale-95"
+                          >
+                            <Plus size={16} strokeWidth={3} /> Criar treino
+                          </button>
                          <button
   onClick={onOpenImportPage}
   className="p-3 rounded-2xl bg-white text-black hover:bg-[#ff6600] hover:text-black transition-all active:scale-95"
