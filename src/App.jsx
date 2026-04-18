@@ -4,8 +4,8 @@ import { MainContent } from './components/MainContent';
 import { PRSearchPage } from './components/Modals/PRSearchPage';
 import { ImportPlanPage } from './components/Modals/ImportPlanPage';
 import { AddExercisePage } from './components/Modals/AddExercisePage';
-import { useScrollToInput } from './hooks/useScrollToInput';
 import { EditExercisePage } from './components/Modals/EditExercisePage';
+import { useScrollToInput } from './hooks/useScrollToInput';
 
 function App() {
   useScrollToInput();
@@ -17,6 +17,7 @@ function App() {
   const [addExercisePlanId, setAddExercisePlanId] = useState(null);
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
+  
   const [showEditExercisePage, setShowEditExercisePage] = useState(false);
   const [editExerciseData, setEditExerciseData] = useState(null);
   const [editExercisePlanId, setEditExercisePlanId] = useState(null);
@@ -56,26 +57,26 @@ function App() {
       </AuthProvider>
     );
   }
+  
   // Se a página de editar exercício estiver aberta, mostra SOMENTE ela
-if (showEditExercisePage) {
-  return (
-    <AuthProvider>
-      <EditExercisePage 
-        onClose={() => setShowEditExercisePage(false)}
-        onUpdate={onUpdateExerciseCallback}
-        exerciseData={editExerciseData}
-        planId={editExercisePlanId}
-        dayName={editExerciseDayName}
-        exerciseName={editExerciseName}
-        isGenerated={editExerciseIsGenerated}
-      />
-    </AuthProvider>
-  );
-}
+  if (showEditExercisePage) {
+    return (
+      <AuthProvider>
+        <EditExercisePage 
+          onClose={() => setShowEditExercisePage(false)}
+          onUpdate={onUpdateExerciseCallback}
+          exerciseData={editExerciseData}
+          planId={editExercisePlanId}
+          dayName={editExerciseDayName}
+          exerciseName={editExerciseName}
+          isGenerated={editExerciseIsGenerated}
+        />
+      </AuthProvider>
+    );
+  }
+  
   // Senão, mostra o app normal
   return (
-
-    
     <AuthProvider>
       <style>{`
         /* Reset básico para mobile */
@@ -173,25 +174,25 @@ if (showEditExercisePage) {
           caret-color: white;
         }
       `}</style>
-<MainContent 
-  onOpenPRPage={() => setShowPRPage(true)}
-  onOpenImportPage={() => setShowImportPage(true)}
-  onOpenAddExercisePage={(planId, dayName, onAdd) => {
-    setAddExercisePlanId(planId);
-    setAddExerciseDayName(dayName);
-    setOnAddExerciseCallback(() => onAdd);
-    setShowAddExercisePage(true);
-  }}
-  onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated) => {
-    setEditExercisePlanId(planId);
-    setEditExerciseDayName(dayName);
-    setEditExerciseName(exerciseName);
-    setEditExerciseData(exerciseData);
-    setEditExerciseIsGenerated(isGenerated);
-    setOnUpdateExerciseCallback(() => onUpdateExercise);
-    setShowEditExercisePage(true);
-  }}
-/>
+      <MainContent 
+        onOpenPRPage={() => setShowPRPage(true)}
+        onOpenImportPage={() => setShowImportPage(true)}
+        onOpenAddExercisePage={(planId, dayName, onAdd) => {
+          setAddExercisePlanId(planId);
+          setAddExerciseDayName(dayName);
+          setOnAddExerciseCallback(() => onAdd);
+          setShowAddExercisePage(true);
+        }}
+        onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated, onUpdate) => {
+          setEditExercisePlanId(planId);
+          setEditExerciseDayName(dayName);
+          setEditExerciseName(exerciseName);
+          setEditExerciseData(exerciseData);
+          setEditExerciseIsGenerated(isGenerated);
+          setOnUpdateExerciseCallback(() => onUpdate);
+          setShowEditExercisePage(true);
+        }}
+      />
     </AuthProvider>
   );
 }

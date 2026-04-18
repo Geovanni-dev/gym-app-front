@@ -594,7 +594,8 @@ export const PlanDetailsView = ({
       day.name,
       ex.name,
       ex,
-      isGenerated
+      isGenerated,
+      onUpdateExercise
     );
   }}
   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
