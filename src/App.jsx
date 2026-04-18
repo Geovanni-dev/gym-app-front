@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { MainContent } from './components/MainContent';
 import { PRSearchPage } from './components/Modals/PRSearchPage';
@@ -9,9 +9,6 @@ import { useScrollToInput } from './hooks/useScrollToInput';
 function App() {
   useScrollToInput();
   
-  const [isLoading, setIsLoading] = useState(true);
-  const [initialView, setInitialView] = useState('landing');
-  
   // Estados que controlam as páginas
   const [showPRPage, setShowPRPage] = useState(false);
   const [showImportPage, setShowImportPage] = useState(false);
@@ -20,32 +17,10 @@ function App() {
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
   
-  useEffect(() => {
-    // Verifica se o usuário está logado no localStorage
-    const token = localStorage.getItem('@superfrango:token');
-    const savedView = localStorage.getItem('@superfrango:view');
-    
-    if (token && savedView === 'dashboard') {
-      setInitialView('dashboard');
-    } else {
-      setInitialView('landing');
-    }
-    
-    setIsLoading(false);
-  }, []);
-  
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="text-white text-2xl font-black">CARREGANDO...</div>
-      </div>
-    );
-  }
-  
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
     return (
-      <AuthProvider initialView={initialView}>
+      <AuthProvider>
         <PRSearchPage onClose={() => setShowPRPage(false)} />
       </AuthProvider>
     );
@@ -54,7 +29,7 @@ function App() {
   // Se a página de importar estiver aberta, mostra SOMENTE ela
   if (showImportPage) {
     return (
-      <AuthProvider initialView={initialView}>
+      <AuthProvider>
         <ImportPlanPage onClose={() => setShowImportPage(false)} />
       </AuthProvider>
     );
@@ -63,7 +38,7 @@ function App() {
   // Se a página de adicionar exercício estiver aberta, mostra SOMENTE ela
   if (showAddExercisePage) {
     return (
-      <AuthProvider initialView={initialView}>
+      <AuthProvider>
         <AddExercisePage 
           onClose={() => setShowAddExercisePage(false)}
           onAdd={onAddExerciseCallback}
@@ -73,22 +48,117 @@ function App() {
       </AuthProvider>
     );
   }
-  
   // Senão, mostra o app normal
   return (
-    <AuthProvider initialView={initialView}>
-      <style>{`...`}</style>
-      <MainContent 
-        initialView={initialView}
-        onOpenPRPage={() => setShowPRPage(true)}
-        onOpenImportPage={() => setShowImportPage(true)}
-        onOpenAddExercisePage={(planId, dayName, onAdd) => {
-          setAddExercisePlanId(planId);
-          setAddExerciseDayName(dayName);
-          setOnAddExerciseCallback(() => onAdd);
-          setShowAddExercisePage(true);
-        }}
-      />
+
+    
+    <AuthProvider>
+      <style>{`
+        /* Reset básico para mobile */
+        html, body {
+          height: 100%;
+          overscroll-behavior-y: none; 
+          background-color: #000;
+        }
+
+        input, select, textarea {
+          font-size: 16px !important;
+        }
+
+        .app-container {
+          display: flex;
+          flex-direction: column;
+          height: 100dvh;
+          width: 100%;
+          position: relative;
+        }
+
+        .scroll-content {
+          flex: 1;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 2rem;
+        }
+
+        body.keyboard-open .scroll-content {
+          padding-bottom: 50vh;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        input[type=number] {
+          -moz-appearance: textfield;
+          appearance: textfield;
+        }
+
+        @media (max-height: 700px) {
+          .fixed.inset-0.z-200 .my-8 {
+            margin-top: 1rem !important;
+            margin-bottom: 1rem !important;
+          }
+          .fixed.inset-0.z-200 .p-6 {
+            padding: 1rem !important;
+          }
+          .fixed.inset-0.z-200 .space-y-6 {
+            gap: 0.75rem !important;
+          }
+          .fixed.inset-0.z-200 .py-3.5 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+          .fixed.inset-0.z-200 .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+          }
+        }
+
+        @media (max-height: 600px) {
+          .fixed.inset-0.z-200 .my-8 {
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+          }
+          .fixed.inset-0.z-200 .p-6 {
+            padding: 0.75rem !important;
+          }
+          .fixed.inset-0.z-200 .gap-3 {
+            gap: 0.5rem !important;
+          }
+        }
+
+        body.modal-open {
+          overflow: hidden;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-transition: background-color 9999s ease-out;
+          transition: background-color 9999s ease-out;
+          -webkit-text-fill-color: white !important;
+        }
+
+        input:-webkit-autofill {
+          caret-color: white;
+        }
+      `}</style>
+     <MainContent 
+  onOpenPRPage={() => setShowPRPage(true)}
+  onOpenImportPage={() => setShowImportPage(true)}
+  onOpenAddExercisePage={(planId, dayName, onAdd) => {
+    setAddExercisePlanId(planId);
+    setAddExerciseDayName(dayName);
+    setOnAddExerciseCallback(() => onAdd);
+    setShowAddExercisePage(true);
+  }}
+/>
     </AuthProvider>
   );
 }
