@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { MainContent } from './components/MainContent';
 import { PRSearchPage } from './components/Modals/PRSearchPage';
 import { ImportPlanPage } from './components/Modals/ImportPlanPage';
+import { AddExercisePage } from './components/Modals/AddExercisePage';
 import { useScrollToInput } from './hooks/useScrollToInput';
 
 function App() {
@@ -11,6 +12,8 @@ function App() {
   // Estados que controlam as páginas
   const [showPRPage, setShowPRPage] = useState(false);
   const [showImportPage, setShowImportPage] = useState(false);
+  const [showAddExercisePage, setShowAddExercisePage] = useState(false);
+  const [addExerciseDayName, setAddExerciseDayName] = useState('');
   
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
@@ -30,8 +33,21 @@ function App() {
     );
   }
   
+  // Se a página de adicionar exercício estiver aberta, mostra SOMENTE ela
+if (showAddExercisePage) {
+  return (
+    <AuthProvider>
+      <AddExercisePage 
+        onClose={() => setShowAddExercisePage(false)}
+        dayName={addExerciseDayName}
+      />
+    </AuthProvider>
+  );
+}
   // Senão, mostra o app normal
   return (
+
+    
     <AuthProvider>
       <style>{`
         /* Reset básico para mobile */
@@ -130,9 +146,13 @@ function App() {
         }
       `}</style>
       <MainContent 
-        onOpenPRPage={() => setShowPRPage(true)}
-        onOpenImportPage={() => setShowImportPage(true)}
-      />
+  onOpenPRPage={() => setShowPRPage(true)}
+  onOpenImportPage={() => setShowImportPage(true)}
+  onOpenAddExercisePage={(dayName) => {
+    setAddExerciseDayName(dayName);
+    setShowAddExercisePage(true);
+  }}
+/>
     </AuthProvider>
   );
 }

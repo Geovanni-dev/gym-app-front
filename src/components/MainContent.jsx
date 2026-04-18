@@ -82,7 +82,7 @@ import {
   PlanDetailsView,
 } from './index';
 
-export const MainContent = ({ onOpenPRPage, onOpenImportPage }) => {
+export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExercisePage }) => {
 
   const { isAuthenticated, login, logout, user } = useAuth();
 
@@ -1143,6 +1143,7 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                       completedExercises={completedExercises}
                       toggleCheck={toggleCheck}
                       onDeletePlan={handleDeletePlan}
+                      onOpenAddExercisePage={onOpenAddExercisePage}
                       onDeleteExercise={handleDeleteExercise}
                       onUpdatePlanName={onUpdatePlanName}
                       onUpdateDayName={onUpdateDayName}

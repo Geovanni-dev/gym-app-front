@@ -37,16 +37,15 @@ export const PlanDetailsView = ({
   onClearDayExercises,
   isGenerated = false,
   onForceRefresh,
+  onOpenAddExercisePage,
 }) => {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [editingPlanName, setEditingPlanName] = useState(null);
   const [editingDayIdx, setEditingDayIdx] = useState(null);
   const [tempDayName, setTempDayName] = useState('');
   const [editingExercise, setEditingExercise] = useState(null);
-  const [addingToDay, setAddingToDay] = useState(null);
   const [addingNewDay, setAddingNewDay] = useState(false);
   const [newDayTitle, setNewDayTitle] = useState('');
-  const [newExData, setNewExData] = useState({ name: '', sets: '', reps: '', weight: '' });
   const [syncingPR, setSyncingPR] = useState(null);
   const [holdProgress, setHoldProgress] = useState(0);
   const timerRef = useRef(null);
@@ -142,18 +141,6 @@ export const PlanDetailsView = ({
     }, 400);
   };
 
-  const handleAddNewEx = async (e) => {
-    e.preventDefault();
-    if (!newExData.name || !newExData.sets) return;
-    await onAddExercise(plan._id || plan.id, addingToDay, {
-      ...newExData,
-      sets: Number(newExData.sets),
-      weight: Number(newExData.weight) || 0,
-    });
-    setAddingToDay(null);
-    setNewExData({ name: '', sets: '', reps: '', weight: '' });
-  };
-
   const handleAddNewDay = async (e) => {
     e.preventDefault();
     if (!newDayTitle.trim()) return;
@@ -209,95 +196,6 @@ export const PlanDetailsView = ({
     <div
       className={`space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-right-6 duration-500 pb-28 relative`}
     >
-
-            {/* MODAL ADICIONAR EXERCÍCIO */}
-      {addingToDay && !isGenerated && (
-        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm overflow-y-auto">
-          <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6">
-            <div className="bg-[#111111] border border-white/5 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] w-full max-w-[95%] sm:max-w-[420px] space-y-6 sm:space-y-8 shadow-2xl my-auto">
-              <div className="space-y-2 text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Plus size={20} className="sm:size-[24px]" />
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter text-white">
-                  Novo Exercício
-                </h3>
-                <p className="text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                  Adicionando ao plano de {addingToDay}
-                </p>
-              </div>
-              <form onSubmit={handleAddNewEx} className="space-y-4 sm:space-y-5">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                      Nome
-                    </label>
-                    <input
-                      autoFocus
-                      className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-sm sm:text-base focus:border-[#ff6600] outline-none"
-                      value={newExData.name}
-                      onChange={(e) => setNewExData({ ...newExData, name: e.target.value })}
-                      placeholder="Ex: Supino Reto"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                        Séries
-                      </label>
-                      <input
-                        type="number"
-                        className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-center focus:border-[#ff6600] outline-none no-spinners text-sm sm:text-base"
-                        value={newExData.sets}
-                        onChange={(e) => setNewExData({ ...newExData, sets: e.target.value })}
-                        placeholder="4"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                        Reps
-                      </label>
-                      <input
-                        className="w-full bg-black/50 border border-white/10 rounded-xl p-3 sm:p-4 text-white text-center focus:border-[#ff6600] outline-none text-sm sm:text-base"
-                        value={newExData.reps}
-                        onChange={(e) => setNewExData({ ...newExData, reps: e.target.value })}
-                        placeholder="12"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[8px] sm:text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1">
-                        Carga
-                      </label>
-                      <input
-                        type="number"
-                        className="w-full bg-black/50 border border-[#ff6600]/20 rounded-xl p-3 sm:p-4 text-[#ff6600] font-black text-center focus:border-[#ff6600] outline-none no-spinners text-sm sm:text-base"
-                        value={newExData.weight}
-                        onChange={(e) => setNewExData({ ...newExData, weight: e.target.value })}
-                        placeholder="KG"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center gap-3 pt-2 sm:pt-4">
-                  <button
-                    type="submit"
-                    className="px-15 py-3 sm:px-10 sm:py-3.5 bg-[#ff6600] text-black font-black uppercase text-[9px] sm:text-[10px] tracking-widest rounded-xl hover:bg-[#ff5500] transition-all shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95"
-                  >
-                    Adicionar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAddingToDay(null)}
-                    className="py-2 text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors"
-                  >
-                    Voltar
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
         {confirmTarget && (
         <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
@@ -833,14 +731,14 @@ export const PlanDetailsView = ({
                   {/* BOTÃO ADICIONAR EXERCÍCIO */}
                   <div className="mt-4">
                     <button
-                      onClick={() => setAddingToDay(day.name)}
-                      className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 sm:gap-3 group cursor-pointer text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600]"
-                    >
-                      <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">
-                        <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
-                      </div>
-                      Adicionar Exercício
-                    </button>
+  onClick={() => onOpenAddExercisePage(day.name)}
+  className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 sm:gap-3 group cursor-pointer text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600]"
+>
+  <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">
+    <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
+  </div>
+  Adicionar Exercício
+</button>
                   </div>
                 </>
               )}
