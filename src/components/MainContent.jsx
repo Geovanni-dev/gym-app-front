@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { PRSearchPage } from './Modals/PRSearchPage';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
@@ -1056,73 +1057,8 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
             }
           />
         
-          {isPRSearchOpen && (
-  <div className="fixed inset-0 z-[300] bg-black overflow-y-auto">
-    <div className="min-h-full flex flex-col items-center p-4">
-      <div className="w-full max-w-md">
-        
-        {/* BOTÃO VOLTAR */}
-        <button
-          onClick={() => {
-            setIsPRSearchOpen(false);
-            setPRSearchResult(null);
-            setPRSearchQuery('');
-          }}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft size={20} />
-          <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
-        </button>
-
-        {/* TÍTULO */}
-        <h1 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tighter text-white leading-none">
-          SEU <span className="text-[#ff6600] drop-shadow-[0_0_15px_rgba(255,102,0,0.3)]">PR</span>
-          <br />
-          MÁXIMO
-        </h1>
-        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mt-3">
-          BUSCA O RECORDE DE QUALQUER EXERCÍCIO
-        </p>
-
-        {/* CONTEÚDO DO MODAL */}
-        <div className="mt-8 p-6 rounded-[2rem] bg-[#0a0a0a] border border-white/10 space-y-6">
-          <form onSubmit={handleSearchPR} className="space-y-4">
-            <div className="relative">
-              <input
-                autoFocus
-                className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-sm outline-none focus:border-[#ff6600] pr-12"
-                placeholder="NOME DO EXERCÍCIO"
-                value={prSearchQuery}
-                onChange={(e) => setPRSearchQuery(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ff6600]"
-              >
-                {searchingPR ? (
-                  <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
-                ) : (
-                  <ChevronRight size={20} />
-                )}
-              </button>
-            </div>
-          </form>
-
-          {prSearchResult !== null && (
-            <div className="bg-white/[0.02] border border-[#ff6600]/20 rounded-2xl p-6 text-center animate-in zoom-in-95 duration-200">
-              <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1">
-                RECORD PESSOAL (MAX CARGA)
-              </p>
-              <p className="text-5xl font-black italic text-[#ff6600] tracking-tighter">
-                {typeof prSearchResult === 'number' ? `${prSearchResult}KG` : prSearchResult}
-              </p>
-            </div>
-          )}
-        </div>
-
-      </div>
-    </div>
-  </div>
+     {isPRSearchOpen && (
+  <PRSearchPage onClose={() => setIsPRSearchOpen(false)} />
 )}
 
           <main className="max-w-7xl mx-auto w-full pt-13 pb-8 md:pt-8 relative z-10">
@@ -1303,54 +1239,7 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                           </button>
                         </div>
                       </div>
-              {isImportModalOpen && (
-            <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
-              <div className="min-h-full flex flex-col items-center justify-center p-4">
-                <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
-                  <button
-                    onClick={() => {
-                      setIsImportModalOpen(false);
-                      setImportCode('');
-                    }}
-                    className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-                        <polyline points="8 12 12 16 16 12" />
-                        <line x1="12" y1="2" x2="12" y2="16" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">
-                      IMPORTAR <span className="text-[#ff6600] drop-shadow-[0_0_8px_rgba(255,102,0,0.2)]">PLANO</span>
-                    </h3>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                      Cole o id do plano que deseja copiar
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <input
-                      autoFocus
-                      className="w-full bg-black border border-white/10 rounded-xl p-4 text-white uppercase font-mono text-sm outline-none focus:border-[#ff6600] text-center"
-                      placeholder="EX: XXXX-XXXX-XXXX"
-                      value={importCode}
-                      onChange={(e) => setImportCode(e.target.value.toUpperCase())}
-                    />
-                    <button
-                      onClick={handleImportPlan}
-                      disabled={loadingImport || !importCode.trim()}
-                      className="w-full py-4 rounded-xl font-black italic bg-[#ff6600] text-black uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95 transition-all disabled:opacity-50"
-                    >
-                      {loadingImport ? 'IMPORTANDO...' : 'IMPORTAR'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            
                       <MetricsGrid
                         stats={stats}
                         plans={plans}
