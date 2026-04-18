@@ -1,5 +1,5 @@
 // useScrollToInput.js - Versão melhorada
-/*import { useEffect } from 'react';
+import { useEffect } from 'react';
 
 export const useScrollToInput = () => {
   useEffect(() => {
@@ -22,4 +22,4 @@ export const useScrollToInput = () => {
     
     return () => document.removeEventListener('focusin', handleFocus);
   }, []);
-};*/
+};

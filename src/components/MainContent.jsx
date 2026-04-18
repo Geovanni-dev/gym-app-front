@@ -1056,10 +1056,10 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
             }
           />
 
-            {isPRSearchOpen && (
-            <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
-              <div className="min-h-full flex flex-col items-center justify-center p-4">
-                <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
+           {isPRSearchOpen && (
+  <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4">
+      <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative">
                   <button
                     onClick={() => {
                       setIsPRSearchOpen(false);
@@ -1296,9 +1296,9 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                         </div>
                       </div>
               {isImportModalOpen && (
-            <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
-              <div className="min-h-full flex flex-col items-center justify-center p-4">
-                <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
+  <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4">
+      <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative">
                   <button
                     onClick={() => {
                       setIsImportModalOpen(false);
@@ -1831,9 +1831,9 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                   </div>
 
                   {isHistoryResetOpen && (
-                    <div className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-md overflow-y-auto">
-                      <div className="min-h-full flex flex-col items-center justify-center p-4">
-                        <div className="bg-[#111111] border border-red-900/20 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
+  <div className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-md overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4">
+      <div className="bg-[#111111] border border-red-900/20 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative">
                           <button onClick={() => { setIsHistoryResetOpen(false); setHistoryConfirmInput(''); }} className="absolute top-6 right-6 text-gray-500 hover:text-white"><X size={20} /></button>
                           <div className="text-center space-y-2">
                             <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-2"><AlertTriangle size={24} /></div>

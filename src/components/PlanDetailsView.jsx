@@ -212,9 +212,9 @@ export const PlanDetailsView = ({
 
             {/* MODAL ADICIONAR EXERCÍCIO */}
       {addingToDay && !isGenerated && (
-        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm overflow-y-auto">
-          <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6">
-            <div className="bg-[#111111] border border-white/5 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] w-full max-w-[95%] sm:max-w-[420px] space-y-6 sm:space-y-8 shadow-2xl my-auto">
+  <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4 sm:p-6">
+      <div className="bg-[#111111] border border-white/5 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] w-full max-w-[95%] sm:max-w-[420px] space-y-6 sm:space-y-8 shadow-2xl">
               <div className="space-y-2 text-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
                   <Plus size={20} className="sm:size-[24px]" />
@@ -300,9 +300,9 @@ export const PlanDetailsView = ({
       )}
 
         {confirmTarget && (
-        <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
-          <div className="min-h-full flex flex-col items-center justify-center p-4">
-            <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] transition-all duration-300 my-auto">
+  <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4">
+      <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px]">
               <div
                 className="absolute inset-0 transition-opacity duration-300"
                 style={{
@@ -380,10 +380,10 @@ export const PlanDetailsView = ({
       )}
 
             {/* MODAL EDITAR EXERCÍCIO */}
-      {editingExercise && (
-        <div className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md overflow-y-auto">
-          <div className="min-h-full flex flex-col items-center justify-center p-4">
-            <div className="bg-[#111111] border border-white/5 p-6 rounded-2xl w-full max-w-[420px] space-y-6 shadow-2xl my-auto">
+ {editingExercise && (
+  <div className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4">
+      <div className="bg-[#111111] border border-white/5 p-6 rounded-2xl w-full max-w-[420px] space-y-6 shadow-2xl">
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
                   <Edit3 size={24} />

@@ -4,7 +4,7 @@ import { MainContent } from './components/MainContent';
 import { useScrollToInput } from './hooks/useScrollToInput';
 
 function App() {
-  /*useScrollToInput();*/
+  useScrollToInput();
   return (
     <AuthProvider>
       <style>{`
