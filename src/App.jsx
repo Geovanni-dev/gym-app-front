@@ -21,7 +21,7 @@ function App() {
   
   useEffect(() => {
     // Aguarda o localStorage ser carregado pelo MainContent
-    setTimeout(() => setIsLoading(false), 100);
+    setTimeout(() => setIsLoading(false), 700);
   }, []);
   
   if (isLoading) {

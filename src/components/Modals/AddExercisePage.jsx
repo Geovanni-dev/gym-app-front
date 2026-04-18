@@ -59,11 +59,12 @@ const handleSubmit = async (e) => {
         sets: Number(newExData.sets),
         weight: Number(newExData.weight) || 0,
       });
-      // Fecha a página apenas depois de tudo certo
-      onClose();
+      // Delay antes de fechar
+      setTimeout(() => {
+        onClose();
+      }, 500);
     } catch (error) {
       setError('Erro ao adicionar exercício');
-    } finally {
       setLoading(false);
     }
   };
