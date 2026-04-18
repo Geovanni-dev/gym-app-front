@@ -1055,67 +1055,75 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
               </div>
             }
           />
+        
+          {isPRSearchOpen && (
+  <div className="fixed inset-0 z-[300] bg-black overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center p-4">
+      <div className="w-full max-w-md">
+        
+        {/* BOTÃO VOLTAR */}
+        <button
+          onClick={() => {
+            setIsPRSearchOpen(false);
+            setPRSearchResult(null);
+            setPRSearchQuery('');
+          }}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeft size={20} />
+          <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
+        </button>
 
-            {isPRSearchOpen && (
-            <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md overflow-y-auto">
-              <div className="min-h-full flex flex-col items-center justify-center p-4">
-                <div className="bg-[#111111] border border-white/5 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
-                  <button
-                    onClick={() => {
-                      setIsPRSearchOpen(false);
-                      setPRSearchResult(null);
-                      setPRSearchQuery('');
-                    }}
-                    className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
-                      <Search size={24} />
-                    </div>
-                    <h3 className="text-2xl font-black italic uppercase tracking-tighter">
-                      seu pr <span className="text-[#ff6600] drop-shadow-[0_0_8px_rgba(255,102,0,0.2)]">MáXIMO</span>
-                    </h3>
-                    <p className="text-gray text-[10px] font-bold uppercase tracking-widest">
-                      Busca o PR de qualquer exercício
-                    </p>
-                  </div>
-                  <form onSubmit={handleSearchPR} className="space-y-4">
-                    <div className="relative">
-                      <input
-                        autoFocus
-                        className="w-full bg-black border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-sm outline-none focus:border-[#ff6600] pr-12"
-                        placeholder="NOME DO EXERCÍCIO"
-                        value={prSearchQuery}
-                        onChange={(e) => setPRSearchQuery(e.target.value)}
-                      />
-                      <button
-                        type="submit"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ff6600]"
-                      >
-                        {searchingPR ? (
-                          <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
-                        ) : (
-                          <ChevronRight size={20} />
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                  {prSearchResult !== null && (
-                    <div className="bg-white/[0.02] border border-[#ff6600]/20 rounded-2xl p-6 text-center animate-in zoom-in-95 duration-200">
-                      <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1">
-                        RECORD PESSOAL (MAX CARGA)
-                      </p>
-                      <p className="text-5xl font-black italic text-[#ff6600] tracking-tighter">
-                        {typeof prSearchResult === 'number' ? `${prSearchResult}KG` : prSearchResult}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+        {/* TÍTULO */}
+        <h1 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tighter text-white leading-none">
+          SEU <span className="text-[#ff6600] drop-shadow-[0_0_15px_rgba(255,102,0,0.3)]">PR</span>
+          <br />
+          MÁXIMO
+        </h1>
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mt-3">
+          BUSCA O RECORDE DE QUALQUER EXERCÍCIO
+        </p>
+
+        {/* CONTEÚDO DO MODAL */}
+        <div className="mt-8 p-6 rounded-[2rem] bg-[#0a0a0a] border border-white/10 space-y-6">
+          <form onSubmit={handleSearchPR} className="space-y-4">
+            <div className="relative">
+              <input
+                autoFocus
+                className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-sm outline-none focus:border-[#ff6600] pr-12"
+                placeholder="NOME DO EXERCÍCIO"
+                value={prSearchQuery}
+                onChange={(e) => setPRSearchQuery(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ff6600]"
+              >
+                {searchingPR ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
+                ) : (
+                  <ChevronRight size={20} />
+                )}
+              </button>
+            </div>
+          </form>
+
+          {prSearchResult !== null && (
+            <div className="bg-white/[0.02] border border-[#ff6600]/20 rounded-2xl p-6 text-center animate-in zoom-in-95 duration-200">
+              <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1">
+                RECORD PESSOAL (MAX CARGA)
+              </p>
+              <p className="text-5xl font-black italic text-[#ff6600] tracking-tighter">
+                {typeof prSearchResult === 'number' ? `${prSearchResult}KG` : prSearchResult}
+              </p>
             </div>
           )}
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
 
           <main className="max-w-7xl mx-auto w-full pt-13 pb-8 md:pt-8 relative z-10">
             <StatusMessage type={uiMessage.type} message={uiMessage.text} />
