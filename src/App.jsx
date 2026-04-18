@@ -5,6 +5,7 @@ import { PRSearchPage } from './components/Modals/PRSearchPage';
 import { ImportPlanPage } from './components/Modals/ImportPlanPage';
 import { AddExercisePage } from './components/Modals/AddExercisePage';
 import { useScrollToInput } from './hooks/useScrollToInput';
+import { EditExercisePage } from './components/Modals/EditExercisePage';
 
 function App() {
   useScrollToInput();
@@ -16,7 +17,14 @@ function App() {
   const [addExercisePlanId, setAddExercisePlanId] = useState(null);
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
-  
+  const [showEditExercisePage, setShowEditExercisePage] = useState(false);
+  const [editExerciseData, setEditExerciseData] = useState(null);
+  const [editExercisePlanId, setEditExercisePlanId] = useState(null);
+  const [editExerciseDayName, setEditExerciseDayName] = useState('');
+  const [editExerciseName, setEditExerciseName] = useState('');
+  const [editExerciseIsGenerated, setEditExerciseIsGenerated] = useState(false);
+  const [onUpdateExerciseCallback, setOnUpdateExerciseCallback] = useState(null);
+
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
     return (
@@ -48,6 +56,22 @@ function App() {
       </AuthProvider>
     );
   }
+  // Se a página de editar exercício estiver aberta, mostra SOMENTE ela
+if (showEditExercisePage) {
+  return (
+    <AuthProvider>
+      <EditExercisePage 
+        onClose={() => setShowEditExercisePage(false)}
+        onUpdate={onUpdateExerciseCallback}
+        exerciseData={editExerciseData}
+        planId={editExercisePlanId}
+        dayName={editExerciseDayName}
+        exerciseName={editExerciseName}
+        isGenerated={editExerciseIsGenerated}
+      />
+    </AuthProvider>
+  );
+}
   // Senão, mostra o app normal
   return (
 

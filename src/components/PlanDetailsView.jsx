@@ -38,6 +38,7 @@ export const PlanDetailsView = ({
   isGenerated = false,
   onForceRefresh,
   onOpenAddExercisePage,
+  onOpenEditExercisePage,
 }) => {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [editingPlanName, setEditingPlanName] = useState(null);
@@ -271,110 +272,6 @@ export const PlanDetailsView = ({
                     </span>
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-            {/* MODAL EDITAR EXERCÍCIO */}
-      {editingExercise && (
-        <div className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md overflow-y-auto">
-          <div className="min-h-full flex flex-col items-center justify-center p-4">
-            <div className="bg-[#111111] border border-white/5 p-6 rounded-2xl w-full max-w-[420px] space-y-6 shadow-2xl my-auto">
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 bg-[#ff6600]/10 text-[#ff6600] rounded-2xl flex items-center justify-center mx-auto mb-2">
-                  <Edit3 size={24} />
-                </div>
-                <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">
-                  EDITAR EXERCÍCIO
-                </h3>
-                <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                  MODIFIQUE OS PARÂMETROS DO EXERCÍCIO
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {!isGenerated ? (
-                  <>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                        Nome do Exercício
-                      </label>
-                      <input
-                        autoFocus
-                        className="w-full bg-black/40 border border-[#ff6600]/30 rounded-xl p-3.5 text-white font-black uppercase italic outline-none focus:border-[#ff6600] text-sm"
-                        value={editingExercise.data.name}
-                        onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, name: e.target.value } })}
-                      />
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                          Séries
-                        </label>
-                        <input
-                          type="number"
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-center text-white font-black text-sm outline-none no-spinners"
-                          value={editingExercise.data.sets}
-                          onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, sets: Number(e.target.value) } })}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                          Reps
-                        </label>
-                        <input
-                          className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-center text-white font-black text-sm outline-none"
-                          value={editingExercise.data.reps}
-                          onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, reps: e.target.value } })}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                          Carga (KG)
-                        </label>
-                        <input
-                          type="number"
-                          className="w-full bg-black/40 border border-[#ff6600]/20 rounded-xl p-3.5 text-center text-[#ff6600] font-black text-sm outline-none no-spinners"
-                          value={editingExercise.data.weight}
-                          onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, weight: Number(e.target.value) } })}
-                        />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-[#ff6600] uppercase tracking-widest ml-1">
-                      Recorde Pessoal (KG)
-                    </label>
-                    <input
-                      type="number"
-                      autoFocus
-                      className="w-full bg-black/60 border border-[#ff6600]/20 rounded-xl p-4 text-center text-[#ff6600] font-black text-3xl outline-none no-spinners"
-                      value={editingExercise.data.weight}
-                      onChange={(e) => setEditingExercise({ ...editingExercise, data: { ...editingExercise.data, weight: Number(e.target.value) } })}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col items-center gap-3 pt-4 border-t border-white/10">
-                <button
-                  onClick={() => {
-                    onUpdateExercise(plan._id || plan.id, editingExercise.day, editingExercise.exerciseName, editingExercise.data, isGenerated);
-                    setEditingExercise(null);
-                  }}
-                  className="px-12 py-3 sm:px-16 sm:py-3.5 bg-[#ff6600] text-black font-black uppercase text-[9px] sm:text-[10px] tracking-widest rounded-xl hover:bg-[#ff5500] transition-all shadow-[0_0_20px_rgba(255,102,0,0.9)] active:scale-95"
-                >
-                  SALVAR
-                </button>
-                <button
-                  onClick={() => setEditingExercise(null)}
-                  className="py-2 text-gray-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors"
-                >
-                  Cancelar
-                </button>
               </div>
             </div>
           </div>
@@ -689,19 +586,21 @@ export const PlanDetailsView = ({
                                     <X size={14} className="sm:size-[16px]" />
                                   </button>
                                 )}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingExercise({
-                                      day: day.name,
-                                      exerciseName: ex.name,
-                                      data: { ...ex },
-                                    });
-                                  }}
-                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
-                                >
-                                  <Edit3 size={14} className="sm:size-[16px]" />
-                                </button>
+                               <button
+  onClick={(e) => {
+    e.stopPropagation();
+    onOpenEditExercisePage(
+      plan._id || plan.id,
+      day.name,
+      ex.name,
+      ex,
+      isGenerated
+    );
+  }}
+  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
+>
+  <Edit3 size={14} className="sm:size-[16px]" />
+</button>
                                 <div
                                   className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center transition-all ${isCompleted ? 'bg-[#ff6600]/20 text-[#ff6600]' : 'bg-white/5 text-white/20'}`}
                                 >
