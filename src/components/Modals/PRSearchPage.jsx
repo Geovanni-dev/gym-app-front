@@ -8,10 +8,8 @@ export const PRSearchPage = ({ onClose }) => {
   const [prSearchResult, setPRSearchResult] = useState(null);
   const [searchingPR, setSearchingPR] = useState(false);
 
-  // Impede zoom e scroll na página
+  // Impede scroll e força viewport correta
   useEffect(() => {
-    // Previne zoom via viewport (já deve estar no index.html)
-    // Força scroll no topo e trava
     window.scrollTo(0, 0);
     document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
@@ -19,7 +17,6 @@ export const PRSearchPage = ({ onClose }) => {
     document.body.style.top = '0';
     
     return () => {
-      // Restaura scroll ao sair
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
@@ -75,8 +72,8 @@ export const PRSearchPage = ({ onClose }) => {
             <form onSubmit={handleSearchPR} className="space-y-4">
               <div className="relative">
                 <input
-                  autoFocus
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-sm outline-none focus:border-[#ff6600] pr-12"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white uppercase font-bold text-base outline-none focus:border-[#ff6600] pr-12"
+                  style={{ fontSize: '16px' }}
                   placeholder="NOME DO EXERCÍCIO"
                   value={prSearchQuery}
                   onChange={(e) => setPRSearchQuery(e.target.value)}
