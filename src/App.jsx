@@ -10,6 +10,7 @@ function App() {
   useScrollToInput();
   
   const [isLoading, setIsLoading] = useState(true);
+  const [initialView, setInitialView] = useState('landing');
   
   // Estados que controlam as páginas
   const [showPRPage, setShowPRPage] = useState(false);
@@ -20,8 +21,17 @@ function App() {
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
   
   useEffect(() => {
-    // Pequeno delay para garantir que o AuthContext carregue
-    setTimeout(() => setIsLoading(false), 500);
+    // Verifica se o usuário está logado no localStorage
+    const token = localStorage.getItem('@superfrango:token');
+    const savedView = localStorage.getItem('@superfrango:view');
+    
+    if (token && savedView === 'dashboard') {
+      setInitialView('dashboard');
+    } else {
+      setInitialView('landing');
+    }
+    
+    setIsLoading(false);
   }, []);
   
   if (isLoading) {
@@ -35,7 +45,7 @@ function App() {
   // Se a página PR estiver aberta, mostra SOMENTE ela
   if (showPRPage) {
     return (
-      <AuthProvider>
+      <AuthProvider initialView={initialView}>
         <PRSearchPage onClose={() => setShowPRPage(false)} />
       </AuthProvider>
     );
@@ -44,7 +54,7 @@ function App() {
   // Se a página de importar estiver aberta, mostra SOMENTE ela
   if (showImportPage) {
     return (
-      <AuthProvider>
+      <AuthProvider initialView={initialView}>
         <ImportPlanPage onClose={() => setShowImportPage(false)} />
       </AuthProvider>
     );
@@ -53,7 +63,7 @@ function App() {
   // Se a página de adicionar exercício estiver aberta, mostra SOMENTE ela
   if (showAddExercisePage) {
     return (
-      <AuthProvider>
+      <AuthProvider initialView={initialView}>
         <AddExercisePage 
           onClose={() => setShowAddExercisePage(false)}
           onAdd={onAddExerciseCallback}
@@ -66,11 +76,10 @@ function App() {
   
   // Senão, mostra o app normal
   return (
-    <AuthProvider>
-      <style>{`
-        /* TODO O SEU CSS AQUI */
-      `}</style>
+    <AuthProvider initialView={initialView}>
+      <style>{`...`}</style>
       <MainContent 
+        initialView={initialView}
         onOpenPRPage={() => setShowPRPage(true)}
         onOpenImportPage={() => setShowImportPage(true)}
         onOpenAddExercisePage={(planId, dayName, onAdd) => {
