@@ -39,6 +39,7 @@ export const PlanDetailsView = ({
   onForceRefresh,
   onOpenAddExercisePage,
   onOpenEditExercisePage,
+  onOpenEditPRPage,
 }) => {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [editingPlanName, setEditingPlanName] = useState(null);
@@ -586,17 +587,28 @@ export const PlanDetailsView = ({
                                     <X size={14} className="sm:size-[16px]" />
                                   </button>
                                 )}
-                               <button
+                              <button
   onClick={(e) => {
     e.stopPropagation();
-    onOpenEditExercisePage(
-      plan._id || plan.id,
-      day.name,
-      ex.name,
-      ex,
-      isGenerated,
-      onUpdateExercise
-    );
+    if (isGenerated) {
+      // Abre a página simplificada (Só peso) para planos automáticos
+      onOpenEditPRPage?. (
+        plan._id || plan.id,
+        ex.name,
+        ex,
+        onUpdateExercise
+      );
+    } else {
+      // Abre a página completa (Nome, Sets, Reps) para planos manuais
+      onOpenEditExercisePage?.(
+        plan._id || plan.id,
+        day.name,
+        ex.name,
+        ex,
+        isGenerated,
+        onUpdateExercise
+      );
+    }
   }}
   className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
 >

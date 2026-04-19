@@ -82,7 +82,8 @@ import {
   PlanDetailsView,
 } from './index';
 
-export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExercisePage, onOpenEditExercisePage }) => {
+export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExercisePage, onOpenEditExercisePage, onOpenEditPRPage,      
+onOpenResetHistoryPage }) => {
 
   const { isAuthenticated, login, logout, user } = useAuth();
 
@@ -133,7 +134,6 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
   const [visiblePlans, setVisiblePlans] = useState(6);
   const [visibleWorkouts, setVisibleWorkouts] = useState(6);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isHistoryResetOpen, setIsHistoryResetOpen] = useState(false);
   const [historyConfirmInput, setHistoryConfirmInput] = useState('');
 
   useEffect(() => {
@@ -306,21 +306,21 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
     }
   };
 
-  const handleClearHistory = async () => {
-    if (historyConfirmInput !== 'CONFIRM') return;
-    setLoading(true);
-    try {
-      await api.delete('/workouts/history', { data: { confirm: 'CONFIRM' } });
-      setHistory([]);
-      setIsHistoryResetOpen(false);
-      setHistoryConfirmInput('');
-      setUiMessage({ type: 'success', text: 'Histórico limpo com sucesso!' });
-    } catch (e) {
-      setUiMessage({ type: 'error', text: 'Falha ao limpar histórico.' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Função simplificada que será executada APÓS a confirmação no modal
+const finalResetAction = async () => {
+  setLoading(true);
+  try {
+    // Note que aqui mandamos 'CONFIRM' direto porque o modal já validou o 'LIMPAR'
+    await api.delete('/workouts/history', { data: { confirm: 'CONFIRM' } });
+    setHistory([]);
+    setUiMessage({ type: 'success', text: 'Histórico limpo com sucesso!' });
+  } catch (e) {
+    console.error(e);
+    setUiMessage({ type: 'error', text: 'Falha ao limpar histórico.' });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const onUpdatePlanName = async (planId, newName) => {
     setLoading(true);
@@ -1156,6 +1156,7 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
                       onDeletePlan={handleDeletePlan}
                       onOpenAddExercisePage={onOpenAddExercisePage}
                       onOpenEditExercisePage={onOpenEditExercisePage}
+                      onOpenEditPRPage={onOpenEditPRPage}
                       onDeleteExercise={handleDeleteExercise}
                       onUpdatePlanName={onUpdatePlanName}
                       onUpdateDayName={onUpdateDayName}
@@ -1382,26 +1383,27 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
               ) : activeTab === 'generator' ? (
                 <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
                   {selectedPlan ? (
-                    <PlanDetailsView
-                      plan={selectedPlan}
-                      onBack={() => setSelectedPlan(null)}
-                      completedExercises={completedExercises}
-                      toggleCheck={toggleCheck}
-                      onDeletePlan={handleDeleteGeneratedWorkout}
-                      onDeleteExercise={handleDeleteExercise}
-                      onUpdatePlanName={onUpdatePlanName}
-                      onUpdateDayName={onUpdateDayName}
-                      onUpdateExercise={onUpdateExercise}
-                      onAddExercise={onAddExercise}
-                      onReorderDays={onReorderDays}
-                      onAddDay={onAddDay}
-                      onDeleteDay={onDeleteDay}
-                      onFinishWorkout={onFinishWorkout}
-                      onClearDayExercises={onClearDayExercises}
-                      onForceRefresh={onForceRefresh}
-                      isGenerated={true}
-                    />
-                  ) : (
+  <PlanDetailsView
+    plan={selectedPlan}
+    onBack={() => setSelectedPlan(null)}
+    completedExercises={completedExercises}
+    toggleCheck={toggleCheck}
+    onDeletePlan={handleDeleteGeneratedWorkout}
+    onOpenEditPRPage={onOpenEditPRPage}
+    onDeleteExercise={handleDeleteExercise}
+    onUpdatePlanName={onUpdatePlanName}
+    onUpdateDayName={onUpdateDayName}
+    onUpdateExercise={onUpdateExercise}
+    onAddExercise={onAddExercise}
+    onReorderDays={onReorderDays}
+    onAddDay={onAddDay}
+    onDeleteDay={onDeleteDay}
+    onFinishWorkout={onFinishWorkout}
+    onClearDayExercises={onClearDayExercises}
+    onForceRefresh={onForceRefresh}
+    isGenerated={true}
+  />
+) : (
                     <>
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
                         <div className="space-y-1 -mt-[-35px]">
@@ -1650,30 +1652,17 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
                     <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
                     {history.length > 0 && (
                       <div className="mt-2 md:absolute md:top-0 md:right-0 md:mt-0">
-                        <span onClick={() => setIsHistoryResetOpen(true)} className="text-[10px] font-black italic uppercase tracking-[0.2em] text-gray/85 hover:text-red-500 transition-colors cursor-pointer">Limpar histórico</span>
+                        <span 
+  onClick={() => onOpenResetHistoryPage(finalResetAction)} 
+  className="text-[10px] font-bold text-red-500/50 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-widest"
+>
+  Limpar histórico
+</span>
                       </div>
                     )}
                   </div>
 
-                  {isHistoryResetOpen && (
-                    <div className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-md overflow-y-auto">
-                      <div className="min-h-full flex flex-col items-center justify-center p-4">
-                        <div className="bg-[#111111] border border-red-900/20 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
-                          <button onClick={() => { setIsHistoryResetOpen(false); setHistoryConfirmInput(''); }} className="absolute top-6 right-6 text-gray-500 hover:text-white"><X size={20} /></button>
-                          <div className="text-center space-y-2">
-                            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-2"><AlertTriangle size={24} /></div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">Limpar Histórico</h3>
-                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Isso removerá permanentemente todos os logs de exercícios finalizados.</p>
-                          </div>
-                          <div className="space-y-4">
-                            <p className="text-[9px] text-center font-black uppercase text-gray-500">Digite <span className="text-red-500 italic">"CONFIRM"</span> abaixo para prosseguir</p>
-                            <input className="w-full bg-black border border-white/10 rounded-xl p-4 text-white text-center font-black uppercase text-sm outline-none focus:border-red-500" placeholder="DIGITE AQUI" value={historyConfirmInput} onChange={(e) => setHistoryConfirmInput(e.target.value)} />
-                            <button onClick={handleClearHistory} disabled={historyConfirmInput !== 'CONFIRM' || loading} className="w-full py-4 rounded-xl font-black italic bg-red-600 text-white uppercase text-[10px] tracking-widest hover:bg-red-700 transition-all disabled:opacity-30">{loading ? 'Apagando...' : 'DELETAR TUDO'}</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                
                   {history.length === 0 ? (
                     <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
                       <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>
@@ -1722,32 +1711,78 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
                   )}
 
                   {selectedExerciseHistory && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-200">
-                      <div className="bg-[#111111] border border-[#ff6600]/20 p-8 rounded-[2.5rem] w-full max-w-2xl max-h-[85vh] overflow-y-auto no-scrollbar space-y-6 shadow-2xl relative animate-in zoom-in duration-300">
-                        <div className="flex justify-between items-start sticky top-0 bg-[#111111] z-10 pb-4">
-                          <div>
-                            <h2 className="text-2xl sm:text-3xl font-black italic uppercase text-[#ff6600] leading-none tracking-tight break-words">{selectedExerciseHistory.name}</h2>
-                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2">Análise de Evolução de Carga</p>
-                          </div>
-                          <button onClick={() => setSelectedExerciseHistory(null)} className="p-2 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-full"><X size={20} /></button>
-                        </div>
-                        <div className="space-y-4">
-                          {selectedExerciseHistory.logs.map((h, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all group/item">
-                              <div className="flex flex-col">
-                                <div className="flex items-center gap-2"><Clock size={12} className="text-gray-600" /><span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(h.date).toLocaleDateString('pt-BR')}</span></div>
-                                <span className="text-[8px] font-black text-gray-700 uppercase ml-5">{new Date(h.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                              </div>
-                              <div className="flex items-center gap-8">
-                                <div className="text-right"><span className="block text-3xl font-black italic text-white leading-none group-hover/item:text-[#ff6600] transition-colors">{h.weight}<span className="text-sm font-black italic ml-1">KG</span></span></div>
-                                <div className="w-14 h-14 rounded-2xl bg-[#ff6600]/10 flex flex-col items-center justify-center border border-[#ff6600]/20 shadow-inner group-hover/item:bg-[#ff6600] group-hover/item:text-black transition-all"><span className="text-lg font-black">{h.reps}</span><span className="text-[7px] font-black uppercase opacity-60">Reps</span></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+  <div className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden animate-in fade-in duration-200">
+    {/* Header */}
+    <div className="px-4 pt-8 pb-2">
+      <button 
+        onClick={() => setSelectedExerciseHistory(null)} 
+        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+      >
+        <ArrowLeft size={24} />
+        <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
+      </button>
+    </div>
+
+    <div className="flex-1 overflow-y-auto px-6 pb-20 pt-6 no-scrollbar">
+      <div className="max-w-md mx-auto">
+        
+        {/* Título Agressivo Estilo Super Frango */}
+        <div className="mb-12 text-center relative">
+          <div className="relative inline-block mb-4">
+             <Activity size={60} className="text-[#ff6600] opacity-90 mx-auto" />
+             <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.85]">
+            {selectedExerciseHistory.name}<br /><span className="text-[#ff6600]">HISTÓRICO</span>
+          </h1>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mt-3">
+            ANÁLISE DE EVOLUÇÃO DE CARGA
+          </p>
+        </div>
+
+        {/* Lista de Histórico */}
+        <div className="space-y-6">
+          {selectedExerciseHistory.logs.map((h, idx) => (
+            <div key={idx} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 text-center relative overflow-hidden shadow-2xl">
+              
+              {/* Badge de Repetições Superior */}
+              <div className="absolute top-6 right-6">
+                <div className="bg-[#ff6600]/10 border border-[#ff6600]/20 rounded-xl px-3 py-1 flex flex-col items-center">
+                  <span className="text-xl font-black text-[#ff6600]">{h.reps}</span>
+                  <span className="text-[7px] font-bold text-[#ff6600]/60 uppercase -mt-1">REPS</span>
+                </div>
+              </div>
+
+              <span className="text-[9px] font-black uppercase text-gray-700 tracking-[0.3em] italic mb-4 block">
+                ENTRADA Nº {selectedExerciseHistory.logs.length - idx}
+              </span>
+              
+              {/* Peso Gigante */}
+              <div className="flex items-end justify-center gap-2 mb-6">
+                <span className="text-7xl font-black italic text-[#ff6600] leading-none tracking-tighter" style={{ textShadow: '0 0 30px rgba(255,102,0,0.3)' }}>
+                  {h.weight}
+                </span>
+                <span className="text-2xl font-black italic text-gray-800 -mb-1">KG</span>
+              </div>
+
+              {/* Data e Hora */}
+              <div className="flex justify-center items-center gap-4 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-1.5">
+                  <Clock size={12} className="text-gray-600" />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">{new Date(h.date).toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div className="w-1 h-1 bg-gray-800 rounded-full"></div>
+                <span className="text-[9px] font-black text-gray-700 uppercase">
+                  {new Date(h.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
                 </div>
               )}
 

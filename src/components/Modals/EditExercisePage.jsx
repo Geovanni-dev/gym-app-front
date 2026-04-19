@@ -1,6 +1,7 @@
 // src/components/Modals/EditExercisePage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Hash, Activity, Weight } from 'lucide-react';
+import { InputField } from '../'; // Importando do index central
 
 export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayName, exerciseName, isGenerated }) => {
   const [formData, setFormData] = useState({
@@ -114,61 +115,52 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
             <div className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                      Nome do Exercício
-                    </label>
-                    <input
-                      autoFocus
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-base outline-none focus:border-[#ff6600] mt-1"
-                      style={{ fontSize: '16px' }}
-                      placeholder="Ex: Supino Reto"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                  </div>
+                  
+                  {/* NOME DO EXERCÍCIO */}
+                  <InputField
+                    label="Nome do Exercício"
+                    icon={ClipboardList}
+                    autoFocus
+                    placeholder="Ex: Supino Reto"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                   
                   <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                        Séries
-                      </label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-center text-base outline-none focus:border-[#ff6600] mt-1"
-                        placeholder="4"
-                        value={formData.sets}
-                        onChange={(e) => setFormData({ ...formData, sets: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                        Reps
-                      </label>
-                      <input
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-center text-base outline-none focus:border-[#ff6600] mt-1"
-                        placeholder="12"
-                        value={formData.reps}
-                        onChange={(e) => setFormData({ ...formData, reps: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
-                        Carga (KG)
-                      </label>
-                      <input
-                        type="number"
-                        className="w-full bg-white/5 border border-[#ff6600]/20 rounded-xl p-4 text-[#ff6600] font-black text-center text-base outline-none focus:border-[#ff6600] mt-1"
-                        placeholder="KG"
-                        value={formData.weight}
-                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                      />
-                    </div>
+                    {/* SÉRIES */}
+                    <InputField
+                      label="Séries"
+                      type="number"
+                      icon={Hash}
+                      placeholder="4"
+                      value={formData.sets}
+                      onChange={(e) => setFormData({ ...formData, sets: e.target.value })}
+                    />
+
+                    {/* REPS */}
+                    <InputField
+                      label="Reps"
+                      icon={Activity}
+                      placeholder="12"
+                      value={formData.reps}
+                      onChange={(e) => setFormData({ ...formData, reps: e.target.value })}
+                    />
+
+                    {/* CARGA */}
+                    <InputField
+                      label="Carga (KG)"
+                      type="number"
+                      icon={Weight}
+                      placeholder="KG"
+                      value={formData.weight}
+                      onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                      style={{ color: '#ff6600', fontWeight: '900' }}
+                    />
                   </div>
                 </div>
                 
                 {error && (
-                  <p className="text-red-500 text-sm text-center">{error}</p>
+                  <p className="text-red-500 text-sm text-center font-bold uppercase">{error}</p>
                 )}
                 
                 <button
