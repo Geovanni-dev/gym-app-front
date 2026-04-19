@@ -1711,32 +1711,78 @@ const finalResetAction = async () => {
                   )}
 
                   {selectedExerciseHistory && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-200">
-                      <div className="bg-[#111111] border border-[#ff6600]/20 p-8 rounded-[2.5rem] w-full max-w-2xl max-h-[85vh] overflow-y-auto no-scrollbar space-y-6 shadow-2xl relative animate-in zoom-in duration-300">
-                        <div className="flex justify-between items-start sticky top-0 bg-[#111111] z-10 pb-4">
-                          <div>
-                            <h2 className="text-2xl sm:text-3xl font-black italic uppercase text-[#ff6600] leading-none tracking-tight break-words">{selectedExerciseHistory.name}</h2>
-                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2">Análise de Evolução de Carga</p>
-                          </div>
-                          <button onClick={() => setSelectedExerciseHistory(null)} className="p-2 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-full"><X size={20} /></button>
-                        </div>
-                        <div className="space-y-4">
-                          {selectedExerciseHistory.logs.map((h, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/[0.08] transition-all group/item">
-                              <div className="flex flex-col">
-                                <div className="flex items-center gap-2"><Clock size={12} className="text-gray-600" /><span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(h.date).toLocaleDateString('pt-BR')}</span></div>
-                                <span className="text-[8px] font-black text-gray-700 uppercase ml-5">{new Date(h.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                              </div>
-                              <div className="flex items-center gap-8">
-                                <div className="text-right"><span className="block text-3xl font-black italic text-white leading-none group-hover/item:text-[#ff6600] transition-colors">{h.weight}<span className="text-sm font-black italic ml-1">KG</span></span></div>
-                                <div className="w-14 h-14 rounded-2xl bg-[#ff6600]/10 flex flex-col items-center justify-center border border-[#ff6600]/20 shadow-inner group-hover/item:bg-[#ff6600] group-hover/item:text-black transition-all"><span className="text-lg font-black">{h.reps}</span><span className="text-[7px] font-black uppercase opacity-60">Reps</span></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+  <div className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden animate-in fade-in duration-200">
+    {/* Header */}
+    <div className="px-4 pt-8 pb-2">
+      <button 
+        onClick={() => setSelectedExerciseHistory(null)} 
+        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+      >
+        <ArrowLeft size={24} />
+        <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
+      </button>
+    </div>
+
+    <div className="flex-1 overflow-y-auto px-6 pb-20 pt-6 no-scrollbar">
+      <div className="max-w-md mx-auto">
+        
+        {/* Título Agressivo Estilo Super Frango */}
+        <div className="mb-12 text-center relative">
+          <div className="relative inline-block mb-4">
+             <Activity size={60} className="text-[#ff6600] opacity-90 mx-auto" />
+             <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.85]">
+            {selectedExerciseHistory.name}<br /><span className="text-[#ff6600]">HISTÓRICO</span>
+          </h1>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mt-3">
+            ANÁLISE DE EVOLUÇÃO DE CARGA
+          </p>
+        </div>
+
+        {/* Lista de Histórico */}
+        <div className="space-y-6">
+          {selectedExerciseHistory.logs.map((h, idx) => (
+            <div key={idx} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 text-center relative overflow-hidden shadow-2xl">
+              
+              {/* Badge de Repetições Superior */}
+              <div className="absolute top-6 right-6">
+                <div className="bg-[#ff6600]/10 border border-[#ff6600]/20 rounded-xl px-3 py-1 flex flex-col items-center">
+                  <span className="text-xl font-black text-[#ff6600]">{h.reps}</span>
+                  <span className="text-[7px] font-bold text-[#ff6600]/60 uppercase -mt-1">REPS</span>
+                </div>
+              </div>
+
+              <span className="text-[9px] font-black uppercase text-gray-700 tracking-[0.3em] italic mb-4 block">
+                ENTRADA Nº {selectedExerciseHistory.logs.length - idx}
+              </span>
+              
+              {/* Peso Gigante */}
+              <div className="flex items-end justify-center gap-2 mb-6">
+                <span className="text-7xl font-black italic text-[#ff6600] leading-none tracking-tighter" style={{ textShadow: '0 0 30px rgba(255,102,0,0.3)' }}>
+                  {h.weight}
+                </span>
+                <span className="text-2xl font-black italic text-gray-800 -mb-1">KG</span>
+              </div>
+
+              {/* Data e Hora */}
+              <div className="flex justify-center items-center gap-4 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-1.5">
+                  <Clock size={12} className="text-gray-600" />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">{new Date(h.date).toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div className="w-1 h-1 bg-gray-800 rounded-full"></div>
+                <span className="text-[9px] font-black text-gray-700 uppercase">
+                  {new Date(h.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
                 </div>
               )}
 
