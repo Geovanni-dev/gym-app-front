@@ -82,7 +82,8 @@ import {
   PlanDetailsView,
 } from './index';
 
-export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExercisePage, onOpenEditExercisePage }) => {
+export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExercisePage, onOpenEditExercisePage, onOpenEditPRPage,      
+onOpenResetHistoryPage }) => {
 
   const { isAuthenticated, login, logout, user } = useAuth();
 
@@ -133,7 +134,6 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
   const [visiblePlans, setVisiblePlans] = useState(6);
   const [visibleWorkouts, setVisibleWorkouts] = useState(6);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isHistoryResetOpen, setIsHistoryResetOpen] = useState(false);
   const [historyConfirmInput, setHistoryConfirmInput] = useState('');
 
   useEffect(() => {
@@ -306,21 +306,21 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
     }
   };
 
-  const handleClearHistory = async () => {
-    if (historyConfirmInput !== 'CONFIRM') return;
-    setLoading(true);
-    try {
-      await api.delete('/workouts/history', { data: { confirm: 'CONFIRM' } });
-      setHistory([]);
-      setIsHistoryResetOpen(false);
-      setHistoryConfirmInput('');
-      setUiMessage({ type: 'success', text: 'Histórico limpo com sucesso!' });
-    } catch (e) {
-      setUiMessage({ type: 'error', text: 'Falha ao limpar histórico.' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Função simplificada que será executada APÓS a confirmação no modal
+const finalResetAction = async () => {
+  setLoading(true);
+  try {
+    // Note que aqui mandamos 'CONFIRM' direto porque o modal já validou o 'LIMPAR'
+    await api.delete('/workouts/history', { data: { confirm: 'CONFIRM' } });
+    setHistory([]);
+    setUiMessage({ type: 'success', text: 'Histórico limpo com sucesso!' });
+  } catch (e) {
+    console.error(e);
+    setUiMessage({ type: 'error', text: 'Falha ao limpar histórico.' });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const onUpdatePlanName = async (planId, newName) => {
     setLoading(true);
@@ -1156,6 +1156,7 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
                       onDeletePlan={handleDeletePlan}
                       onOpenAddExercisePage={onOpenAddExercisePage}
                       onOpenEditExercisePage={onOpenEditExercisePage}
+                      onOpenEditPRPage={onOpenEditPRPage}
                       onDeleteExercise={handleDeleteExercise}
                       onUpdatePlanName={onUpdatePlanName}
                       onUpdateDayName={onUpdateDayName}
@@ -1382,26 +1383,27 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
               ) : activeTab === 'generator' ? (
                 <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
                   {selectedPlan ? (
-                    <PlanDetailsView
-                      plan={selectedPlan}
-                      onBack={() => setSelectedPlan(null)}
-                      completedExercises={completedExercises}
-                      toggleCheck={toggleCheck}
-                      onDeletePlan={handleDeleteGeneratedWorkout}
-                      onDeleteExercise={handleDeleteExercise}
-                      onUpdatePlanName={onUpdatePlanName}
-                      onUpdateDayName={onUpdateDayName}
-                      onUpdateExercise={onUpdateExercise}
-                      onAddExercise={onAddExercise}
-                      onReorderDays={onReorderDays}
-                      onAddDay={onAddDay}
-                      onDeleteDay={onDeleteDay}
-                      onFinishWorkout={onFinishWorkout}
-                      onClearDayExercises={onClearDayExercises}
-                      onForceRefresh={onForceRefresh}
-                      isGenerated={true}
-                    />
-                  ) : (
+  <PlanDetailsView
+    plan={selectedPlan}
+    onBack={() => setSelectedPlan(null)}
+    completedExercises={completedExercises}
+    toggleCheck={toggleCheck}
+    onDeletePlan={handleDeleteGeneratedWorkout}
+    onOpenEditPRPage={onOpenEditPRPage}
+    onDeleteExercise={handleDeleteExercise}
+    onUpdatePlanName={onUpdatePlanName}
+    onUpdateDayName={onUpdateDayName}
+    onUpdateExercise={onUpdateExercise}
+    onAddExercise={onAddExercise}
+    onReorderDays={onReorderDays}
+    onAddDay={onAddDay}
+    onDeleteDay={onDeleteDay}
+    onFinishWorkout={onFinishWorkout}
+    onClearDayExercises={onClearDayExercises}
+    onForceRefresh={onForceRefresh}
+    isGenerated={true}
+  />
+) : (
                     <>
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
                         <div className="space-y-1 -mt-[-35px]">
@@ -1650,30 +1652,17 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
                     <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
                     {history.length > 0 && (
                       <div className="mt-2 md:absolute md:top-0 md:right-0 md:mt-0">
-                        <span onClick={() => setIsHistoryResetOpen(true)} className="text-[10px] font-black italic uppercase tracking-[0.2em] text-gray/85 hover:text-red-500 transition-colors cursor-pointer">Limpar histórico</span>
+                        <span 
+  onClick={() => onOpenResetHistoryPage(finalResetAction)} 
+  className="text-[10px] font-bold text-red-500/50 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-widest"
+>
+  Limpar histórico
+</span>
                       </div>
                     )}
                   </div>
 
-                  {isHistoryResetOpen && (
-                    <div className="fixed inset-0 z-[400] bg-black/90 backdrop-blur-md overflow-y-auto">
-                      <div className="min-h-full flex flex-col items-center justify-center p-4">
-                        <div className="bg-[#111111] border border-red-900/20 p-8 rounded-[2rem] w-full max-w-md space-y-6 shadow-2xl relative my-auto">
-                          <button onClick={() => { setIsHistoryResetOpen(false); setHistoryConfirmInput(''); }} className="absolute top-6 right-6 text-gray-500 hover:text-white"><X size={20} /></button>
-                          <div className="text-center space-y-2">
-                            <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-2"><AlertTriangle size={24} /></div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">Limpar Histórico</h3>
-                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Isso removerá permanentemente todos os logs de exercícios finalizados.</p>
-                          </div>
-                          <div className="space-y-4">
-                            <p className="text-[9px] text-center font-black uppercase text-gray-500">Digite <span className="text-red-500 italic">"CONFIRM"</span> abaixo para prosseguir</p>
-                            <input className="w-full bg-black border border-white/10 rounded-xl p-4 text-white text-center font-black uppercase text-sm outline-none focus:border-red-500" placeholder="DIGITE AQUI" value={historyConfirmInput} onChange={(e) => setHistoryConfirmInput(e.target.value)} />
-                            <button onClick={handleClearHistory} disabled={historyConfirmInput !== 'CONFIRM' || loading} className="w-full py-4 rounded-xl font-black italic bg-red-600 text-white uppercase text-[10px] tracking-widest hover:bg-red-700 transition-all disabled:opacity-30">{loading ? 'Apagando...' : 'DELETAR TUDO'}</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                
                   {history.length === 0 ? (
                     <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
                       <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>

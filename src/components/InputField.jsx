@@ -1,4 +1,3 @@
-// Componente de campo de entrada personalizado com suporte para ícones, mensagens de erro e toggle de visibilidade para campos de senha
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -8,19 +7,43 @@ export const InputField = React.forwardRef(
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === 'password';
 
+    // Se o tipo for 'number', usamos 'text' para o navegador não renderizar as setinhas (spinners),
+    // mas mantemos o comportamento numérico via inputMode.
+    const inputType = isPassword 
+      ? (showPassword ? 'text' : 'password') 
+      : (type === 'number' ? 'text' : type);
+
     return (
-      // Estrutura do componente de campo de entrada, incluindo o rótulo, o campo de entrada e a mensagem de erro
       <div className="space-y-1.5 w-full text-left">
-        <label className="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1 flex items-center gap-2">
-          {Icon && <Icon size={12} />} {label}
-        </label>
+        {label && (
+          <label className="text-[10px] uppercase font-black text-gray-500 tracking-widest ml-1 flex items-center gap-2">
+            {Icon && <Icon size={12} />} {label}
+          </label>
+        )}
+        
         <div className="relative">
           <input
             {...props}
             ref={ref}
-            type={isPassword ? (showPassword ? 'text' : 'password') : type}
-            className={`w-full bg-black/50 border ${error ? 'border-red-500' : 'border-white/10'} rounded-xl p-4 pr-12 text-white focus:border-[#ff6600] outline-none transition-all placeholder:text-gray-800 no-spinners`}
+            type={inputType}
+            
+            // Força o teclado numérico/decimal no mobile quando o tipo original for 'number'
+            inputMode={type === 'number' ? 'decimal' : props.inputMode}
+            
+            className={`w-full bg-black/50 border ${
+              error ? 'border-red-500' : 'border-white/10'
+            } rounded-xl p-4 pr-12 text-white focus:border-[#ff6600] outline-none transition-all placeholder:text-gray-800 ${props.className || ''}`}
+            
+            // Estilo inline para garantir reset visual em qualquer navegador
+            style={{
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              appearance: 'none',
+              margin: 0,
+              ...props.style
+            }}
           />
+          
           {isPassword && (
             <button
               type="button"
@@ -31,8 +54,11 @@ export const InputField = React.forwardRef(
             </button>
           )}
         </div>
+
         {error && (
-          <span className="text-[10px] font-bold text-red-500 ml-1 uppercase">{error}</span>
+          <span className="text-[10px] font-bold text-red-500 ml-1 uppercase">
+            {error}
+          </span>
         )}
       </div>
     );
