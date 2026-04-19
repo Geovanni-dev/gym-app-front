@@ -96,7 +96,7 @@ export const MainContent = ({ onOpenPRPage, onOpenImportPage, onOpenAddExerciseP
   });
 
   const [isManualInfoActive, setIsManualInfoActive] = useState(false);
-const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
+  const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
 
   const [activeAutoCard, setActiveAutoCard] = useState(null);
   const [activeManualCard, setActiveManualCard] = useState(null);
@@ -374,8 +374,7 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
       const response = await api.post(`/workout-plans/${planId}/exercise`, { dayName, ...data });
       if (response.data.workoutPlan) {
         setSelectedPlan(response.data.workoutPlan);
-        // Atualiza também o plano na lista de plans
-        setPlans(prevPlans => prevPlans.map(p => 
+        setPlans(prevPlans => prevPlans.map(p =>
           (p._id || p.id) === planId ? response.data.workoutPlan : p
         ));
       }
@@ -482,6 +481,26 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
     }
   };
 
+  const onForceRefresh = async () => {
+    try {
+      await Promise.all([
+        fetchPlans(),
+        fetchGeneratedWorkouts(),
+        fetchHistory()
+      ]);
+
+      if (selectedPlan) {
+        const planId = selectedPlan._id || selectedPlan.id;
+        const isGenerator = activeTab === 'generator';
+        const source = isGenerator ? generatedWorkouts : plans;
+        const updated = source.find(p => (p._id || p.id) === planId);
+        if (updated) setSelectedPlan(updated);
+      }
+    } catch (e) {
+      console.error("Erro ao sincronizar dados:", e);
+    }
+  };
+
   const stats = useMemo(() => {
     const historyArray = Array.isArray(history) ? history : [];
     const maxWeight = historyArray.reduce((acc, log) => Math.max(acc, Number(log.weight) || 0), 0);
@@ -576,13 +595,11 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
   }, [uiMessage]);
 
   const onLoginSubmit = async (data) => {
-    console.log('Dados sendo enviados:', data);
     setLoading(true);
     const result = await login(data);
-    console.log('Resultado:', result);
     setLoading(false);
 
-    if (result && result.success) { // <-- ADICIONE "result &&"
+    if (result && result.success) {
       setIsProfileOpen(false);
       setView('dashboard');
       return;
@@ -699,21 +716,16 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
   };
 
   const onGenerateSubmit = async () => {
-    console.log('=== onGenerateSubmit foi chamada ===');
-    console.log('Goal selecionado:', selectedGoal);
-    console.log('Days:', formGenerate.getValues('days'));
     setLoading(true);
     try {
-      const response = await api.post('/workouts/generate', {
+      await api.post('/workouts/generate', {
         goal: selectedGoal,
         days: Number(formGenerate.getValues('days')),
       });
-      console.log('Resposta da API:', response.data);
       setIsGeneratingCustom(false);
       setTimeout(() => fetchGeneratedWorkouts(), 500);
     } catch (e) {
       console.error('ERRO na API:', e);
-      console.error('Detalhes:', e.response?.data);
     } finally {
       setLoading(false);
     }
@@ -736,13 +748,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
 
   const renderView = () => {
     if (['forgotPassword', 'resetPassword', 'verify'].includes(view)) {
-      const resetBack = () => {
-        if (isInternalReset) {
-          setIsInternalReset(false);
-          setView('landing');
-          setIsProfileOpen(true);
-        } else setView('landing');
-      };
       if (view === 'forgotPassword')
         return (
           <div className="fixed inset-0 bg-black flex flex-col items-center justify-start pt-[20vh] p-6 select-none overflow-hidden">
@@ -1161,22 +1166,7 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                       onDeleteDay={onDeleteDay}
                       onFinishWorkout={onFinishWorkout}
                       onClearDayExercises={onClearDayExercises}
-                      onForceRefresh={async () => {
-
-                        if (selectedPlan) {
-                          const planId = selectedPlan._id || selectedPlan.id;
-                          const isGenerated = activeTab === 'generator';
-                          let updatedPlan;
-                          if (isGenerated) {
-                            updatedPlan = generatedWorkouts.find(p => (p._id || p.id) === planId);
-                          } else {
-                            updatedPlan = plans.find(p => (p._id || p.id) === planId);
-                          }
-                          if (updatedPlan) {
-                            setSelectedPlan(updatedPlan);
-                          }
-                        }
-                      }}
+                      onForceRefresh={onForceRefresh}
                     />
                   ) : !isCreatingPlan ? (
                     <div className="space-y-10 animate-in fade-in duration-700">
@@ -1210,11 +1200,11 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                         </div>
                       </div>
             
-                     <MetricsGrid
+                      <MetricsGrid
   stats={stats}
   plans={plans}
   generatedWorkouts={generatedWorkouts}
-  onOpenPRPage={onOpenPRPage}   // ← NOVO
+  onOpenPRPage={onOpenPRPage}
 />
 
                       <div className="space-y-6">
@@ -1258,7 +1248,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
         <DecorativeIcon size={240} strokeWidth={1} />
       </div>
 
-      {/* Barras de Neon */}
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/20'}`} />
       <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0'}`} />
 
@@ -1274,16 +1263,13 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Arquitetura</span>
             <span className="text-xs font-bold text-white">{plan.daysCount} DIAS DE TREINO</span>
           </div>
-          {/* Botão de Ação */}
-          {/* Botão de Ação (Chevron) */}
 <div 
   onClick={(e) => { 
     e.stopPropagation(); 
-    setSelectedPlan(plan); // ou workout no caso da aba auto
+    setSelectedPlan(plan);
   }}
   className={`w-12 h-12 rounded-2xl border transition-all duration-200 flex items-center justify-center shadow-lg
     
-    /* Animação apenas de crescer no clique */
     active:scale-125 
     
     ${isActive 
@@ -1412,25 +1398,7 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
                       onDeleteDay={onDeleteDay}
                       onFinishWorkout={onFinishWorkout}
                       onClearDayExercises={onClearDayExercises}
-                      onForceRefresh={async () => {
-                        await fetchPlans();
-                        await fetchGeneratedWorkouts();
-                        await fetchHistory();
-
-                        if (selectedPlan) {
-                          const planId = selectedPlan._id || selectedPlan.id;
-                          const isGenerated = activeTab === 'generator';
-                          let updatedPlan;
-                          if (isGenerated) {
-                            updatedPlan = generatedWorkouts.find(p => (p._id || p.id) === planId);
-                          } else {
-                            updatedPlan = plans.find(p => (p._id || p.id) === planId);
-                          }
-                          if (updatedPlan) {
-                            setSelectedPlan(updatedPlan);
-                          }
-                        }
-                      }}
+                      onForceRefresh={onForceRefresh}
                       isGenerated={true}
                     />
                   ) : (
@@ -1462,7 +1430,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
 />
                       
                       
-{/* ... dentro do bloco activeTab === 'generator' ... */}
 {generatedWorkouts.length === 0 ? (
   <div className="bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem] min-h-[400px] flex flex-col items-center justify-center p-12 text-center space-y-6 backdrop-blur-sm mx-2">
     <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700">
@@ -1480,12 +1447,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
 ) : (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500 px-2 w-full">
     {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
-       // ... seu map atual dos cards ...
-    })}
-  </div>
-)}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500 px-2 w-full">
-                      {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
   const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
   const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
   
@@ -1502,17 +1463,14 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
           : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'
         }`}
     >
-      {/* Background dinâmico */}
       <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 
         ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
 
-      {/* Ícone Decorativo */}
       <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 
         ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
         <DecorativeIcon size={240} strokeWidth={1} />
       </div>
 
-      {/* Barras Neon */}
       <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/20'}`} />
       <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0'}`} />
 
@@ -1530,7 +1488,6 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
             <span className="text-xs font-bold text-white uppercase">{workout.goal} • {workout.daysCount} DIAS</span>
           </div>
 
-          {/* Botão Chevron com animação de crescer no click */}
           <div 
             onClick={(e) => { 
               e.stopPropagation(); 
@@ -1550,7 +1507,8 @@ const [isAutoInfoActive, setIsAutoInfoActive] = useState(false);
     </div>
   );
 })}
-                      </div>
+  </div>
+)}
 
                       {generatedWorkouts.length > 6 && (
                         <div className="flex justify-center mt-4">
