@@ -150,6 +150,10 @@ function App() {
         input:-webkit-autofill {
           caret-color: white;
         }
+          /* Apenas para Android - limita scroll extra sem bloquear totalmente */
+        .android-scroll-limit {
+        overscroll-behavior-y: contain;
+}
       `}</style>
 
       <MainContent 

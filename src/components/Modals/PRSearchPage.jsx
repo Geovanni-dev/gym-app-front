@@ -11,7 +11,6 @@ export const PRSearchPage = ({ onClose }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    // Detecta Android
     const userAgent = navigator.userAgent.toLowerCase();
     setIsAndroid(userAgent.includes('android'));
 
@@ -64,13 +63,10 @@ export const PRSearchPage = ({ onClose }) => {
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto"
-      style={isAndroid ? { overscrollBehavior: 'none', overflowY: 'auto', maxHeight: '100%' } : {}}
+      className={`fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto ${isAndroid ? 'android-scroll-limit' : ''}`}
+      style={isAndroid ? { WebkitOverflowScrolling: 'touch' } : {}}
     >
-      <div 
-        className="min-h-full flex flex-col items-center p-4"
-        style={isAndroid ? { minHeight: '100%', height: 'auto' } : {}}
-      >
+      <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
           <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
@@ -139,8 +135,7 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          {/* CAMPO INFORMATIVO */}
-          <div className="mt-16">
+          <div className="mt-25">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
