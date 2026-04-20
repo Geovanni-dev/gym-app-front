@@ -25,6 +25,9 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
       navbar.style.display = 'none';
     }
     
+    const preventTouchMove = (e) => { e.preventDefault(); };
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
     }
@@ -35,6 +38,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
+      document.removeEventListener('touchmove', preventTouchMove);
       
       if (navbar) {
         navbar.style.display = '';
