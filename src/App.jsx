@@ -172,7 +172,78 @@ function App() {
         />
       )}
     </AuthProvider>
+    
   );
+     <style>{`
+  /* Comportamento da Página */
+  html, body { 
+    height: 100%; 
+    overscroll-behavior-y: none; 
+    background-color: #000; 
+  }
+
+  /* Evita zoom no iOS */
+  input, select, textarea { 
+    font-size: 16px !important; 
+  }
+
+  .app-container { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100dvh; 
+    width: 100%; 
+    position: relative; 
+  }
+
+  .scroll-content { 
+    flex: 1; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+    padding-bottom: 2rem; 
+  }
+
+  .no-scrollbar::-webkit-scrollbar { 
+    display: none; 
+  }
+
+  /* ==========================================================
+     BLOQUEIO GLOBAL DE SETINHAS (SPINNERS) EM INPUT NUMBER
+     ========================================================== */
+  
+  /* Chrome, Safari, Edge e Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+  }
+
+  /* Firefox */
+  input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+  }
+    /* REMOVE TUDO QUE É NATIVO DE INPUT NO MOBILE */
+  input[type="number"] {
+    -webkit-appearance: none !important; /* Mata o estilo do iOS */
+    -moz-appearance: textfield !important; /* Mata o estilo do Firefox */
+    appearance: none !important;
+    margin: 0 !important;
+  }
+
+  /* Mata os botões internos de incremento */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    display: none !important;
+    margin: 0 !important;
+  }
+
+  /* Garante que o input não tenha scroll interno */
+  input {
+    overflow: hidden !important;
+    outline: none !important;
+  }
+`}</style>
 }
 
 export default App;
