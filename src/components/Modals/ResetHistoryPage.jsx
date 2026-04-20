@@ -1,19 +1,28 @@
-// src/components/Modals/ResetHistoryPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Trash2, AlertTriangle } from 'lucide-react';
-import { InputField } from '../'; 
+import { ArrowLeft, Trash2, AlertTriangle, Dumbbell } from 'lucide-react';
+import { InputField } from '../';
 
 export const ResetHistoryPage = ({ onClose, onReset }) => {
   const [confirmText, setConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isInfoActive, setIsInfoActive] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsAndroid(userAgent.includes('android'));
+
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
+    
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+      navbar.style.display = 'none';
+    }
     
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
@@ -25,6 +34,10 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
+      
+      if (navbar) {
+        navbar.style.display = '';
+      }
     };
   }, []);
 
@@ -44,18 +57,19 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
   };
 
   return (
-    <div ref={containerRef} className="bg-black text-white fixed inset-0 z-[9999] overflow-hidden flex flex-col">
-      <div className="px-4 pt-6 pb-2">
-        <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-          <ArrowLeft size={24} />
-          <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
-        </button>
-      </div>
-
-      {/* Ajustado pt-10 para pt-4 e mb-10 para mb-6 para subir o corpo */}
-      <div className="flex-1 px-6 flex flex-col items-center pt-4">
-        <div className="max-w-md w-full">
+    <div 
+      ref={containerRef} 
+      className={`fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto ${isAndroid ? 'android-scroll-limit' : ''}`}
+      style={isAndroid ? { WebkitOverflowScrolling: 'touch' } : {}}
+    >
+      <div className="min-h-full flex flex-col items-center p-4">
+        <div className="w-full max-w-[380px] flex flex-col">
           
+          <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
+            <ArrowLeft size={24} />
+            <span className="text-sm font-bold uppercase tracking-wider">VOLTAR</span>
+          </button>
+
           <div className="text-center mb-6">
             <div className="inline-block p-3 rounded-full bg-red-500/10 mb-3">
               <AlertTriangle size={40} className="text-red-500" />
@@ -77,12 +91,12 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
               <InputField
                 label="Confirmação"
                 icon={Trash2}
-                autoFocus
+                
                 placeholder="Digite LIMPAR"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 className="text-center font-black uppercase"
-                style={{ color: confirmText.toUpperCase() === 'LIMPAR' ? '#ef4444' : '#ffffff' }}
+                style={{ fontSize: '16px', color: confirmText.toUpperCase() === 'LIMPAR' ? '#ef4444' : '#ffffff' }}
               />
             </div>
 
@@ -94,6 +108,46 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
               {loading ? 'APAGANDO...' : 'EXCLUIR TUDO DEFINITIVAMENTE'}
             </button>
           </form>
+
+          <div className="mt-16">
+            <div 
+              onClick={() => setIsInfoActive(!isInfoActive)}
+              className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+                ${isInfoActive 
+                  ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
+                  : 'border-white/10 hover:border-white/20'
+                }`}
+            >
+              <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
+                ${isInfoActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/10'}`} 
+              />
+
+              <div className="flex items-center gap-4 relative z-10">
+                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
+                  ${isInfoActive 
+                    ? 'bg-[#ff6600] text-black border-[#ff6600] shadow-[0_0_10px_#ff6600]' 
+                    : 'bg-white/[0.03] border-white/5 text-gray-500'
+                  }`}
+                >
+                  <Dumbbell size={16} />
+                </div>
+
+                <div className="flex-1">
+                  <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
+                    ${isInfoActive ? 'text-white' : 'text-gray-400'}`}
+                  >
+                    <span className="text-[#ff6600]">Resetar não é apagar</span>. 
+                    É abrir espaço para novos feitos.
+                  </p>
+                </div>
+              </div>
+
+              <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 
+                ${isInfoActive ? 'w-full' : 'w-0'}`} 
+              />
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
