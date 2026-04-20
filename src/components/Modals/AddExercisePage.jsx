@@ -26,8 +26,8 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       navbar.style.display = 'none';
     }
     
-    /*const preventTouchMove = (e) => { e.preventDefault(); };
-    document.addEventListener('touchmove', preventTouchMove, { passive: false });*/
+    const preventTouchMove = (e) => { e.preventDefault(); };
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
     
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
@@ -46,7 +46,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
-      //document.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('touchmove', preventTouchMove);
       
       if (navbar) {
         navbar.style.display = '';
@@ -82,7 +82,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-8 pt-2"> 
+          <div className="mb-8 pt-6"> 
             <h1 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-white leading-none">
               NOVO <span className="text-[#ff6600]">EXERCÍCIO</span>
             </h1>
