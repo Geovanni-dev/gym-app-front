@@ -82,7 +82,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-8 pt-9"> 
+          <div className="mb-8 pt-12"> 
             <h1 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-white leading-none">
               NOVO <span className="text-[#ff6600]">EXERCÍCIO</span>
             </h1>

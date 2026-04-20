@@ -40,7 +40,6 @@ export const PRSearchPage = ({ onClose }) => {
       window.scrollTo(0, scrollY);
       document.removeEventListener('touchmove', preventTouchMove);
       
-
       if (navbar) {
         navbar.style.display = '';
       }
@@ -74,13 +73,17 @@ export const PRSearchPage = ({ onClose }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-12 pt-5">
-            <h1 className="text-5xl font-black italic uppercase tracking-tighter leading-[0.85] text-white">
-              SEU <span className="text-[#ff6600]">PR</span><br />
-              MÁXIMO
+          {/* Cabeçalho Padronizado: Troféu + Título em Linha Única */}
+          <div className="mb-12 text-center pt-12">
+            <div className="relative inline-block mb-4">
+              <Trophy size={60} className="text-[#ff6600] opacity-90 mx-auto" />
+              <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>
+            </div>
+            <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">
+              <span className="text-white">PR</span> <span className="text-[#ff6600]">MÁXIMO</span>
             </h1>
-            <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.3em] mt-4">
-              BUSCA O PR DE QUALQUER EXERCÍCIO
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em]">
+              BUSCA GLOBAL DE EXERCÍCIOS
             </p>
           </div>
 

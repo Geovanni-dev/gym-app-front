@@ -38,7 +38,7 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
        document.removeEventListener('touchmove', preventTouchMove);
-       
+
       if (navbar) {
         navbar.style.display = '';
       }
@@ -69,7 +69,7 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="text-center mb-6 pt-2"> 
+          <div className="text-center mb-6 pt-5"> 
             <div className="inline-block p-3 rounded-full bg-red-500/10 mb-3">
               <AlertTriangle size={40} className="text-red-500" />
             </div>

@@ -73,7 +73,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-12 text-center pt-5"> 
+          <div className="mb-12 text-center pt-3"> 
             <div className="relative inline-block mb-4">
               <Calendar size={48} className="text-[#ff6600] opacity-80" />
               <div className="absolute inset-0 blur-2xl bg-[#ff6600]/20 -z-10"></div>
