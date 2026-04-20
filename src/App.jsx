@@ -155,15 +155,10 @@ function App() {
           caret-color: white;
         }
           /* Apenas para Android - limita scroll extra sem bloquear totalmente */
-        /*.android-scroll-limit {*/
-        /*overscroll-behavior-y: contain;*/
-}
-        /* Ajuste para Android - altura dinâmica com teclado */
-@supports (height: 100dvh) {
-  .min-h-dvh {
-    min-height: 100dvh;
-  }
-}
+        .android-scroll-limit {
+        overscroll-behavior-y: contain; 
+        }
+        
       `}</style>
 
      {/* OVERLAYS */}
