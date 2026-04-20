@@ -54,9 +54,8 @@ function App() {
   const [addDayPlanId, setAddDayPlanId] = useState(null);
   const [onAddDayCallback, setOnAddDayCallback] = useState(null);
 
-  // ============================================
-  // APP NORMAL - MainContent SEMPRE montado
-  // ============================================
+  // APP NORMAL com MainContent sempre montado
+
   return (
     <AuthProvider>
       <style>{`
@@ -175,15 +174,24 @@ function App() {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-          /* Ajuste para Android - altura dinâmica com teclado */
+/* Ajuste para Android - altura dinâmica com teclado */
 @supports (height: 100dvh) {
   .min-h-dvh {
     min-height: 100dvh;
   }
 }
+  /* Esconde a barra de rolagem visualmente, mas mantém o scroll funcionando */
+*::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Edge */
+}
+
+* {
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge antigos */
+}
       `}</style>
 
-      {/* MAIN CONTENT - SEMPRE RENDERIZADO */}
+      {/* MAIN CONTENT SEMPRE RENDERIZADO */}
       <MainContent 
         onOpenPRPage={() => setShowPRSearchOverlay(true)}
         onOpenImportPage={() => setShowImportPlanOverlay(true)}
@@ -271,7 +279,6 @@ function App() {
         />
       )}
 
-      {/* NOVO OVERLAY - ADD DAY */}
       {showAddDayOverlay && (
         <AddDayPage 
           onClose={() => setShowAddDayOverlay(false)} 
@@ -283,4 +290,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; //

@@ -68,7 +68,7 @@ export const ProfileSideMenu = ({ isOpen, onClose, user, setView, logout, securi
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black" />
         </div>
 
-        {/* Ajuste: Mudei p-6 para px-6 pb-6 pt-2 para subir o conteúdo */}
+        
         <div className="relative z-10 h-full px-6 pb-6 pt-2 overflow-y-auto no-scrollbar">
           
           {/* Ajuste: Mudei mb-10 para mb-2 para tirar o espaço vazio no topo */}
@@ -81,7 +81,7 @@ export const ProfileSideMenu = ({ isOpen, onClose, user, setView, logout, securi
             </button>
           </div>
 
-          {/* Ajuste: Adicionei -mt-10 para a foto subir e encostar lá em cima */}
+          
           <div className="flex flex-col items-center text-center space-y-4 mb-8 pb-8 border-b border-white/10 -mt-10">
             <div className="relative group">
               <div className="w-24 h-24 rounded-full overflow-hidden bg-white/10 border-2 border-gray-900">

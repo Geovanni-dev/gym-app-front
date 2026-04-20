@@ -8,7 +8,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
   const [error, setError] = useState('');
   const [isInfoActive, setIsInfoActive] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); // Novo estado
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false); 
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
     // Lógica para detectar teclado aberto
     const handleResize = () => {
       if (window.visualViewport) {
-        // Se a altura do viewport for significativamente menor que a da tela, teclado está aberto
+       
         setIsKeyboardVisible(window.visualViewport.height < window.innerHeight * 0.8);
       }
     };
@@ -135,7 +135,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
             </div>
           </form>
 
-          {/* AJUSTE: Só renderiza se o teclado NÃO estiver visível */}
+         
           {!isKeyboardVisible && (
             <div className="mt-13">
               <div 

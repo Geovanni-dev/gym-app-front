@@ -324,7 +324,7 @@ export const PlanDetailsView = ({
               </div>
             )}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
-              {/* PLANOS AUTOMÁTICOS - Arena Mode + frase antiga */}
+              
               {isGenerated && (
                 <div className="flex items-center gap-1">
                   <div className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#ff6600] text-black text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-full italic">
@@ -336,7 +336,7 @@ export const PlanDetailsView = ({
                 </div>
               )}
 
-              {/* PLANOS MANUAIS - ID DO PLANO + código + botão */}
+              
               {!isGenerated && (
                 <>
                   <div className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#ff6600] text-black text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-full italic">

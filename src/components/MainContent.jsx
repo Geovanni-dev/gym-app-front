@@ -1712,13 +1712,13 @@ const finalResetAction = async () => {
   {selectedExerciseHistory && (
   <div className="fixed inset-0 z-[99999] bg-black flex flex-col overflow-y-auto">
     
-    <div className="flex-1 px-6 pb-20 pt-21 sm:pt-24"> {/* Ajustado para pt-16 para alinhar com o topo do app */}
+    <div className="flex-1 px-6 pb-20 pt-21 sm:pt-24"> 
       <div className="max-w-md mx-auto">
         
-        {/* Título com Seta de Voltar Integrada - PADRÃO IDENTICO AO GERADOR */}
+        
         <div className="mb-12 text-left relative flex items-start gap-3 -ml-1"> 
           
-          {/* Botão com Seta de Voltar - Ajustado size para 24 para manter consistência */}
+          
           <button 
             onClick={() => setSelectedExerciseHistory(null)} 
             className="text-gray-500 hover:text-white transition-colors pt-1"

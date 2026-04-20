@@ -7,7 +7,7 @@ export const StatusMessage = ({ type, message }) => {
   return (
     <div className="animate-in fade-in duration-300 mb-4">
       {' '}
-      {/* Animação de fade-in para a mensagem */}
+      
       <div
         className={`flex items-center gap-2 p-4 rounded-xl border ${type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-[#ff6600]/10 border-[#ff6600]/20 text-[#ff6600]'}`}
       >

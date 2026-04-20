@@ -50,7 +50,7 @@ export const LandingPage = ({ onStart }) => {
         </div>
       </header>
 
-      {/* Centro: O Grito de Guerra */}
+      {/* Centro: Título e Descrição */}
       <main className="z-20 flex flex-col items-center text-center w-full">
         <div className={`transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
           <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1 rounded-full mb-4 backdrop-blur-md">
@@ -67,7 +67,7 @@ export const LandingPage = ({ onStart }) => {
         </div>
       </main>
 
-     {/* Baixo: Ações - Responsivo Desktop */}
+     {/* Rodapé: Botões Responsivo Desktop */}
 <footer className={`z-20 w-full transition-all duration-700 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
   <div className="flex flex-col md:flex-row md:items-center md:justify-center md:gap-4 w-full items-center">
    <button
