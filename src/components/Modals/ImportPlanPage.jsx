@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Download, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Download, Dumbbell,  Share2,  Users } from 'lucide-react';
 import api from '../../services/api';
 import { InputField } from '../';
 
@@ -51,7 +51,7 @@ export const ImportPlanPage = ({ onClose, onSuccess }) => {
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
       document.removeEventListener('touchmove', preventTouchMove);
-      
+
       if (navbar) {
         navbar.style.display = '';
       }
@@ -161,7 +161,7 @@ export const ImportPlanPage = ({ onClose, onSuccess }) => {
                     : 'bg-white/[0.03] border-white/5 text-gray-500'
                   }`}
                 >
-                  <Dumbbell size={16} />
+                  <Users size={16} />
                 </div>
 
                 <div className="flex-1">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ClipboardList, Hash, Activity, Weight, Dumbbell } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Hash, Activity, Weight, Dumbbell, Target ,  Rocket } from 'lucide-react';
 import { InputField } from '../';
 
 export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
@@ -154,7 +154,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
             </div>
           </div>
 
-          <div className="mt-35">
+          <div className="mt-25">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
@@ -174,7 +174,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
                     : 'bg-white/[0.03] border-white/5 text-gray-500'
                   }`}
                 >
-                  <Dumbbell size={16} />
+                  <Rocket size={16} />
                 </div>
 
                 <div className="flex-1">

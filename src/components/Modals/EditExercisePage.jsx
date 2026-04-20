@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ClipboardList, Hash, Activity, Weight, Dumbbell } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Hash, Activity, Weight, Dumbbell, Sliders,  Settings  } from 'lucide-react';
 import { InputField } from '../';
 
 export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayName, exerciseName, isGenerated }) => {
@@ -173,7 +173,7 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
             </div>
           </div>
 
-          <div className="mt-35">
+          <div className="mt-25">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
@@ -193,7 +193,7 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
                     : 'bg-white/[0.03] border-white/5 text-gray-500'
                   }`}
                 >
-                  <Dumbbell size={16} />
+                 <Settings size={16} />
                 </div>
 
                 <div className="flex-1">

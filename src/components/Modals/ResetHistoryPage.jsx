@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Trash2, AlertTriangle, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Trash2, AlertTriangle, Eraser, RotateCcw } from 'lucide-react';
 import { InputField } from '../';
 
 export const ResetHistoryPage = ({ onClose, onReset }) => {
@@ -125,35 +125,35 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
                 ${isInfoActive 
-                  ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
-                  : 'border-white/10 hover:border-white/20'
+                  ? 'border-red-500/60 scale-[1.01] bg-white/[0.06]' 
+                  : 'border-white/10 hover:border-red-500/30'
                 }`}
             >
               <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
-                ${isInfoActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/10'}`} 
+                ${isInfoActive ? 'bg-red-500 shadow-[0_0_15px_#ef4444]' : 'bg-red-500/30'}`} 
               />
 
               <div className="flex items-center gap-4 relative z-10">
                 <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
                   ${isInfoActive 
-                    ? 'bg-[#ff6600] text-black border-[#ff6600] shadow-[0_0_10px_#ff6600]' 
-                    : 'bg-white/[0.03] border-white/5 text-gray-500'
+                    ? 'bg-red-500 text-black border-red-500 shadow-[0_0_10px_#ef4444]' 
+                    : 'bg-white/[0.03] border-white/5 text-red-400'
                   }`}
                 >
-                  <Dumbbell size={16} />
+                 <RotateCcw size={16} />
                 </div>
 
                 <div className="flex-1">
                   <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
                     ${isInfoActive ? 'text-white' : 'text-gray-400'}`}
                   >
-                    <span className="text-[#ff6600]">Resetar não é apagar</span>. 
+                    <span className="text-red-500">Resetar não é apagar</span>. 
                     É abrir espaço para novos feitos.
                   </p>
                 </div>
               </div>
 
-              <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 
+              <div className={`absolute bottom-0 left-0 h-[2px] bg-red-500 shadow-[0_0_15px_#ef4444] transition-all duration-700 
                 ${isInfoActive ? 'w-full' : 'w-0'}`} 
               />
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Trophy, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Search, Trophy, Dumbbell,  Crown,  Flame } from 'lucide-react';
 import api from '../../services/api';
 
 export const PRSearchPage = ({ onClose }) => {
@@ -170,7 +170,7 @@ export const PRSearchPage = ({ onClose }) => {
                       : 'bg-white/[0.03] border-white/5 text-gray-500'
                     }`}
                   >
-                    <Dumbbell size={16} />
+                    <Crown size={16} />
                   </div>
 
                   <div className="flex-1">
