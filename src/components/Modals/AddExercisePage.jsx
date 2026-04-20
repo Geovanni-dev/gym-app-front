@@ -26,8 +26,8 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       navbar.style.display = 'none';
     }
     
-    /*const preventTouchMove = (e) => { e.preventDefault(); };
-    document.addEventListener('touchmove', preventTouchMove, { passive: false });*/
+    const preventTouchMove = (e) => { e.preventDefault(); };
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
     
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
@@ -46,7 +46,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
-      //document.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('touchmove', preventTouchMove);
       
       if (navbar) {
         navbar.style.display = '';
@@ -154,7 +154,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
             </div>
           </div>
 
-          <div className="mt-25">
+          <div className="mt-35">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
