@@ -74,9 +74,9 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
             <div className="inline-block p-3 rounded-full bg-red-500/10 mb-3">
               <AlertTriangle size={40} className="text-red-500" />
             </div>
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">
-              APAGAR <span className="text-red-500">HISTÓRICO</span>
-            </h1>
+           <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">
+  <span className="text-white">LIMPAR</span> <span className="text-red-500">HISTÓRICO</span>
+</h1>
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
               Esta ação não pode ser desfeita
             </p>

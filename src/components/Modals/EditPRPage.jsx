@@ -73,9 +73,9 @@ export const EditPRPage = ({ onClose, onUpdate, planId, exerciseName, currentWei
               <Trophy size={60} className="text-[#ff6600] opacity-90 mx-auto" />
               <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>
             </div>
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">
-              RECORD <span className="text-[#ff6600]">PESSOAL</span>
-            </h1>
+           <h1 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">
+  <span className="text-white">RECORD</span> <span className="text-[#ff6600]">PESSOAL</span>
+</h1>
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em]">
               {exerciseName}
             </p>

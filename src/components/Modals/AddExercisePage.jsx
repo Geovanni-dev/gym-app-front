@@ -9,6 +9,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
   const [isInfoActive, setIsInfoActive] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const containerRef = useRef(null);
+  const nameInputRef = useRef(null);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -17,8 +18,6 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
     
@@ -34,11 +33,16 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       containerRef.current.style.height = `${window.innerHeight}px`;
     }
     
+    // Posiciona o cursor no final do texto se houver valor
+    if (nameInputRef.current && newExData.name) {
+      const value = nameInputRef.current.value;
+      nameInputRef.current.value = '';
+      nameInputRef.current.value = value;
+    }
+    
     return () => {
       document.body.style.position = '';
       document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
@@ -96,9 +100,9 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-4">
                 <InputField
+                  ref={nameInputRef}
                   label="Nome do Exercício"
                   icon={ClipboardList}
-                  
                   placeholder="Ex: Supino Reto"
                   value={newExData.name}
                   onChange={(e) => setNewExData({ ...newExData, name: e.target.value })}

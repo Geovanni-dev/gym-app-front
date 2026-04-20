@@ -14,6 +14,7 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
   const [isInfoActive, setIsInfoActive] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const containerRef = useRef(null);
+  const nameInputRef = useRef(null);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -37,6 +38,13 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
     
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
+    }
+    
+    // Posiciona o cursor no final do texto se houver valor
+    if (nameInputRef.current && formData.name) {
+      const value = nameInputRef.current.value;
+      nameInputRef.current.value = '';
+      nameInputRef.current.value = value;
     }
     
     return () => {
@@ -111,9 +119,9 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-4">
                 <InputField
+                  ref={nameInputRef}
                   label="Nome do Exercício"
                   icon={ClipboardList}
-                  
                   placeholder="Ex: Supino Reto"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}

@@ -1711,26 +1711,26 @@ const finalResetAction = async () => {
                   )}
 
                   {selectedExerciseHistory && (
-  <div className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden animate-in fade-in duration-200">
-    {/* Header */}
-    <div className="px-4 pt-8 pb-2">
+  <div className="fixed inset-0 z-[99999] bg-black flex flex-col overflow-y-auto">
+    {/* Header com botão Voltar */}
+    <div className="px-4 pt-8 pb-2 bg-black sticky top-0 z-10">
       <button 
         onClick={() => setSelectedExerciseHistory(null)} 
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-white font-bold"
       >
         <ArrowLeft size={24} />
-        <span className="text-sm font-bold uppercase tracking-wider">Voltar</span>
+        <span className="text-sm font-bold uppercase tracking-wider">VOLTAR</span>
       </button>
     </div>
 
-    <div className="flex-1 overflow-y-auto px-6 pb-20 pt-6 no-scrollbar">
+    <div className="flex-1 px-6 pb-20">
       <div className="max-w-md mx-auto">
         
-        {/* Título Agressivo Estilo Super Frango */}
+        {/* Título */}
         <div className="mb-12 text-center relative">
           <div className="relative inline-block mb-4">
-             <Activity size={60} className="text-[#ff6600] opacity-90 mx-auto" />
-             <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>
+            <Activity size={60} className="text-[#ff6600] opacity-90 mx-auto" />
+            <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>
           </div>
           <h1 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.85]">
             {selectedExerciseHistory.name}<br /><span className="text-[#ff6600]">HISTÓRICO</span>
