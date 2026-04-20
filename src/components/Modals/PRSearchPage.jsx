@@ -1,12 +1,12 @@
-// src/components/Modals/PRSearchPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Trophy } from 'lucide-react';
+import { ArrowLeft, Search, Trophy, Dumbbell } from 'lucide-react';
 import api from '../../services/api';
 
 export const PRSearchPage = ({ onClose }) => {
   const [prSearchQuery, setPRSearchQuery] = useState('');
   const [prSearchResult, setPRSearchResult] = useState(null);
   const [searchingPR, setSearchingPR] = useState(false);
+  const [isInfoActive, setIsInfoActive] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -48,34 +48,26 @@ export const PRSearchPage = ({ onClose }) => {
   };
 
   return (
-    <div 
-      ref={containerRef}
-      className="bg-black text-white fixed inset-0 z-[9999] overflow-hidden flex flex-col"
-    >
-      {/* Botão Voltar */}
-      <div className="px-4 pt-8 pb-2">
-        <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-          <ArrowLeft size={20} />
-          <span className="text-[10px] font-bold uppercase tracking-widest">VOLTAR</span>
-        </button>
-      </div>
-
-      <div className="flex-1 px-6 pt-10">
+    <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black overflow-y-auto">
+      <div className="px-4 pt-8 pb-20">
         <div className="max-w-md mx-auto">
           
-          {/* Título com quebra de linha conforme a imagem */}
+          <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
+            <ArrowLeft size={20} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">VOLTAR</span>
+          </button>
+
           <div className="mb-12">
             <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-[0.85] text-white">
               SEU <span className="text-[#ff6600]">PR</span><br />
               MÁXIMO
             </h1>
             <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.3em] mt-4">
-              BUSCA O pr DE QUALQUER EXERCÍCIO
+              BUSCA O PR DE QUALQUER EXERCÍCIO
             </p>
           </div>
 
           <div className="space-y-10">
-            {/* Campo de busca dentro do retângulo conforme a imagem */}
             <form onSubmit={handleSearchPR} className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <Search size={14} className="text-gray-600" />
@@ -89,6 +81,7 @@ export const PRSearchPage = ({ onClose }) => {
                   placeholder="EX: SUPINO RETO"
                   value={prSearchQuery}
                   onChange={(e) => setPRSearchQuery(e.target.value.toUpperCase())}
+                  style={{ fontSize: '16px' }}
                   className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 text-gray-400 font-bold text-sm tracking-widest outline-none focus:border-[#ff6600]/30 transition-all placeholder:text-gray-900"
                 />
                 <button 
@@ -104,18 +97,15 @@ export const PRSearchPage = ({ onClose }) => {
               </div>
             </form>
 
-            {/* Resultado do PR - Estilo Brutalista */}
             {prSearchResult !== null && (
               <div className="animate-in fade-in zoom-in duration-300">
                 <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-10 text-center relative overflow-hidden">
                   <div className="absolute -right-6 -top-6 text-[#ff6600]/5 rotate-12">
                     <Trophy size={150} />
                   </div>
-                  
                   <span className="text-[9px] font-black uppercase text-gray-600 tracking-[0.4em] mb-4 block">
                     seu pr nesse exercício
                   </span>
-                  
                   <div className="flex items-end justify-center gap-2">
                     <span className="text-8xl font-black italic text-[#ff6600] leading-none tracking-tighter" style={{ textShadow: '0 0 40px rgba(255,102,0,0.3)' }}>
                       {prSearchResult}
@@ -128,6 +118,45 @@ export const PRSearchPage = ({ onClose }) => {
               </div>
             )}
           </div>
+
+          {/* CAMPO INFORMATIVO - IGUAL AO DO CRIAR PLANO MANUAL */}
+          <div 
+            onClick={() => setIsInfoActive(!isInfoActive)}
+            className={`group relative mt-6 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+              ${isInfoActive 
+                ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
+                : 'border-white/10 hover:border-white/20'
+              }`}
+          >
+            <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
+              ${isInfoActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/10'}`} 
+            />
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
+                ${isInfoActive 
+                  ? 'bg-[#ff6600] text-black border-[#ff6600] shadow-[0_0_10px_#ff6600]' 
+                  : 'bg-white/[0.03] border-white/5 text-gray-500'
+                }`}
+              >
+                <Dumbbell size={16} />
+              </div>
+
+              <div className="flex-1">
+                <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
+                  ${isInfoActive ? 'text-white' : 'text-gray-400'}`}
+                >
+                  <span className="text-[#ff6600]">A força não vem do corpo</span>. 
+                  Vem da vontade de nunca parar.
+                </p>
+              </div>
+            </div>
+
+            <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 
+              ${isInfoActive ? 'w-full' : 'w-0'}`} 
+            />
+          </div>
+
         </div>
       </div>
     </div>
