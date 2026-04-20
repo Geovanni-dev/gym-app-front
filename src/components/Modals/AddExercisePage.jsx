@@ -26,8 +26,8 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       navbar.style.display = 'none';
     }
     
-    const preventTouchMove = (e) => { e.preventDefault(); };
-    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+    /*const preventTouchMove = (e) => { e.preventDefault(); };
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });*/
     
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
@@ -46,7 +46,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
-      document.removeEventListener('touchmove', preventTouchMove);
+      //document.removeEventListener('touchmove', preventTouchMove);
       
       if (navbar) {
         navbar.style.display = '';
