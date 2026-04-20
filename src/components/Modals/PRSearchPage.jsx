@@ -49,8 +49,8 @@ export const PRSearchPage = ({ onClose }) => {
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black overflow-y-auto">
-      <div style={{ minHeight: '100dvh' }} className="bg-black flex flex-col items-center p-4">
-        <div className="w-full max-w-[380px] flex flex-col flex-grow">
+      <div className="bg-black min-h-screen flex flex-col items-center p-4">
+        <div className="w-full max-w-[380px] flex flex-col">
           
           <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
             <ArrowLeft size={20} />
@@ -118,8 +118,8 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          {/* CAMPO INFORMATIVO - GRUDADO NO FINAL */}
-          <div className="mt-auto pt-16">
+          {/* CAMPO INFORMATIVO - SUBIU UM POUCO E SEM mt-auto */}
+          <div className="mt-20">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
