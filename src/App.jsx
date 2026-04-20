@@ -151,8 +151,8 @@ function App() {
           caret-color: white;
         }
           /* Apenas para Android - limita scroll extra sem bloquear totalmente */
-        .android-scroll-limit {
-        overscroll-behavior-y: contain;
+        /*.android-scroll-limit {*/
+        /*overscroll-behavior-y: contain; */
 }
       `}</style>
 

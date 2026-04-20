@@ -69,12 +69,7 @@ export const PRSearchPage = ({ onClose }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
-            <ArrowLeft size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">VOLTAR</span>
-          </button>
-
-          <div className="mb-12">
+          <div className="mb-12 pt-16">
             <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-[0.85] text-white">
               SEU <span className="text-[#ff6600]">PR</span><br />
               MÁXIMO
@@ -85,33 +80,44 @@ export const PRSearchPage = ({ onClose }) => {
           </div>
 
           <div className="space-y-10">
-            <form onSubmit={handleSearchPR} className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Search size={14} className="text-gray-600" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-gray-600">PESQUISAR EXERCÍCIO</span>
-              </div>
-              
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder="EX: SUPINO RETO"
-                  value={prSearchQuery}
-                  onChange={(e) => setPRSearchQuery(e.target.value.toUpperCase())}
-                  style={{ fontSize: '16px' }}
-                  className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 text-gray-400 font-bold text-sm tracking-widest outline-none focus:border-[#ff6600]/30 transition-all placeholder:text-gray-900"
-                />
-                <button 
-                  type="submit"
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-[#ff6600] opacity-30 group-focus-within:opacity-100 transition-opacity"
+            <div className="space-y-6">
+              <form onSubmit={handleSearchPR} className="space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Search size={14} className="text-gray-600" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-gray-600">PESQUISAR EXERCÍCIO</span>
+                </div>
+                
+                <div className="relative group">
+                  <input
+                    type="text"
+                    placeholder="EX: SUPINO RETO"
+                    value={prSearchQuery}
+                    onChange={(e) => setPRSearchQuery(e.target.value.toUpperCase())}
+                    style={{ fontSize: '16px' }}
+                    className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 text-gray-400 font-bold text-sm tracking-widest outline-none focus:border-[#ff6600]/30 transition-all placeholder:text-gray-900"
+                  />
+                  <button 
+                    type="submit"
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-[#ff6600] opacity-30 group-focus-within:opacity-100 transition-opacity"
+                  >
+                    {searchingPR ? (
+                      <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
+                    ) : (
+                      <Search size={22} />
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              <div className="text-center">
+                <span 
+                  onClick={onClose}
+                  className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.3em] cursor-pointer active:text-white transition-colors"
                 >
-                  {searchingPR ? (
-                    <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
-                  ) : (
-                    <Search size={22} />
-                  )}
-                </button>
+                  VOLTAR
+                </span>
               </div>
-            </form>
+            </div>
 
             {prSearchResult !== null && (
               <div className="animate-in fade-in zoom-in duration-300">

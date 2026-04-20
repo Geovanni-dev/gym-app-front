@@ -82,12 +82,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
-            <ArrowLeft size={24} />
-            <span className="text-sm font-bold uppercase tracking-wider">VOLTAR</span>
-          </button>
-
-          <div className="mb-8">
+          <div className="mb-8 pt-12"> {/* pt-12 para compensar a saída do botão de voltar do topo */}
             <h1 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-white leading-none">
               NOVO <span className="text-[#ff6600]">EXERCÍCIO</span>
             </h1>
@@ -147,6 +142,16 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
                 {loading ? 'ADICIONANDO...' : 'ADICIONAR EXERCÍCIO'}
               </button>
             </form>
+            
+            {/* VOLTAR como texto simples abaixo do botão */}
+            <div className="text-center">
+              <span 
+                onClick={onClose}
+                className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.3em] cursor-pointer active:text-white transition-colors"
+              >
+                VOLTAR
+              </span>
+            </div>
           </div>
 
           <div className="mt-16">

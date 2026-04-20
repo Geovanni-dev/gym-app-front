@@ -87,12 +87,7 @@ export const ImportPlanPage = ({ onClose, onSuccess }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
-            <ArrowLeft size={24} />
-            <span className="text-sm font-bold uppercase tracking-wider">VOLTAR</span>
-          </button>
-
-          <div className="mb-12 text-center">
+          <div className="mb-12 text-center pt-12"> {/* pt-12 compensando a remoção do topo */}
             <div className="relative inline-block mb-4">
               <Download size={48} className="text-[#ff6600] opacity-80" />
               <div className="absolute inset-0 blur-2xl bg-[#ff6600]/20 -z-10"></div>
@@ -121,13 +116,25 @@ export const ImportPlanPage = ({ onClose, onSuccess }) => {
               </p>
             )}
             
-            <button
-              type="submit"
-              disabled={loadingImport || importCode.length < 14}
-              className="w-full py-5 rounded-2xl font-black italic bg-[#ff6600] text-black uppercase text-[11px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.5)] active:scale-95 disabled:opacity-30 transition-all"
-            >
-              {loadingImport ? 'SINCRONIZANDO...' : 'CONFIRMAR IMPORTAÇÃO'}
-            </button>
+            <div className="space-y-4">
+              <button
+                type="submit"
+                disabled={loadingImport || importCode.length < 14}
+                className="w-full py-5 rounded-2xl font-black italic bg-[#ff6600] text-black uppercase text-[11px] tracking-widest shadow-[0_0_20px_rgba(255,102,0,0.5)] active:scale-95 disabled:opacity-30 transition-all"
+              >
+                {loadingImport ? 'SINCRONIZANDO...' : 'CONFIRMAR IMPORTAÇÃO'}
+              </button>
+
+              {/* VOLTAR como texto simples abaixo do botão */}
+              <div className="text-center">
+                <span 
+                  onClick={onClose}
+                  className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.3em] cursor-pointer active:text-white transition-colors"
+                >
+                  VOLTAR
+                </span>
+              </div>
+            </div>
           </form>
 
           <div className="mt-16">
