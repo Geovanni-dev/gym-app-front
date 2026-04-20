@@ -1,166 +1,238 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Trophy, Dumbbell } from 'lucide-react';
-import api from '../../services/api';
+import React, { useState } from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { MainContent } from './components/MainContent';
+import { PRSearchPage } from './components/Modals/PRSearchPage';
+import { ImportPlanPage } from './components/Modals/ImportPlanPage';
+import { AddExercisePage } from './components/Modals/AddExercisePage';
+import { EditExercisePage } from './components/Modals/EditExercisePage';
+import { EditPRPage } from './components/Modals/EditPRPage';
+import { ResetHistoryPage } from './components/Modals/ResetHistoryPage';
+import { useScrollToInput } from './hooks/useScrollToInput';
 
-export const PRSearchPage = ({ onClose }) => {
-  const [prSearchQuery, setPRSearchQuery] = useState('');
-  const [prSearchResult, setPRSearchResult] = useState(null);
-  const [searchingPR, setSearchingPR] = useState(false);
-  const [isInfoActive, setIsInfoActive] = useState(false);
-  const containerRef = useRef(null);
+function App() {
+  useScrollToInput();
+  
+  // Estados existentes
+  const [showPRPage, setShowPRPage] = useState(false);
+  const [showImportPage, setShowImportPage] = useState(false);
+  const [showAddExercisePage, setShowAddExercisePage] = useState(false);
+  const [addExercisePlanId, setAddExercisePlanId] = useState(null);
+  const [addExerciseDayName, setAddExerciseDayName] = useState('');
+  const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
+  
+  const [showEditExercisePage, setShowEditExercisePage] = useState(false);
+  const [editExerciseData, setEditExerciseData] = useState(null);
+  const [editExercisePlanId, setEditExercisePlanId] = useState(null);
+  const [editExerciseDayName, setEditExerciseDayName] = useState('');
+  const [editExerciseName, setEditExerciseName] = useState('');
+  const [editExerciseIsGenerated, setEditExerciseIsGenerated] = useState(false);
+  const [onUpdateExerciseCallback, setOnUpdateExerciseCallback] = useState(null);
 
-  useEffect(() => {
-    const scrollY = window.scrollY;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
-    
-    if (containerRef.current) {
-      containerRef.current.style.height = `${window.innerHeight}px`;
-    }
-    
-    return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
-      window.scrollTo(0, scrollY);
-    };
-  }, []);
+  const [showEditPRPage, setShowEditPRPage] = useState(false);
+  const [editPRPlanId, setEditPRPlanId] = useState(null);
+  const [editPRExerciseName, setEditPRExerciseName] = useState('');
+  const [editPRWeight, setEditPRWeight] = useState(0);
+  const [onUpdatePRCallback, setOnUpdatePRCallback] = useState(null);
 
-  const handleSearchPR = async (e) => {
-    if (e) e.preventDefault();
-    if (!prSearchQuery.trim()) return;
-    
-    setSearchingPR(true);
-    try {
-      const response = await api.get('/workouts/pr', {
-        params: { exercise: prSearchQuery.trim() },
-      });
-      const pr = response.data.personalRecord || response.data.weight;
-      setPRSearchResult(pr !== undefined && pr !== null ? `${pr}` : 'N/A');
-    } catch (e) {
-      setPRSearchResult('N/A');
-    } finally {
-      setSearchingPR(false);
-    }
-  };
+  const [showResetHistoryPage, setShowResetHistoryPage] = useState(false);
+  const [onConfirmResetCallback, setOnConfirmResetCallback] = useState(null);
 
-  // ESTRUTURA EXATAMENTE IGUAL AO CRIAR PLANO MANUAL
-  return (
-    <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto">
-      <div className="min-h-full flex flex-col items-center p-4">
-        <div className="w-full max-w-[380px] flex flex-col">
-          
-          <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
-            <ArrowLeft size={20} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">VOLTAR</span>
-          </button>
-
-          <div className="mb-12">
-            <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-[0.85] text-white">
-              SEU <span className="text-[#ff6600]">PR</span><br />
-              MÁXIMO
-            </h1>
-            <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.3em] mt-4">
-              BUSCA O PR DE QUALQUER EXERCÍCIO
-            </p>
-          </div>
-
-          <div className="space-y-10">
-            <form onSubmit={handleSearchPR} className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Search size={14} className="text-gray-600" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-gray-600">PESQUISAR EXERCÍCIO</span>
-              </div>
-              
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder="EX: SUPINO RETO"
-                  value={prSearchQuery}
-                  onChange={(e) => setPRSearchQuery(e.target.value.toUpperCase())}
-                  style={{ fontSize: '16px' }}
-                  className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 text-gray-400 font-bold text-sm tracking-widest outline-none focus:border-[#ff6600]/30 transition-all placeholder:text-gray-900"
-                />
-                <button 
-                  type="submit"
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-[#ff6600] opacity-30 group-focus-within:opacity-100 transition-opacity"
-                >
-                  {searchingPR ? (
-                    <div className="animate-spin h-5 w-5 border-2 border-[#ff6600] border-t-transparent rounded-full" />
-                  ) : (
-                    <Search size={22} />
-                  )}
-                </button>
-              </div>
-            </form>
-
-            {prSearchResult !== null && (
-              <div className="animate-in fade-in zoom-in duration-300">
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-10 text-center relative overflow-hidden">
-                  <div className="absolute -right-6 -top-6 text-[#ff6600]/5 rotate-12">
-                    <Trophy size={150} />
-                  </div>
-                  <span className="text-[9px] font-black uppercase text-gray-600 tracking-[0.4em] mb-4 block">
-                    seu pr nesse exercício
-                  </span>
-                  <div className="flex items-end justify-center gap-2">
-                    <span className="text-8xl font-black italic text-[#ff6600] leading-none tracking-tighter" style={{ textShadow: '0 0 40px rgba(255,102,0,0.3)' }}>
-                      {prSearchResult}
-                    </span>
-                    {prSearchResult !== 'N/A' && (
-                      <span className="text-2xl font-black italic text-gray-800 mb-1">KG</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* CAMPO INFORMATIVO - MAIS PRA BAIXO */}
-          <div className="mt-16">
-            <div 
-              onClick={() => setIsInfoActive(!isInfoActive)}
-              className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
-                ${isInfoActive 
-                  ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
-                  : 'border-white/10 hover:border-white/20'
-                }`}
-            >
-              <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
-                ${isInfoActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/10'}`} 
-              />
-
-              <div className="flex items-center gap-4 relative z-10">
-                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
-                  ${isInfoActive 
-                    ? 'bg-[#ff6600] text-black border-[#ff6600] shadow-[0_0_10px_#ff6600]' 
-                    : 'bg-white/[0.03] border-white/5 text-gray-500'
-                  }`}
-                >
-                  <Dumbbell size={16} />
-                </div>
-
-                <div className="flex-1">
-                  <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
-                    ${isInfoActive ? 'text-white' : 'text-gray-400'}`}
-                  >
-                    <span className="text-[#ff6600]">A força não vem do corpo</span>. 
-                    Vem da vontade de nunca parar.
-                  </p>
-                </div>
-              </div>
-
-              <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 
-                ${isInfoActive ? 'w-full' : 'w-0'}`} 
-              />
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
+  // --- RENDERIZAÇÃO CONDICIONAL ---
+  
+  if (showPRPage) return (
+    <AuthProvider>
+      <PRSearchPage onClose={() => setShowPRPage(false)} />
+    </AuthProvider>
   );
-};
+  
+  if (showImportPage) return (
+    <AuthProvider>
+      <ImportPlanPage onClose={() => setShowImportPage(false)} />
+    </AuthProvider>
+  );
+  
+  if (showAddExercisePage) return (
+    <AuthProvider>
+      <AddExercisePage 
+        onClose={() => setShowAddExercisePage(false)} 
+        onAdd={onAddExerciseCallback} 
+        planId={addExercisePlanId} 
+        dayName={addExerciseDayName} 
+      />
+    </AuthProvider>
+  );
+
+  if (showEditExercisePage) return (
+    <AuthProvider>
+      <EditExercisePage 
+        onClose={() => setShowEditExercisePage(false)} 
+        onUpdate={onUpdateExerciseCallback} 
+        exerciseData={editExerciseData} 
+        planId={editExercisePlanId} 
+        dayName={editExerciseDayName} 
+        exerciseName={editExerciseName} 
+        isGenerated={editExerciseIsGenerated} 
+      />
+    </AuthProvider>
+  );
+
+  if (showEditPRPage) return (
+    <AuthProvider>
+      <EditPRPage 
+        onClose={() => setShowEditPRPage(false)} 
+        onUpdate={onUpdatePRCallback} 
+        planId={editPRPlanId} 
+        exerciseName={editPRExerciseName} 
+        currentWeight={editPRWeight} 
+      />
+    </AuthProvider>
+  );
+
+  if (showResetHistoryPage) return (
+    <AuthProvider>
+      <ResetHistoryPage 
+        onClose={() => setShowResetHistoryPage(false)} 
+        onReset={async () => {
+          if (onConfirmResetCallback) {
+            await onConfirmResetCallback();
+          }
+        }} 
+      />
+    </AuthProvider>
+  );
+
+  // APP NORMAL
+  return (
+    <AuthProvider>
+      <style>{`
+        /* Reset básico para mobile */
+        html, body {
+          height: 100%;
+          overscroll-behavior-y: none; 
+          background-color: #000;
+        }
+
+        input, select, textarea {
+          font-size: 16px !important;
+        }
+
+        .app-container {
+          display: flex;
+          flex-direction: column;
+          height: 100dvh;
+          width: 100%;
+          position: relative;
+        }
+
+        .scroll-content {
+          flex: 1;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 2rem;
+        }
+
+        body.keyboard-open .scroll-content {
+          padding-bottom: 50vh;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        input[type=number] {
+          -moz-appearance: textfield;
+          appearance: textfield;
+        }
+
+        @media (max-height: 700px) {
+          .fixed.inset-0.z-200 .my-8 {
+            margin-top: 1rem !important;
+            margin-bottom: 1rem !important;
+          }
+          .fixed.inset-0.z-200 .p-6 {
+            padding: 1rem !important;
+          }
+          .fixed.inset-0.z-200 .space-y-6 {
+            gap: 0.75rem !important;
+          }
+          .fixed.inset-0.z-200 .py-3.5 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+          }
+          .fixed.inset-0.z-200 .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+          }
+        }
+
+        @media (max-height: 600px) {
+          .fixed.inset-0.z-200 .my-8 {
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+          }
+          .fixed.inset-0.z-200 .p-6 {
+            padding: 0.75rem !important;
+          }
+          .fixed.inset-0.z-200 .gap-3 {
+            gap: 0.5rem !important;
+          }
+        }
+
+        body.modal-open {
+          overflow: hidden;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-transition: background-color 9999s ease-out;
+          transition: background-color 9999s ease-out;
+          -webkit-text-fill-color: white !important;
+        }
+
+        input:-webkit-autofill {
+          caret-color: white;
+        }
+      `}</style>
+
+      <MainContent 
+        onOpenPRPage={() => setShowPRPage(true)}
+        onOpenImportPage={() => setShowImportPage(true)}
+        onOpenAddExercisePage={(planId, dayName, onAdd) => {
+          setAddExercisePlanId(planId);
+          setAddExerciseDayName(dayName);
+          setOnAddExerciseCallback(() => onAdd);
+          setShowAddExercisePage(true);
+        }}
+        onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated, onUpdate) => {
+          setEditExercisePlanId(planId);
+          setEditExerciseDayName(dayName);
+          setEditExerciseName(exerciseName);
+          setEditExerciseData(exerciseData);
+          setEditExerciseIsGenerated(isGenerated);
+          setOnUpdateExerciseCallback(() => onUpdate);
+          setShowEditExercisePage(true);
+        }}
+        onOpenEditPRPage={(planId, exerciseName, exerciseData, onUpdate) => {
+          setEditPRPlanId(planId);
+          setEditPRExerciseName(exerciseName);
+          setEditPRWeight(exerciseData.weight);
+          setOnUpdatePRCallback(() => onUpdate);
+          setShowEditPRPage(true);
+        }}
+        onOpenResetHistoryPage={(onConfirm) => {
+          setOnConfirmResetCallback(() => onConfirm); 
+          setShowResetHistoryPage(true);
+        }}
+      />
+    </AuthProvider>
+  );
+}
+
+export default App;
