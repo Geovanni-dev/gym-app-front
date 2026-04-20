@@ -150,7 +150,7 @@ export const PRSearchPage = ({ onClose }) => {
 
           
           {prSearchResult === null && (
-            <div className="mt-35">
+            <div className="mt-50">
               <div 
                 onClick={() => setIsInfoActive(!isInfoActive)}
                 className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
