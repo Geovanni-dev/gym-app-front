@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Trophy, Dumbbell,  Crown,  Flame } from 'lucide-react';
+import { ArrowLeft, Search, Trophy, Crown } from 'lucide-react';
 import api from '../../services/api';
 
 export const PRSearchPage = ({ onClose }) => {
@@ -8,11 +8,19 @@ export const PRSearchPage = ({ onClose }) => {
   const [searchingPR, setSearchingPR] = useState(false);
   const [isInfoActive, setIsInfoActive] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     setIsAndroid(userAgent.includes('android'));
+
+    const handleResize = () => {
+      if (window.visualViewport) {
+        setIsKeyboardVisible(window.visualViewport.height < window.innerHeight * 0.8);
+      }
+    };
+    window.visualViewport?.addEventListener('resize', handleResize);
 
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
@@ -39,6 +47,7 @@ export const PRSearchPage = ({ onClose }) => {
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
       document.removeEventListener('touchmove', preventTouchMove);
+      window.visualViewport?.removeEventListener('resize', handleResize);
       
       if (navbar) {
         navbar.style.display = '';
@@ -148,9 +157,8 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          
-          {prSearchResult === null && (
-            <div className="mt-45">
+          {!isKeyboardVisible && prSearchResult === null && (
+            <div className="mt-20">
               <div 
                 onClick={() => setIsInfoActive(!isInfoActive)}
                 className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Trash2, AlertTriangle, Eraser, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Trash2, AlertTriangle, RotateCcw } from 'lucide-react';
 import { InputField } from '../';
 
 export const ResetHistoryPage = ({ onClose, onReset }) => {
@@ -7,11 +7,19 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
   const [loading, setLoading] = useState(false);
   const [isInfoActive, setIsInfoActive] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     setIsAndroid(userAgent.includes('android'));
+
+    const handleResize = () => {
+      if (window.visualViewport) {
+        setIsKeyboardVisible(window.visualViewport.height < window.innerHeight * 0.8);
+      }
+    };
+    window.visualViewport?.addEventListener('resize', handleResize);
 
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
@@ -37,7 +45,8 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
-       document.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('touchmove', preventTouchMove);
+      window.visualViewport?.removeEventListener('resize', handleResize);
 
       if (navbar) {
         navbar.style.display = '';
@@ -108,7 +117,6 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
                 {loading ? 'APAGANDO...' : 'EXCLUIR TUDO DEFINITIVAMENTE'}
               </button>
 
-              {/* VOLTAR como texto simples abaixo do botão */}
               <div className="text-center">
                 <span 
                   onClick={onClose}
@@ -120,44 +128,46 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
             </div>
           </form>
 
-          <div className="mt-35">
-            <div 
-              onClick={() => setIsInfoActive(!isInfoActive)}
-              className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
-                ${isInfoActive 
-                  ? 'border-red-500/60 scale-[1.01] bg-white/[0.06]' 
-                  : 'border-white/10 hover:border-red-500/30'
-                }`}
-            >
-              <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
-                ${isInfoActive ? 'bg-red-500 shadow-[0_0_15px_#ef4444]' : 'bg-red-500/30'}`} 
-              />
-
-              <div className="flex items-center gap-4 relative z-10">
-                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
+          {!isKeyboardVisible && (
+            <div className="mt-13">
+              <div 
+                onClick={() => setIsInfoActive(!isInfoActive)}
+                className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
                   ${isInfoActive 
-                    ? 'bg-red-500 text-black border-red-500 shadow-[0_0_10px_#ef4444]' 
-                    : 'bg-white/[0.03] border-white/5 text-red-400'
+                    ? 'border-red-500/60 scale-[1.01] bg-white/[0.06]' 
+                    : 'border-white/10 hover:border-red-500/30'
                   }`}
-                >
-                 <RotateCcw size={16} />
-                </div>
+              >
+                <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 
+                  ${isInfoActive ? 'bg-red-500 shadow-[0_0_15px_#ef4444]' : 'bg-red-500/30'}`} 
+                />
 
-                <div className="flex-1">
-                  <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
-                    ${isInfoActive ? 'text-white' : 'text-gray-400'}`}
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 flex-shrink-0
+                    ${isInfoActive 
+                      ? 'bg-red-500 text-black border-red-500 shadow-[0_0_10px_#ef4444]' 
+                      : 'bg-white/[0.03] border-white/5 text-red-400'
+                    }`}
                   >
-                    <span className="text-red-500">Resetar não é apagar</span>. 
-                    É abrir espaço para novos feitos.
-                  </p>
-                </div>
-              </div>
+                    <RotateCcw size={16} />
+                  </div>
 
-              <div className={`absolute bottom-0 left-0 h-[2px] bg-red-500 shadow-[0_0_15px_#ef4444] transition-all duration-700 
-                ${isInfoActive ? 'w-full' : 'w-0'}`} 
-              />
+                  <div className="flex-1">
+                    <p className={`text-[12px] font-bold uppercase tracking-[0.15em] leading-tight transition-colors duration-300
+                      ${isInfoActive ? 'text-white' : 'text-gray-400'}`}
+                    >
+                      <span className="text-red-500">Resetar não é apagar</span>. 
+                      É abrir espaço para novos feitos.
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`absolute bottom-0 left-0 h-[2px] bg-red-500 shadow-[0_0_15px_#ef4444] transition-all duration-700 
+                  ${isInfoActive ? 'w-full' : 'w-0'}`} 
+                />
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>

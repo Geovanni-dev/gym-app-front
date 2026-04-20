@@ -1106,7 +1106,7 @@ const finalResetAction = async () => {
                       </form>
                      <div 
   onClick={() => setIsManualInfoActive(!isManualInfoActive)}
-  className={`group relative mt-6 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+  className={`group relative mt-12 p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
     ${isManualInfoActive 
       ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
       : 'border-white/10 hover:border-white/20'
