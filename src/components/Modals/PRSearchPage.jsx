@@ -16,6 +16,12 @@ export const PRSearchPage = ({ onClose }) => {
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
     
+    // ESCONDE O NAVBAR NO ANDROID TAMBÉM
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+      navbar.style.display = 'none';
+    }
+    
     if (containerRef.current) {
       containerRef.current.style.height = `${window.innerHeight}px`;
     }
@@ -26,6 +32,11 @@ export const PRSearchPage = ({ onClose }) => {
       document.body.style.width = '';
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
+      
+      // RESTAURA O NAVBAR
+      if (navbar) {
+        navbar.style.display = '';
+      }
     };
   }, []);
 
@@ -50,7 +61,7 @@ export const PRSearchPage = ({ onClose }) => {
   return (
     <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black overflow-y-auto">
       <div className="bg-black min-h-screen flex flex-col items-center p-4">
-        <div className="w-full max-w-[380px] flex flex-col">
+        <div className="w-full max-w-[380px] flex flex-col flex-grow">
           
           <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
             <ArrowLeft size={20} />
@@ -118,8 +129,8 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          {/* CAMPO INFORMATIVO - SUBIU UM POUCO E SEM mt-auto */}
-          <div className="mt-20">
+          {/* CAMPO INFORMATIVO - NO FUNDO, MAS COM ESPAÇO */}
+          <div className="mt-auto pt-8 pb-4">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
