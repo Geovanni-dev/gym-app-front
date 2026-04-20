@@ -12,15 +12,28 @@ import { useScrollToInput } from './hooks/useScrollToInput';
 function App() {
   useScrollToInput();
   
-  // Estados existentes
-  const [showPRPage, setShowPRPage] = useState(false);
-  const [showImportPage, setShowImportPage] = useState(false);
-  const [showAddExercisePage, setShowAddExercisePage] = useState(false);
+  // ============================================
+  // OVERLAYS - TODAS AS 6 SÃO OVERLAYS
+  // ============================================
+  const [showPRSearchOverlay, setShowPRSearchOverlay] = useState(false);
+  const [showImportPlanOverlay, setShowImportPlanOverlay] = useState(false);
+  const [showAddExerciseOverlay, setShowAddExerciseOverlay] = useState(false);
+  const [showEditExerciseOverlay, setShowEditExerciseOverlay] = useState(false);
+  const [showEditPROverlay, setShowEditPROverlay] = useState(false);
+  const [showResetHistoryOverlay, setShowResetHistoryOverlay] = useState(false);
+  
+  // Dados PRSearch
+  const [onPRSearchCloseCallback, setOnPRSearchCloseCallback] = useState(null);
+  
+  // Dados ImportPlan
+  const [onImportPlanCloseCallback, setOnImportPlanCloseCallback] = useState(null);
+  
+  // Dados AddExercise
   const [addExercisePlanId, setAddExercisePlanId] = useState(null);
   const [addExerciseDayName, setAddExerciseDayName] = useState('');
   const [onAddExerciseCallback, setOnAddExerciseCallback] = useState(null);
   
-  const [showEditExercisePage, setShowEditExercisePage] = useState(false);
+  // Dados EditExercise
   const [editExerciseData, setEditExerciseData] = useState(null);
   const [editExercisePlanId, setEditExercisePlanId] = useState(null);
   const [editExerciseDayName, setEditExerciseDayName] = useState('');
@@ -28,80 +41,18 @@ function App() {
   const [editExerciseIsGenerated, setEditExerciseIsGenerated] = useState(false);
   const [onUpdateExerciseCallback, setOnUpdateExerciseCallback] = useState(null);
 
-  const [showEditPRPage, setShowEditPRPage] = useState(false);
+  // Dados EditPR
   const [editPRPlanId, setEditPRPlanId] = useState(null);
   const [editPRExerciseName, setEditPRExerciseName] = useState('');
   const [editPRWeight, setEditPRWeight] = useState(0);
   const [onUpdatePRCallback, setOnUpdatePRCallback] = useState(null);
 
-  const [showResetHistoryPage, setShowResetHistoryPage] = useState(false);
+  // Dados ResetHistory
   const [onConfirmResetCallback, setOnConfirmResetCallback] = useState(null);
 
-  // --- RENDERIZAÇÃO CONDICIONAL ---
-  
-  if (showPRPage) return (
-    <AuthProvider>
-      <PRSearchPage onClose={() => setShowPRPage(false)} />
-    </AuthProvider>
-  );
-  
-  if (showImportPage) return (
-    <AuthProvider>
-      <ImportPlanPage onClose={() => setShowImportPage(false)} />
-    </AuthProvider>
-  );
-  
-  if (showAddExercisePage) return (
-    <AuthProvider>
-      <AddExercisePage 
-        onClose={() => setShowAddExercisePage(false)} 
-        onAdd={onAddExerciseCallback} 
-        planId={addExercisePlanId} 
-        dayName={addExerciseDayName} 
-      />
-    </AuthProvider>
-  );
-
-  if (showEditExercisePage) return (
-    <AuthProvider>
-      <EditExercisePage 
-        onClose={() => setShowEditExercisePage(false)} 
-        onUpdate={onUpdateExerciseCallback} 
-        exerciseData={editExerciseData} 
-        planId={editExercisePlanId} 
-        dayName={editExerciseDayName} 
-        exerciseName={editExerciseName} 
-        isGenerated={editExerciseIsGenerated} 
-      />
-    </AuthProvider>
-  );
-
-  if (showEditPRPage) return (
-    <AuthProvider>
-      <EditPRPage 
-        onClose={() => setShowEditPRPage(false)} 
-        onUpdate={onUpdatePRCallback} 
-        planId={editPRPlanId} 
-        exerciseName={editPRExerciseName} 
-        currentWeight={editPRWeight} 
-      />
-    </AuthProvider>
-  );
-
-  if (showResetHistoryPage) return (
-    <AuthProvider>
-      <ResetHistoryPage 
-        onClose={() => setShowResetHistoryPage(false)} 
-        onReset={async () => {
-          if (onConfirmResetCallback) {
-            await onConfirmResetCallback();
-          }
-        }} 
-      />
-    </AuthProvider>
-  );
-
-  // APP NORMAL
+  // ============================================
+  // APP NORMAL - MainContent SEMPRE montado
+  // ============================================
   return (
     <AuthProvider>
       <style>{`
@@ -202,13 +153,13 @@ function App() {
       `}</style>
 
       <MainContent 
-        onOpenPRPage={() => setShowPRPage(true)}
-        onOpenImportPage={() => setShowImportPage(true)}
+        onOpenPRPage={() => setShowPRSearchOverlay(true)}
+        onOpenImportPage={() => setShowImportPlanOverlay(true)}
         onOpenAddExercisePage={(planId, dayName, onAdd) => {
           setAddExercisePlanId(planId);
           setAddExerciseDayName(dayName);
           setOnAddExerciseCallback(() => onAdd);
-          setShowAddExercisePage(true);
+          setShowAddExerciseOverlay(true);
         }}
         onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated, onUpdate) => {
           setEditExercisePlanId(planId);
@@ -217,20 +168,78 @@ function App() {
           setEditExerciseData(exerciseData);
           setEditExerciseIsGenerated(isGenerated);
           setOnUpdateExerciseCallback(() => onUpdate);
-          setShowEditExercisePage(true);
+          setShowEditExerciseOverlay(true);
         }}
         onOpenEditPRPage={(planId, exerciseName, exerciseData, onUpdate) => {
           setEditPRPlanId(planId);
           setEditPRExerciseName(exerciseName);
           setEditPRWeight(exerciseData.weight);
           setOnUpdatePRCallback(() => onUpdate);
-          setShowEditPRPage(true);
+          setShowEditPROverlay(true);
         }}
         onOpenResetHistoryPage={(onConfirm) => {
-          setOnConfirmResetCallback(() => onConfirm); 
-          setShowResetHistoryPage(true);
+          setOnConfirmResetCallback(() => onConfirm);
+          setShowResetHistoryOverlay(true);
         }}
       />
+
+      {/* ============================================
+          OVERLAYS - TODAS FLUTUAM SOBRE O MAINCONTENT
+          ============================================ */}
+      
+      {showPRSearchOverlay && (
+        <PRSearchPage 
+          onClose={() => setShowPRSearchOverlay(false)} 
+        />
+      )}
+
+      {showImportPlanOverlay && (
+        <ImportPlanPage 
+          onClose={() => setShowImportPlanOverlay(false)} 
+        />
+      )}
+
+      {showAddExerciseOverlay && (
+        <AddExercisePage 
+          onClose={() => setShowAddExerciseOverlay(false)} 
+          onAdd={onAddExerciseCallback} 
+          planId={addExercisePlanId} 
+          dayName={addExerciseDayName} 
+        />
+      )}
+
+      {showEditExerciseOverlay && (
+        <EditExercisePage 
+          onClose={() => setShowEditExerciseOverlay(false)} 
+          onUpdate={onUpdateExerciseCallback} 
+          exerciseData={editExerciseData} 
+          planId={editExercisePlanId} 
+          dayName={editExerciseDayName} 
+          exerciseName={editExerciseName} 
+          isGenerated={editExerciseIsGenerated} 
+        />
+      )}
+
+      {showEditPROverlay && (
+        <EditPRPage 
+          onClose={() => setShowEditPROverlay(false)} 
+          onUpdate={onUpdatePRCallback} 
+          planId={editPRPlanId} 
+          exerciseName={editPRExerciseName} 
+          currentWeight={editPRWeight} 
+        />
+      )}
+
+      {showResetHistoryOverlay && (
+        <ResetHistoryPage 
+          onClose={() => setShowResetHistoryOverlay(false)} 
+          onReset={async () => {
+            if (onConfirmResetCallback) {
+              await onConfirmResetCallback();
+            }
+          }} 
+        />
+      )}
     </AuthProvider>
   );
 }

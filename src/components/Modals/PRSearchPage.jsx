@@ -49,8 +49,8 @@ export const PRSearchPage = ({ onClose }) => {
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black overflow-y-auto">
-      <div className="bg-black/95 backdrop-blur-xl min-h-full flex flex-col items-center p-4">
-        <div className="w-full max-w-[380px] flex flex-col">
+      <div style={{ minHeight: '100dvh' }} className="bg-black flex flex-col items-center p-4">
+        <div className="w-full max-w-[380px] flex flex-col flex-grow">
           
           <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
             <ArrowLeft size={20} />
@@ -118,11 +118,11 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          {/* CAMPO INFORMATIVO - BEM MAIS PRA BAIXO */}
-          <div className="mt-32">
+          {/* CAMPO INFORMATIVO - GRUDADO NO FINAL */}
+          <div className="mt-auto pt-16">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
-              className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+              className={`group relative p-4 rounded-2xl bg-white/[0.03] border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
                 ${isInfoActive 
                   ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
                   : 'border-white/10 hover:border-white/20'
