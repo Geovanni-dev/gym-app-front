@@ -660,46 +660,19 @@ export const PlanDetailsView = ({
           );
         })}
 
-        {!isGenerated && (
-          <div className="pt-4 px-2">
-            {addingNewDay ? (
-              <form
-                onSubmit={handleAddNewDay}
-                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 bg-white/[0.03] p-3 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-dashed border-[#ff6600]/30 animate-in fade-in zoom-in-95"
-              >
-                <input
-                  autoFocus
-                  className="bg-transparent text-base sm:text-xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600] outline-none flex-1 min-w-0 px-2 py-2"
-                  placeholder="NOME DO DIA"
-                  value={newDayTitle}
-                  onChange={(e) => setNewDayTitle(e.target.value)}
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAddingNewDay(false)}
-                    className="p-2 text-gray-500 hover:text-white"
-                  >
-                    <X size={18} className="sm:size-[20px]" />
-                  </button>
-                  <button type="submit" className="p-2 text-[#ff6600]">
-                    <Check size={20} className="sm:size-[24px]" />
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <button
-                onClick={() => setAddingNewDay(true)}
-                className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase text-gray-600 hover:border-[#ff6600] hover:text-[#ff6600] transition-all flex items-center justify-center gap-2 sm:gap-3 group"
-              >
-                <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#ff6600] group-hover:text-black transition-all">
-                  <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
-                </div>
-                Adicionar dia
-              </button>
-            )}
-          </div>
-        )}
+       {!isGenerated && (
+  <div className="pt-4 px-2">
+    <button
+      onClick={() => onOpenAddDayPage?.(plan._id || plan.id, onAddDay)}
+      className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase text-gray-600 hover:border-[#ff6600] hover:text-[#ff6600] transition-all flex items-center justify-center gap-2 sm:gap-3 group"
+    >
+      <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#ff6600] group-hover:text-black transition-all">
+        <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
+      </div>
+      Adicionar dia
+    </button>
+  </div>
+)}
       </div>
     </div>
   );

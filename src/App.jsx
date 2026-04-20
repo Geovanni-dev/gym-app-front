@@ -8,19 +8,19 @@ import { EditExercisePage } from './components/Modals/EditExercisePage';
 import { EditPRPage } from './components/Modals/EditPRPage';
 import { ResetHistoryPage } from './components/Modals/ResetHistoryPage';
 import { useScrollToInput } from './hooks/useScrollToInput';
+import { AddDayPage } from './components/Modals/AddDayPage';
 
 function App() {
   useScrollToInput();
   
-  // ============================================
-  // OVERLAYS - TODAS AS 6 SÃO OVERLAYS
-  // ============================================
+  // Modais
   const [showPRSearchOverlay, setShowPRSearchOverlay] = useState(false);
   const [showImportPlanOverlay, setShowImportPlanOverlay] = useState(false);
   const [showAddExerciseOverlay, setShowAddExerciseOverlay] = useState(false);
   const [showEditExerciseOverlay, setShowEditExerciseOverlay] = useState(false);
   const [showEditPROverlay, setShowEditPROverlay] = useState(false);
   const [showResetHistoryOverlay, setShowResetHistoryOverlay] = useState(false);
+  const [showAddDayOverlay, setShowAddDayOverlay] = useState(false); // ← NOVO
   
   // Dados PRSearch
   const [onPRSearchCloseCallback, setOnPRSearchCloseCallback] = useState(null);
@@ -49,6 +49,10 @@ function App() {
 
   // Dados ResetHistory
   const [onConfirmResetCallback, setOnConfirmResetCallback] = useState(null);
+
+  // Dados AddDay
+  const [addDayPlanId, setAddDayPlanId] = useState(null);
+  const [onAddDayCallback, setOnAddDayCallback] = useState(null);
 
   // ============================================
   // APP NORMAL - MainContent SEMPRE montado
@@ -152,98 +156,75 @@ function App() {
         }
           /* Apenas para Android - limita scroll extra sem bloquear totalmente */
         /*.android-scroll-limit {*/
-        /*overscroll-behavior-y: contain; */
+        /*overscroll-behavior-y: contain;*/
+}
+        /* Ajuste para Android - altura dinâmica com teclado */
+@supports (height: 100dvh) {
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
 }
       `}</style>
 
-      <MainContent 
-        onOpenPRPage={() => setShowPRSearchOverlay(true)}
-        onOpenImportPage={() => setShowImportPlanOverlay(true)}
-        onOpenAddExercisePage={(planId, dayName, onAdd) => {
-          setAddExercisePlanId(planId);
-          setAddExerciseDayName(dayName);
-          setOnAddExerciseCallback(() => onAdd);
-          setShowAddExerciseOverlay(true);
-        }}
-        onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated, onUpdate) => {
-          setEditExercisePlanId(planId);
-          setEditExerciseDayName(dayName);
-          setEditExerciseName(exerciseName);
-          setEditExerciseData(exerciseData);
-          setEditExerciseIsGenerated(isGenerated);
-          setOnUpdateExerciseCallback(() => onUpdate);
-          setShowEditExerciseOverlay(true);
-        }}
-        onOpenEditPRPage={(planId, exerciseName, exerciseData, onUpdate) => {
-          setEditPRPlanId(planId);
-          setEditPRExerciseName(exerciseName);
-          setEditPRWeight(exerciseData.weight);
-          setOnUpdatePRCallback(() => onUpdate);
-          setShowEditPROverlay(true);
-        }}
-        onOpenResetHistoryPage={(onConfirm) => {
-          setOnConfirmResetCallback(() => onConfirm);
-          setShowResetHistoryOverlay(true);
-        }}
-      />
+     {/* OVERLAYS */}
+{showPRSearchOverlay && (
+  <PRSearchPage onClose={() => setShowPRSearchOverlay(false)} />
+)}
 
-      {/* ============================================
-          OVERLAYS - TODAS FLUTUAM SOBRE O MAINCONTENT
-          ============================================ */}
-      
-      {showPRSearchOverlay && (
-        <PRSearchPage 
-          onClose={() => setShowPRSearchOverlay(false)} 
-        />
-      )}
+{showImportPlanOverlay && (
+  <ImportPlanPage onClose={() => setShowImportPlanOverlay(false)} />
+)}
 
-      {showImportPlanOverlay && (
-        <ImportPlanPage 
-          onClose={() => setShowImportPlanOverlay(false)} 
-        />
-      )}
+{showAddExerciseOverlay && (
+  <AddExercisePage 
+    onClose={() => setShowAddExerciseOverlay(false)} 
+    onAdd={onAddExerciseCallback} 
+    planId={addExercisePlanId} 
+    dayName={addExerciseDayName} 
+  />
+)}
 
-      {showAddExerciseOverlay && (
-        <AddExercisePage 
-          onClose={() => setShowAddExerciseOverlay(false)} 
-          onAdd={onAddExerciseCallback} 
-          planId={addExercisePlanId} 
-          dayName={addExerciseDayName} 
-        />
-      )}
+{showEditExerciseOverlay && (
+  <EditExercisePage 
+    onClose={() => setShowEditExerciseOverlay(false)} 
+    onUpdate={onUpdateExerciseCallback} 
+    exerciseData={editExerciseData} 
+    planId={editExercisePlanId} 
+    dayName={editExerciseDayName} 
+    exerciseName={editExerciseName} 
+    isGenerated={editExerciseIsGenerated} 
+  />
+)}
 
-      {showEditExerciseOverlay && (
-        <EditExercisePage 
-          onClose={() => setShowEditExerciseOverlay(false)} 
-          onUpdate={onUpdateExerciseCallback} 
-          exerciseData={editExerciseData} 
-          planId={editExercisePlanId} 
-          dayName={editExerciseDayName} 
-          exerciseName={editExerciseName} 
-          isGenerated={editExerciseIsGenerated} 
-        />
-      )}
+{showEditPROverlay && (
+  <EditPRPage 
+    onClose={() => setShowEditPROverlay(false)} 
+    onUpdate={onUpdatePRCallback} 
+    planId={editPRPlanId} 
+    exerciseName={editPRExerciseName} 
+    currentWeight={editPRWeight} 
+  />
+)}
 
-      {showEditPROverlay && (
-        <EditPRPage 
-          onClose={() => setShowEditPROverlay(false)} 
-          onUpdate={onUpdatePRCallback} 
-          planId={editPRPlanId} 
-          exerciseName={editPRExerciseName} 
-          currentWeight={editPRWeight} 
-        />
-      )}
+{showResetHistoryOverlay && (
+  <ResetHistoryPage 
+    onClose={() => setShowResetHistoryOverlay(false)} 
+    onReset={async () => {
+      if (onConfirmResetCallback) {
+        await onConfirmResetCallback();
+      }
+    }} 
+  />
+)}
 
-      {showResetHistoryOverlay && (
-        <ResetHistoryPage 
-          onClose={() => setShowResetHistoryOverlay(false)} 
-          onReset={async () => {
-            if (onConfirmResetCallback) {
-              await onConfirmResetCallback();
-            }
-          }} 
-        />
-      )}
+{/* NOVO OVERLAY - ADD DAY */}
+{showAddDayOverlay && (
+  <AddDayPage 
+    onClose={() => setShowAddDayOverlay(false)} 
+    onAdd={onAddDayCallback} 
+    planId={addDayPlanId} 
+  />
+)}
     </AuthProvider>
   );
 }
