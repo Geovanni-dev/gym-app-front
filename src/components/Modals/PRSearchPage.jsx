@@ -7,9 +7,14 @@ export const PRSearchPage = ({ onClose }) => {
   const [prSearchResult, setPRSearchResult] = useState(null);
   const [searchingPR, setSearchingPR] = useState(false);
   const [isInfoActive, setIsInfoActive] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
+    // Detecta Android
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsAndroid(userAgent.includes('android'));
+
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
@@ -56,10 +61,16 @@ export const PRSearchPage = ({ onClose }) => {
     }
   };
 
-  // ESTRUTURA EXATAMENTE IGUAL AO CRIAR PLANO MANUAL
   return (
-    <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto">
-      <div className="min-h-full flex flex-col items-center p-4">
+    <div 
+      ref={containerRef} 
+      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto"
+      style={isAndroid ? { overscrollBehavior: 'none', overflowY: 'auto', maxHeight: '100%' } : {}}
+    >
+      <div 
+        className="min-h-full flex flex-col items-center p-4"
+        style={isAndroid ? { minHeight: '100%', height: 'auto' } : {}}
+      >
         <div className="w-full max-w-[380px] flex flex-col">
           
           <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
@@ -128,7 +139,7 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          {/* CAMPO INFORMATIVO - IGUAL AO CRIAR PLANO MANUAL */}
+          {/* CAMPO INFORMATIVO */}
           <div className="mt-16">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
