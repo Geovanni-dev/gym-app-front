@@ -16,7 +16,6 @@ export const PRSearchPage = ({ onClose }) => {
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
     
-    // Esconde o navbar
     const navbar = document.querySelector('nav');
     if (navbar) {
       navbar.style.display = 'none';
@@ -33,7 +32,6 @@ export const PRSearchPage = ({ onClose }) => {
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
       
-      // Restaura o navbar
       if (navbar) {
         navbar.style.display = '';
       }
@@ -58,10 +56,11 @@ export const PRSearchPage = ({ onClose }) => {
     }
   };
 
+  // ESTRUTURA EXATAMENTE IGUAL AO CRIAR PLANO MANUAL
   return (
-    <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black overflow-y-auto">
-      <div className="bg-black w-full">
-        <div className="w-full max-w-[380px] mx-auto p-4">
+    <div ref={containerRef} className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl overflow-y-auto">
+      <div className="min-h-full flex flex-col items-center p-4">
+        <div className="w-full max-w-[380px] flex flex-col">
           
           <button onClick={onClose} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8">
             <ArrowLeft size={20} />
@@ -129,11 +128,11 @@ export const PRSearchPage = ({ onClose }) => {
             )}
           </div>
 
-          {/* CAMPO INFORMATIVO - AGORA NO FINAL DO CONTEÚDO */}
-          <div className="mt-16 pb-8">
+          {/* CAMPO INFORMATIVO - IGUAL AO CRIAR PLANO MANUAL */}
+          <div className="mt-16">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
-              className={`group relative p-4 rounded-2xl bg-white/[0.03] border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
+              className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
                 ${isInfoActive 
                   ? 'border-[#ff6600]/60 scale-[1.01] bg-white/[0.06]' 
                   : 'border-white/10 hover:border-white/20'
