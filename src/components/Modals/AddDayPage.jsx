@@ -39,7 +39,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
       document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
       document.removeEventListener('touchmove', preventTouchMove);
-      
+
       if (navbar) {
         navbar.style.display = '';
       }
@@ -73,7 +73,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-12 text-center pt-2"> 
+          <div className="mb-12 text-center pt-5"> 
             <div className="relative inline-block mb-4">
               <Calendar size={48} className="text-[#ff6600] opacity-80" />
               <div className="absolute inset-0 blur-2xl bg-[#ff6600]/20 -z-10"></div>
@@ -124,7 +124,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
             </div>
           </form>
 
-          <div className="mt-16">
+          <div className="mt-25">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer

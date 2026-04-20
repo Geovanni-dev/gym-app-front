@@ -117,7 +117,7 @@ export const EditPRPage = ({ onClose, onUpdate, planId, exerciseName, currentWei
             </div>
           </form>
 
-          <div className="mt-16">
+          <div className="mt-25">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer

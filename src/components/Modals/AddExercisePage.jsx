@@ -82,7 +82,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-8 pt-6"> 
+          <div className="mb-8 pt-9"> 
             <h1 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-white leading-none">
               NOVO <span className="text-[#ff6600]">EXERCÍCIO</span>
             </h1>
@@ -154,7 +154,7 @@ export const AddExercisePage = ({ onClose, onAdd, planId, dayName }) => {
             </div>
           </div>
 
-          <div className="mt-16">
+          <div className="mt-25">
             <div 
               onClick={() => setIsInfoActive(!isInfoActive)}
               className={`group relative p-4 rounded-2xl bg-white/[0.03] backdrop-blur-sm border transition-all duration-500 shadow-2xl overflow-hidden cursor-pointer
