@@ -20,7 +20,7 @@ function App() {
   const [showEditExerciseOverlay, setShowEditExerciseOverlay] = useState(false);
   const [showEditPROverlay, setShowEditPROverlay] = useState(false);
   const [showResetHistoryOverlay, setShowResetHistoryOverlay] = useState(false);
-  const [showAddDayOverlay, setShowAddDayOverlay] = useState(false); // ← NOVO
+  const [showAddDayOverlay, setShowAddDayOverlay] = useState(false);
   
   // Dados PRSearch
   const [onPRSearchCloseCallback, setOnPRSearchCloseCallback] = useState(null);
@@ -154,72 +154,115 @@ function App() {
         input:-webkit-autofill {
           caret-color: white;
         }
-          /* Apenas para Android - limita scroll extra sem bloquear totalmente */
+
+        /* Apenas para Android - limita scroll extra sem bloquear totalmente */
         .android-scroll-limit {
-        overscroll-behavior-y: contain; 
+          overscroll-behavior-y: contain; 
         }
-        
+          /* Ajuste para Android - altura dinâmica com teclado */
+@supports (height: 100dvh) {
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+}
       `}</style>
 
-     {/* OVERLAYS */}
-{showPRSearchOverlay && (
-  <PRSearchPage onClose={() => setShowPRSearchOverlay(false)} />
-)}
+      {/* MAIN CONTENT - SEMPRE RENDERIZADO */}
+      <MainContent 
+        onOpenPRPage={() => setShowPRSearchOverlay(true)}
+        onOpenImportPage={() => setShowImportPlanOverlay(true)}
+        onOpenAddExercisePage={(planId, dayName, onAdd) => {
+          setAddExercisePlanId(planId);
+          setAddExerciseDayName(dayName);
+          setOnAddExerciseCallback(() => onAdd);
+          setShowAddExerciseOverlay(true);
+        }}
+        onOpenEditExercisePage={(planId, dayName, exerciseName, exerciseData, isGenerated, onUpdate) => {
+          setEditExercisePlanId(planId);
+          setEditExerciseDayName(dayName);
+          setEditExerciseName(exerciseName);
+          setEditExerciseData(exerciseData);
+          setEditExerciseIsGenerated(isGenerated);
+          setOnUpdateExerciseCallback(() => onUpdate);
+          setShowEditExerciseOverlay(true);
+        }}
+        onOpenEditPRPage={(planId, exerciseName, exerciseData, onUpdate) => {
+          setEditPRPlanId(planId);
+          setEditPRExerciseName(exerciseName);
+          setEditPRWeight(exerciseData.weight);
+          setOnUpdatePRCallback(() => onUpdate);
+          setShowEditPROverlay(true);
+        }}
+        onOpenResetHistoryPage={(onConfirm) => {
+          setOnConfirmResetCallback(() => onConfirm);
+          setShowResetHistoryOverlay(true);
+        }}
+        onOpenAddDayPage={(planId, onAddDay) => {
+          setAddDayPlanId(planId);
+          setOnAddDayCallback(() => onAddDay);
+          setShowAddDayOverlay(true);
+        }}
+      />
 
-{showImportPlanOverlay && (
-  <ImportPlanPage onClose={() => setShowImportPlanOverlay(false)} />
-)}
+      {/* OVERLAYS */}
+      {showPRSearchOverlay && (
+        <PRSearchPage onClose={() => setShowPRSearchOverlay(false)} />
+      )}
 
-{showAddExerciseOverlay && (
-  <AddExercisePage 
-    onClose={() => setShowAddExerciseOverlay(false)} 
-    onAdd={onAddExerciseCallback} 
-    planId={addExercisePlanId} 
-    dayName={addExerciseDayName} 
-  />
-)}
+      {showImportPlanOverlay && (
+        <ImportPlanPage onClose={() => setShowImportPlanOverlay(false)} />
+      )}
 
-{showEditExerciseOverlay && (
-  <EditExercisePage 
-    onClose={() => setShowEditExerciseOverlay(false)} 
-    onUpdate={onUpdateExerciseCallback} 
-    exerciseData={editExerciseData} 
-    planId={editExercisePlanId} 
-    dayName={editExerciseDayName} 
-    exerciseName={editExerciseName} 
-    isGenerated={editExerciseIsGenerated} 
-  />
-)}
+      {showAddExerciseOverlay && (
+        <AddExercisePage 
+          onClose={() => setShowAddExerciseOverlay(false)} 
+          onAdd={onAddExerciseCallback} 
+          planId={addExercisePlanId} 
+          dayName={addExerciseDayName} 
+        />
+      )}
 
-{showEditPROverlay && (
-  <EditPRPage 
-    onClose={() => setShowEditPROverlay(false)} 
-    onUpdate={onUpdatePRCallback} 
-    planId={editPRPlanId} 
-    exerciseName={editPRExerciseName} 
-    currentWeight={editPRWeight} 
-  />
-)}
+      {showEditExerciseOverlay && (
+        <EditExercisePage 
+          onClose={() => setShowEditExerciseOverlay(false)} 
+          onUpdate={onUpdateExerciseCallback} 
+          exerciseData={editExerciseData} 
+          planId={editExercisePlanId} 
+          dayName={editExerciseDayName} 
+          exerciseName={editExerciseName} 
+          isGenerated={editExerciseIsGenerated} 
+        />
+      )}
 
-{showResetHistoryOverlay && (
-  <ResetHistoryPage 
-    onClose={() => setShowResetHistoryOverlay(false)} 
-    onReset={async () => {
-      if (onConfirmResetCallback) {
-        await onConfirmResetCallback();
-      }
-    }} 
-  />
-)}
+      {showEditPROverlay && (
+        <EditPRPage 
+          onClose={() => setShowEditPROverlay(false)} 
+          onUpdate={onUpdatePRCallback} 
+          planId={editPRPlanId} 
+          exerciseName={editPRExerciseName} 
+          currentWeight={editPRWeight} 
+        />
+      )}
 
-{/* NOVO OVERLAY - ADD DAY */}
-{showAddDayOverlay && (
-  <AddDayPage 
-    onClose={() => setShowAddDayOverlay(false)} 
-    onAdd={onAddDayCallback} 
-    planId={addDayPlanId} 
-  />
-)}
+      {showResetHistoryOverlay && (
+        <ResetHistoryPage 
+          onClose={() => setShowResetHistoryOverlay(false)} 
+          onReset={async () => {
+            if (onConfirmResetCallback) {
+              await onConfirmResetCallback();
+            }
+          }} 
+        />
+      )}
+
+      {/* NOVO OVERLAY - ADD DAY */}
+      {showAddDayOverlay && (
+        <AddDayPage 
+          onClose={() => setShowAddDayOverlay(false)} 
+          onAdd={onAddDayCallback} 
+          planId={addDayPlanId} 
+        />
+      )}
     </AuthProvider>
   );
 }
