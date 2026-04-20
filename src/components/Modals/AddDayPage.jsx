@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus, Calendar, Dumbbell } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Dumbbell, Layers } from 'lucide-react';
 import { InputField } from '../';
 
 export const AddDayPage = ({ onClose, onAdd, planId }) => {
@@ -144,7 +144,7 @@ export const AddDayPage = ({ onClose, onAdd, planId }) => {
                     : 'bg-white/[0.03] border-white/5 text-gray-500'
                   }`}
                 >
-                  <Dumbbell size={16} />
+                  <Layers size={16} />
                 </div>
 
                 <div className="flex-1">
