@@ -101,7 +101,7 @@ export const EditExercisePage = ({ onClose, onUpdate, exerciseData, planId, dayN
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-8 pt-12"> {/* pt-12 para compensar a remoção do botão de voltar do topo */}
+          <div className="mb-8 pt-2">
             <h1 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-white leading-none">
               EDITAR <span className="text-[#ff6600]">EXERCÍCIO</span>
             </h1>

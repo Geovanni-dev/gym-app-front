@@ -69,8 +69,8 @@ export const PRSearchPage = ({ onClose }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-12 pt-16">
-            <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-[0.85] text-white">
+          <div className="mb-12 pt-12">
+            <h1 className="text-5xl font-black italic uppercase tracking-tighter leading-[0.85] text-white">
               SEU <span className="text-[#ff6600]">PR</span><br />
               MÁXIMO
             </h1>

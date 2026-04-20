@@ -63,7 +63,7 @@ export const EditPRPage = ({ onClose, onUpdate, planId, exerciseName, currentWei
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="mb-12 text-center pt-12"> {/* pt-12 para compensar a remoção do botão de voltar do topo */}
+          <div className="mb-12 text-center pt-2"> 
             <div className="relative inline-block mb-4">
               <Trophy size={60} className="text-[#ff6600] opacity-90 mx-auto" />
               <div className="absolute inset-0 blur-3xl bg-[#ff6600]/20 -z-10"></div>

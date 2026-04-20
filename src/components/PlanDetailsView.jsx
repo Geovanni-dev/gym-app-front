@@ -40,6 +40,7 @@ export const PlanDetailsView = ({
   onOpenAddExercisePage,
   onOpenEditExercisePage,
   onOpenEditPRPage,
+  onOpenAddDayPage,
 }) => {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [editingPlanName, setEditingPlanName] = useState(null);

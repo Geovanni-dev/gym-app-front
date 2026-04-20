@@ -159,6 +159,22 @@ function App() {
         .android-scroll-limit {
           overscroll-behavior-y: contain; 
         }
+          /* Bloqueia scroll extra em ambos (Android e iOS) */
+.scroll-limit {
+  overscroll-behavior-y: contain;
+}
+
+/* Versão mais agressiva para iOS (bloqueia completamente o bounce) */
+.ios-scroll-limit {
+  overscroll-behavior-y: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
           /* Ajuste para Android - altura dinâmica com teclado */
 @supports (height: 100dvh) {
   .min-h-dvh {

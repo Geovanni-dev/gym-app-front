@@ -65,7 +65,7 @@ export const ResetHistoryPage = ({ onClose, onReset }) => {
       <div className="min-h-full flex flex-col items-center p-4">
         <div className="w-full max-w-[380px] flex flex-col">
           
-          <div className="text-center mb-6 pt-12"> {/* pt-12 para compensar a remoção do botão de voltar do topo */}
+          <div className="text-center mb-6 pt-2"> 
             <div className="inline-block p-3 rounded-full bg-red-500/10 mb-3">
               <AlertTriangle size={40} className="text-red-500" />
             </div>
