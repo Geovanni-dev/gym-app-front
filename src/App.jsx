@@ -194,7 +194,10 @@ function App() {
       {/* MAIN CONTENT SEMPRE RENDERIZADO */}
       <MainContent 
         onOpenPRPage={() => setShowPRSearchOverlay(true)}
-        onOpenImportPage={() => setShowImportPlanOverlay(true)}
+        onOpenImportPage={(onSuccess) => {
+        setOnImportPlanCloseCallback(() => onSuccess);
+        setShowImportPlanOverlay(true);
+        }}
         onOpenAddExercisePage={(planId, dayName, onAdd) => {
           setAddExercisePlanId(planId);
           setAddExerciseDayName(dayName);
@@ -234,7 +237,10 @@ function App() {
       )}
 
       {showImportPlanOverlay && (
-        <ImportPlanPage onClose={() => setShowImportPlanOverlay(false)} />
+      <ImportPlanPage 
+            onClose={() => setShowImportPlanOverlay(false)} 
+            onSuccess={onImportPlanCloseCallback}
+        />
       )}
 
       {showAddExerciseOverlay && (
