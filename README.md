@@ -22,15 +22,12 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 
 
 <p align="center">
-<img src="./public/images/TELA-LOGIN.png" width="220" alt="Login" />
-&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="./public/images/TELA-INICIO.png" width="220" alt="Início" />
-&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="./public/images/TELA-EXERCICIO.png" width="220" alt="Treino" />
-&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="./public/images/TELA-HISTORICO.png" width="220" alt="Histórico" />
+  <img src="./public/images/TELA-LOGIN.png" width="200" alt="Login" style="margin-right: 40px;" />
+  <img src="./public/images/TELA-INICIO.png" width="200" alt="Início" />
+  <br />
+  <img src="./public/images/TELA-EXERCICIO.png" width="200" alt="Treino" style="margin-right: 40px;" />
+  <img src="./public/images/TELA-HISTORICO.png" width="200" alt="Histórico" />
 </p>
-
 ---
 
 ## ⚡ **Destaques & Funcionalidades**
