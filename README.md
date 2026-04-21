@@ -1,6 +1,6 @@
 <div align="center">
   
-  #  🐔 **Super Frango App**
+  #   **Super Frango App**
   *"A força não vem do corpo. Vem da vontade de nunca parar."*
 
   [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://gym-app-front.vercel.app)
@@ -22,13 +22,13 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 
 
 <p align="center">
-<img src="./public/images/TELA-LOGIN.png" width="180" alt="Login" />
+<img src="./public/images/TELA-LOGIN.png" width="220" alt="Login" />
 &nbsp;&nbsp;&nbsp;&nbsp;
-<img src="./public/images/TELA-INICIO.png" width="180" alt="Início" />
+<img src="./public/images/TELA-INICIO.png" width="220" alt="Início" />
 &nbsp;&nbsp;&nbsp;&nbsp;
-<img src="./public/images/TELA-EXERCICIO.png" width="180" alt="Treino" />
+<img src="./public/images/TELA-EXERCICIO.png" width="220" alt="Treino" />
 &nbsp;&nbsp;&nbsp;&nbsp;
-<img src="./public/images/TELA-HISTORICO.png" width="180" alt="Histórico" />
+<img src="./public/images/TELA-HISTORICO.png" width="220" alt="Histórico" />
 </p>
 
 ---
@@ -82,7 +82,19 @@ Acesse o app diretamente pelo link: [https://gym-superfrango.vercel.app](https:/
 
 **Após a instalação, o app terá ícone personalizado e abrirá em tela cheia, sem a barra de endereços do navegador.**
 
+## 🌐 Deploy no Vercel
 
+O frontend do projeto está hospedado na **Vercel** (plataforma cloud gratuita).
+
+### ☁️ Por que escolhi a Vercel?
+
+- ✅ Deploy gratuito e simples
+- ✅ Integração direta com GitHub
+- ✅ Suporte nativo a React e Vite
+- ✅ SSL automático (HTTPS)
+- ✅ Preview automático a cada push
+
+---
 
 ```markdown
 ### 💻 Rodando Localmente
@@ -103,4 +115,4 @@ npm run dev
 
 ## 📄 **Licença**
 
-MIT © Geovani Rodrigues - Este projeto é de uso pessoal e educacional. Todos os direitos reservados.
+MIT © Geovani Rodrigues
