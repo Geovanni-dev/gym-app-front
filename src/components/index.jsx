@@ -8,3 +8,5 @@ export { Navbar } from './Navbar';
 export { ProfileSideMenu } from './ProfileSideMenu';
 export { DayAccordion } from './DayAccordion';
 export { PlanDetailsView } from './PlanDetailsView';
+export { default as MetricsGrid } from './MetricsGrid';
+export { default as MetricsGridAuto } from './MetricsGridAuto';
