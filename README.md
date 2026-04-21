@@ -53,25 +53,14 @@ Para entregar uma experiência próxima a um app nativo (PWA), implementei:
 
 ---
 
-## 🛠️ **Tecnologias & Arquitetura**
-
-### Stack Principal
-`| Categoria | Tecnologia | Finalidade |
-
+| Categoria | Tecnologia | Finalidade |
 |:----------|:-----------|:-----------|
-
 | **Core** | `React 18` | Biblioteca de UI |
-
 | **Tooling** | `Vite` | Build tool ultra-rápido |
-
 | **Styles** | `Tailwind CSS` | Estilização utilitária e responsiva |
-
 | **Forms** | `React Hook Form` | Gerenciamento de formulários |
-
 | **Validation** | `Zod` | Validação de schemas tipados |
-
 | **Data** | `Axios` | Consumo da API REST |
-
 ---
 
 ### Organização de Pastas
