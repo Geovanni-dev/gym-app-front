@@ -1,11 +1,9 @@
 <div align="center">
   
-  #   **Super Frango App**
-  
-  > *"A força não vem do corpo. Vem da vontade de nunca parar."*
+  #  🐔 **Super Frango App**
+  *"A força não vem do corpo. Vem da vontade de nunca parar."*
 
   [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://gym-app-front.vercel.app)
-  [![Render](https://img.shields.io/badge/API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://superfrango-app.onrender.com)
   [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
   [![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
@@ -15,81 +13,92 @@
 
 ## 📱 **Sobre o Projeto**
 
-> O **Super Frango App** é um aplicativo mobile-first de gerenciamento de treinos desenvolvido para suprir uma necessidade real minha e de um grupo de amigos. Inspirado no nosso grupo "Super Frango" do **Gym Rats** (aplicativo de desafios em grupo na academia), o projeto nasceu da necessidade de **compartilhar treinos** e **acompanhar evolução** de forma prática e personalizada.
+O **Super Frango App** é um aplicativo mobile-first de gerenciamento de treinos desenvolvido para suprir uma necessidade real minha e de um grupo de amigos. Inspirado no nosso grupo "Super Frango" do **Gym Rats** (aplicativo de desafios em grupo na academia), o projeto nasceu da necessidade de **compartilhar treinos** e **acompanhar evolução** de forma prática e personalizada. As cores, o nome e a identidade visual foram totalmente inspirados no grupo, trazendo uma identidade única e familiar para os membros.
 
-
-> A API do aplicativo foi desenvolvida como parte do meu portfólio e para fins de estudo, enquanto o frontend foi construído para uso diário do nosso grupo, com funcionalidades que vão além do básico.
-
-
-
+A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em **Node.js, Express e MongoDB**. Partindo de uma base já existente, foram adicionadas apenas mais algumas funcionalidades essenciais e integradas ao frontend. Este foi construído integralmente em **React** para atender às necessidades do projeto e aplicar boas práticas do framework.
 ---
 
-## 📸 **Demonstração**
+## 🖥️ **Demonstração**
 
 <div align="center">
   <table>
     <tr>
-      <td align="center"><img src="./public/images/TELA-LOGIN.png" width="200" alt="Tela de Planos" /></td>
-      <td align="center"><img src="./public/images/TELA-INICIO.png" width="200" alt="Detalhe do Plano" /></td>
-      <td align="center"><img src="./public/images/TELA-EXERCICIO.png" width="200" alt="Modo Treino" /></td>
-      <td align="center"><img src="./public/images/TELA-HISTORICO.png" width="200" alt="Histórico e PRs" /></td>
+      <td align="center"><img src="./public/images/TELA-LOGIN.png" width="180" /><br/><sub>Login</sub></td>
+      <td align="center"><img src="./public/images/TELA-INICIO.png" width="180" /><br/><sub>Dashboard</sub></td>
+      <td align="center"><img src="./public/images/TELA-EXERCICIO.png" width="180" /><br/><sub>Treino</sub></td>
+      <td align="center"><img src="./public/images/TELA-HISTORICO.png" width="180" /><br/><sub>PRs</sub></td>
     </tr>
   </table>
 </div>
 
 ---
 
-## ✨ **Funcionalidades Principais**
+## ⚡ **Destaques & Funcionalidades**
 
-- ✅ **Planos Manuais e Automáticos** – Crie do zero ou gere treinos por objetivo
-- 🔄 **Compartilhamento** – Importe treinos via código único
-- 📝 **Modo Treino** – Checklist interativo e registro de histórico
-- 🏆 **Hall dos PRs** – Acompanhe seus recordes pessoais por exercício
-- 🖼️ **Perfil Visual** – Upload de foto integrado ao Cloudinary
+-  **Planos Inteligentes** – Crie do zero ou gere treinos automáticos por objetivo.
+-  **Ecossistema Social** – Importe treinos de amigos via código único.
+-  **Modo Treino Ativo** – Checklist interativo e registro de histórico em tempo real.
+-  **Hall dos PRs** – Acompanhe seus recordes pessoais por exercício.
+-  **Cloudinary Integration** – Upload de foto de perfil integrado.
 
 ---
 
-## 🛠️ **Tecnologias Utilizadas**
+## 🎯 **Diferenciais de UX Mobile**
 
-| Categoria | Tecnologia | Finalidade |
+Para entregar uma experiência próxima a um app nativo (PWA), implementei:
+
+*  **Overlays Inteligentes:** Edições utilizam camadas flutuantes, preservando o scroll e o estado da página principal.
+*  **Keyboard Awareness:** Detecção automática de teclado no Android para liberar espaço de input.
+*  **Scroll Controlado:** Uso de `overscroll-behavior-y: contain` para evitar comportamentos indesejados de "pull-to-refresh".
+
+---
+
+## 🛠️ **Tecnologias & Arquitetura**
+
+### Stack Principal
+`| Categoria | Tecnologia | Finalidade |
+
 |:----------|:-----------|:-----------|
+
 | **Core** | `React 18` | Biblioteca de UI |
+
 | **Tooling** | `Vite` | Build tool ultra-rápido |
+
 | **Styles** | `Tailwind CSS` | Estilização utilitária e responsiva |
+
 | **Forms** | `React Hook Form` | Gerenciamento de formulários |
+
 | **Validation** | `Zod` | Validação de schemas tipados |
+
 | **Data** | `Axios` | Consumo da API REST |
 
 ---
 
-## 🏗️ **Arquitetura do Frontend**
-
+### Organização de Pastas
 ```bash
 src/
-├──  components/        # Overlays (Modals) e componentes reutilizaveis
-├──  views/             # Telas principais (Auth, App, Modals)
-├──  contexts/          # Autenticacao e estado global
-├──  hooks/              # Hooks customizados (useLockScroll, useScrollToInput)
-├──  services/          # Configuracao Axios e chamadas API
-└──  utils/             # Temas e funcoes utilitarias
+├── components/   # UI Reutilizável & Modais (Overlays)
+├── views/        # Telas principais da aplicação
+├── hooks/        # Lógica customizada (ScrollLock, Mobile detection)
+├── services/     # Camada de dados e chamadas API
+└── utils/        # Temas e funções auxiliares
 ````
-----
-## 🎯 Diferenciais Técnicos (UX Mobile)
 
-🔹 Overlays vs Páginas:
-Edições usam overlays flutuantes. O conteúdo principal nunca é desmontado, preservando o scroll e o estado ao voltar.
---
-🔹 Detecção de Teclado:
-O app esconde elementos secundários no Android para liberar espaço para o input quando o teclado sobe.
---
-🔹 Scroll Controlado:
-Implementação de overscroll-behavior-y: contain para evitar comportamentos indesejados em navegadores mobile.
---
+## 📱 Instalação como PWA (Mobile)
 
-----
+Acesse o app diretamente pelo link: [https://gym-superfrango.vercel.app](https://gym-superfrango.vercel.app)
 
-## 🚀 Como Executar Localmente
-````bash
+* **No Android:** Chrome → Menu (três pontos) → Instalar aplicativo.
+* **No iOS:** Safari → Compartilhar → Adicionar à Tela de Início.
+
+**Após a instalação, o app terá ícone personalizado e abrirá em tela cheia, sem a barra de endereços do navegador.**
+
+
+
+```markdown
+### 💻 Rodando Localmente
+
+```bash
 # Clone o repositório
 git clone https://github.com/Geovanni-dev/gym-app-front.git
 
@@ -101,6 +110,8 @@ npm install
 
 # Execute o projeto
 npm run dev
-````
-## 📄 Licença
-Este projeto é de uso pessoal e educacional. Todos os direitos reservados.
+```
+
+## 📄 **Licença**
+
+MIT © Geovani Rodrigues - Este projeto é de uso pessoal e educacional. Todos os direitos reservados.
