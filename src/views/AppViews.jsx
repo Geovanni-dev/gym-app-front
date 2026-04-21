@@ -93,7 +93,7 @@ export const AppViews = ({
                 PLANOS <br /> DE TREINOS
               </div>
               <p className="text-[11px] font-bold text-white/85 uppercase tracking-[0.4em]">
-                Crie seus treinos manualmente e acompanhe sua evolução
+                Crie treinos manuais e <br/> acompanhe sua evolução
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -127,7 +127,7 @@ export const AppViews = ({
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">Sem Planos de treino</h2>
-                  <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] max-w-xs">Clique no botão acima para criar seu primeiro plano de treino manualmente</p>
+                  <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] max-w-xs">Clique no botão acima para criar um plano de treino manualmente</p>
                 </div>
               </div>
             ) : (

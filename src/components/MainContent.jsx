@@ -135,12 +135,17 @@ export const MainContent = ({
     catch (e) {} finally { setLoading(false); }
   };
 
-  const onUpdateDayName = async (planId, oldDayName, newDayName) => {
-    setLoading(true);
-    try { await api.put(`/workout-plans/${planId}/day/${oldDayName}`, { name: newDayName }); fetchPlans(); } 
-    catch (e) {} finally { setLoading(false); }
-  };
-
+const onUpdateDayName = async (planId, oldDayName, newDayName) => {
+  setLoading(true);
+  try {
+    await api.put(`/workout-plans/${planId}/day/${encodeURIComponent(oldDayName)}`, { name: newDayName });
+    fetchPlans();
+  } catch (e) {
+    console.error('Erro ao atualizar nome do dia:', e);
+  } finally {
+    setLoading(false);
+  }
+};
   const onUpdateExercise = async (planId, dayName, exerciseName, data, isGenerated = false) => {
     setLoading(true);
     try {
