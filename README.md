@@ -23,10 +23,10 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 <div align="center">
   <table>
     <tr>
-      <td align="center"><img src="./public/images/TELA-LOGIN.png" width="180" /><br/><sub>Login</sub></td>
-      <td align="center"><img src="./public/images/TELA-INICIO.png" width="180" /><br/><sub>Dashboard</sub></td>
-      <td align="center"><img src="./public/images/TELA-EXERCICIO.png" width="180" /><br/><sub>Treino</sub></td>
-      <td align="center"><img src="./public/images/TELA-HISTORICO.png" width="180" /><br/><sub>PRs</sub></td>
+      <td align="center"><img src="./public/images/TELA-LOGIN.png" width="180" /><br/></td>
+      <td align="center"><img src="./public/images/TELA-INICIO.png" width="180" /><br/></td>
+      <td align="center"><img src="./public/images/TELA-EXERCICIO.png" width="180" /><br/></td>
+      <td align="center"><img src="./public/images/TELA-HISTORICO.png" width="180" /><br/></td>
     </tr>
   </table>
 </div>
