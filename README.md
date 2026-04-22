@@ -19,6 +19,8 @@ O **Super Frango App** é um aplicativo mobile-first de gerenciamento de treinos
 
 A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em **Node.js, Express e MongoDB**. Partindo de uma base já existente, foram adicionadas apenas mais algumas funcionalidades essenciais e integradas ao frontend. Este foi construído integralmente em **React** para atender às necessidades do projeto e aplicar boas práticas do framework. Confira o repositório da API do app: [gym-api](https://github.com/Geovanni-dev/gym-app-api).
 
+> ⚠️ **Aviso:** Este aplicativo foi desenvolvido **visando experiência mobile**. Para aproveitar ao máximo no desktop, recomendo baixar a extensão **"Mobile Simulator"** do Google Chrome (gratuita) e escolher o dispositivo de sua preferência para uma visualização otimizada.
+
 
 ## 🖥️  **Demonstração**
 
