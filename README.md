@@ -83,7 +83,7 @@ src/
 
 ## 📱 **Instalação como PWA (Mobile)**
 
-Acesse o app diretamente: [https://gym-superfrango.vercel.app](https://gym-superfrango.vercel.app)
+Acesse o app diretamente: [https://gr-s.onrender.com/super-frango](https://gr-s.onrender.com/super-frango)
 
 | Plataforma | Como instalar |
 |------------|---------------|
