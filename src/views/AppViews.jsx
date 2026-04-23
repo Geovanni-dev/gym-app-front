@@ -408,58 +408,117 @@ export const AppViews = ({
   }
 
   // History - Evolução
-  if (activeTab === 'history') {
-    return (
-      <>
-        <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in duration-500 px-2 pb-10 -mt-[-35px]">
-          <div className="text-center space-y-2 relative flex flex-col items-center">
-            <h1 className="text-5xl font-black italic uppercase tracking-tighter text-[#ff6600]">EVOLUÇÃO</h1>
-            <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
-            {history.length > 0 && (
-              <div className="mt-2 md:absolute md:top-0 md:right-0 md:mt-0">
-                <span onClick={() => onOpenResetHistoryPage(finalResetAction)} className="text-[10px] font-bold text-red-500/50 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-widest">
-                  Limpar histórico
-                </span>
-              </div>
-            )}
-          </div>
-
-          {history.length === 0 ? (
-            <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>
-              <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em]">Ainda não há histórico de exercicios.</p>
+if (activeTab === 'history') {
+  return (
+    <>
+      <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in duration-500 px-2 pb-10 -mt-[-35px]">
+        <div className="text-center space-y-2 relative flex flex-col items-center">
+          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-[#ff6600]">EVOLUÇÃO</h1>
+          <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
+          {history.length > 0 && (
+            <div className="mt-2 md:absolute md:top-0 md:right-0 md:mt-0">
+              <span onClick={() => onOpenResetHistoryPage(finalResetAction)} className="text-[10px] font-bold text-red-500/50 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-widest">
+                Limpar histórico
+              </span>
             </div>
-          ) : (
-            (() => {
-              const groupedHistory = history.reduce((groups, log) => {
-                const workoutName = log.workoutName ? log.workoutName.split(' - ')[1] : 'TREINO';
-                if (!groups[workoutName]) groups[workoutName] = [];
-                groups[workoutName].push(log);
-                return groups;
-              }, {});
+          )}
+        </div>
 
-              return Object.entries(groupedHistory).map(([workoutName, logs], groupIdx) => (
-                <div key={groupIdx} className="space-y-4 mb-8">
+        {history.length === 0 ? (
+          <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>
+            <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em]">Ainda não há histórico de exercicios.</p>
+          </div>
+        ) : (
+          (() => {
+            
+            const sessions = new Map();
+            
+            history.forEach((log) => {
+              const dateObj = new Date(log.date);
+              const dateKey = dateObj.toISOString().split('T')[0]; 
+              
+              
+              const sessionKey = `${log.workoutName || 'TREINO'}|${dateKey}`;
+              
+              if (!sessions.has(sessionKey)) {
+                sessions.set(sessionKey, {
+                  workoutName: log.workoutName || 'TREINO',
+                  date: log.date, 
+                  dateKey: dateKey,
+                  exercises: []
+                });
+              }
+              
+              sessions.get(sessionKey).exercises.push(log);
+            });
+            
+            
+            const sessionGroups = Array.from(sessions.values())
+              .sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            return sessionGroups.map((session, sessionIdx) => {
+              
+              const workoutDisplayName = session.workoutName.split(' - ')[1] || session.workoutName;
+              const sessionDate = new Date(session.date);
+              const formattedDate = sessionDate.toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              });
+              
+              return (
+                <div key={sessionIdx} className="space-y-4 mb-8">
                   <div className="flex items-center gap-2 px-2">
                     <div className="h-px flex-grow bg-[#ff6600]/20"></div>
-                    <h2 className="text-sm sm:text-base font-black italic uppercase tracking-wider text-[#ff6600] px-3">{workoutName}</h2>
+                    <div className="flex flex-col items-center px-3">
+                      <h2 className="text-sm sm:text-base font-black italic uppercase tracking-wider text-[#ff6600]">
+                        {workoutDisplayName}
+                      </h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock size={10} className="text-gray-500" />
+                        <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                          {formattedDate}
+                        </p>
+                      </div>
+                    </div>
                     <div className="h-px flex-grow bg-[#ff6600]/20"></div>
                   </div>
+                  
                   <div className="space-y-3">
-                    {logs.map((log, idx) => (
-                      <div key={idx} onClick={async () => { try { const res = await api.get(`/workouts/history/${encodeURIComponent(log.exerciseName || log.name)}`); setSelectedExerciseHistory({ name: log.exerciseName || log.name, logs: res.data }); } catch (e) { console.error(e); } }} className="group relative p-4 rounded-2xl bg-black/1 backdrop-blur-sm border border-white/10 hover:border-[#ff6600]/60 transition-all flex items-center justify-between overflow-hidden cursor-pointer shadow-2xl">
+                    {session.exercises.map((log, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={async () => { 
+                          try { 
+                            const res = await api.get(`/workouts/history/${encodeURIComponent(log.exerciseName || log.name)}`); 
+                            setSelectedExerciseHistory({ name: log.exerciseName || log.name, logs: res.data }); 
+                          } catch (e) { 
+                            console.error(e); 
+                          } 
+                        }} 
+                        className="group relative p-4 rounded-2xl bg-black/1 backdrop-blur-sm border border-white/10 hover:border-[#ff6600]/60 transition-all flex items-center justify-between overflow-hidden cursor-pointer shadow-2xl"
+                      >
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff6600]/10 group-hover:bg-[#ff6600] transition-all"></div>
                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-[#ff6600]/5 flex items-center justify-center text-[#ff6600] group-hover:bg-[#ff6600] group-hover:text-black transition-all shadow-lg flex-shrink-0"><Trophy size={18} /></div>
+                          <div className="w-10 h-10 rounded-xl bg-[#ff6600]/5 flex items-center justify-center text-[#ff6600] group-hover:bg-[#ff6600] group-hover:text-black transition-all shadow-lg flex-shrink-0">
+                            <Trophy size={18} />
+                          </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-sm sm:text-base font-black italic uppercase text-white leading-tight group-hover:text-[#ff6600] transition-colors overflow-hidden text-ellipsis whitespace-nowrap">{log.exerciseName || log.name}</h3>
-                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{new Date(log.date).toLocaleString('pt-BR')}</p>
+                            <h3 className="text-sm sm:text-base font-black italic uppercase text-white leading-tight group-hover:text-[#ff6600] transition-colors overflow-hidden text-ellipsis whitespace-nowrap">
+                              {log.exerciseName || log.name}
+                            </h3>
                           </div>
                         </div>
                         <div className="text-right flex items-center gap-3 flex-shrink-0">
                           <div className="flex flex-col items-end">
-                            <p className="text-xl font-black italic text-[#ff6600] leading-none">{log.weight}<span className="text-xs">KG</span></p>
-                            <p className="text-[9px] font-black uppercase text-gray-600">{log.reps} Reps</p>
+                            <p className="text-xl font-black italic text-[#ff6600] leading-none">
+                              {log.weight}<span className="text-xs">KG</span>
+                            </p>
+                            <p className="text-[9px] font-black uppercase text-gray-600">
+                              {log.reps} Reps
+                            </p>
                           </div>
                           <ChevronRight className="text-gray-800 group-hover:text-[#ff6600] transition-colors" size={16} />
                         </div>
@@ -467,59 +526,60 @@ export const AppViews = ({
                     ))}
                   </div>
                 </div>
-              ));
-            })()
-          )}
+              );
+            });
+          })()
+        )}
+      </div>
+
+      {/* FOOTER HISTORY */}
+      <footer className="mt-1 mb-9 py-6 border-t border-transparent">
+        <div className="text-center">
+          <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
+            © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
+          </p>
+          <div className="flex items-center justify-center gap-6 mt-3">
+            <a
+              href="https://github.com/Geovanni-dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group"
+            >
+              <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+              </svg>
+              GitHub
+            </a>
+
+            <a
+              href="https://www.linkedin.com/in/geovani-rodrigues-dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group"
+            >
+              <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
+              </svg>
+              LinkedIn
+            </a>
+
+            <a
+              href="https://wa.me/5562984585485"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group"
+            >
+              <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
+              </svg>
+              WhatsApp
+            </a>
+          </div>
         </div>
-
-        {/* FOOTER HISTORY */}
-       <footer className="mt-1 mb-9 py-6 border-t border-transparent">
-  <div className="text-center">
-    <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
-      © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
-    </p>
-    <div className="flex items-center justify-center gap-6 mt-3">
-      <a
-        href="https://github.com/Geovanni-dev"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-        </svg>
-        GitHub
-      </a>
-
-      <a
-        href="https://www.linkedin.com/in/geovani-rodrigues-dev/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
-        </svg>
-        LinkedIn
-      </a>
-
-      <a
-        href="https://wa.me/5562984585485"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
-        </svg>
-        WhatsApp
-      </a>
-    </div>
-  </div>
-       </footer>
-      </>
-    );
-  }
+      </footer>
+    </>
+  );
+}
 
   return null;
 };

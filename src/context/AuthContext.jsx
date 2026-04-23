@@ -19,29 +19,37 @@ export const AuthProvider = ({ children }) => { // cria o provider
     }
   }, [token]);
 
-  const login = async (data) => { // cria a funcao de login
-    try {
-      const response = await api.post('/users/login', data);
-      const { token: receivedToken, user: userData } = response.data;
+const login = async (data) => {
+  try {
+    const response = await api.post('/users/login', data);
+    const { token: receivedToken, user: userData } = response.data;
 
-      setToken(receivedToken);
-      setUser(userData);
+    setToken(receivedToken);
+    setUser(userData);
 
-      localStorage.setItem('@superfrango:token', receivedToken);
-      localStorage.setItem('@superfrango:user', JSON.stringify(userData));
+    localStorage.setItem('@superfrango:token', receivedToken);
+    localStorage.setItem('@superfrango:user', JSON.stringify(userData));
 
-      return { success: true };
-    } catch (error) {
-      // CAPTURA A FLAG NOTVERIFIED DO BACKEND
-      const isNotVerified = error.response?.status === 403 && error.response?.data?.notVerified;
+    return { success: true };
+  } catch (error) {
+    const status = error.response?.status;
 
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Email ou senha incorretos',
-        notVerified: isNotVerified // Manda a flag para o App.jsx
-      };
-    }
-  };
+    const isNotVerified =
+      status === 403 && error.response?.data?.notVerified;
+
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error || // pega o 429 do rate limit
+      (status === 429 && 'Muitas tentativas. Tente novamente mais tarde.') ||
+      'Email ou senha incorretos';
+
+    return {
+      success: false,
+      message,
+      notVerified: isNotVerified
+    };
+  }
+};
   // funçao ara o ProfileSideMenu atualizar a foto sem dar refresh na página
   const updateUserData = (newData) => {
     setUser(prev => {

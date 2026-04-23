@@ -84,7 +84,24 @@ export const MainContent = ({
   const formGenerate = useForm({ resolver: zodResolver(generateWorkoutSchema), defaultValues: { goal: 'hipertrofia', days: 3 } });
   const { fields: dayFields, append: appendDay, remove: removeDay } = useFieldArray({ control: formPlan.control, name: 'days' });
 
-  // ========== Funções de API ==========
+//=============mensagem de erro global
+useEffect(() => {
+  const handleApiError = (event) => {
+    setUiMessage({
+      type: 'error',
+      text: event.detail.message
+    });
+  };
+
+  window.addEventListener('apiError', handleApiError);
+
+  return () => {
+    window.removeEventListener('apiError', handleApiError);
+  };
+}, []);
+
+
+  // ============= Funções de API 
   const fetchPlans = async () => {
     try {
       const response = await api.get('/workout-plans');
@@ -296,19 +313,35 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
   };
 
   // ========== Funções de Autenticação ==========
-  const onLoginSubmit = async (data) => {
-    setLoading(true);
-    const result = await login(data);
-    setLoading(false);
-    if (result && result.success) { setIsProfileOpen(false); setView('dashboard'); return; }
-    if (result && result.notVerified) {
-      setTempEmail(data.email);
-      setUiMessage({ type: 'error', text: 'E-mail não verificado! Enviamos um novo código.' });
-      setTimeout(() => setView('verify'), 1500);
-      return;
-    }
-    setUiMessage({ type: 'error', text: (result && result.message) || 'Email ou senha incorretos' });
-  };
+ const onLoginSubmit = async (data) => {
+  if (loading) return;
+  setLoading(true);
+
+  const result = await login(data);
+
+  setLoading(false);
+
+  if (result.success) {
+    setIsProfileOpen(false);
+    setView('dashboard');
+    return;
+  }
+
+  if (result.notVerified) {
+    setTempEmail(data.email);
+    setUiMessage({ 
+      type: 'error', 
+      text: 'E-mail não verificado! Enviamos um novo código.' 
+    });
+    setTimeout(() => setView('verify'), 1500);
+    return;
+  }
+
+  setUiMessage({ 
+    type: 'error', 
+    text: result.message || 'Email ou senha incorretos' 
+  });
+};
 
   const onRegisterSubmit = async (data) => {
     setLoading(true);
@@ -626,7 +659,11 @@ const onResetSubmit = async (data) => {
       />
 
       <main className="max-w-7xl mx-auto w-full pt-13 pb-8 md:pt-8 relative z-10">
-        <StatusMessage type={uiMessage.type} message={uiMessage.text} />
+        {uiMessage.text && (
+  <div className="mt-3 mx-4">
+    <StatusMessage type={uiMessage.type} message={uiMessage.text} />
+  </div>
+)}
         <div className={`transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           <AppViews
             activeTab={activeTab}
