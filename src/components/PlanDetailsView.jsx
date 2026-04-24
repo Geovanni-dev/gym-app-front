@@ -54,6 +54,7 @@ export const PlanDetailsView = ({
   const timerRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
+  // Estados de navegação
   const [openDays, setOpenDays] = useState(() => {
     const saved = localStorage.getItem('@superfrango:openDays');
     return saved ? JSON.parse(saved) : {};
@@ -195,7 +196,7 @@ export const PlanDetailsView = ({
     }
   };
 
-  return (
+  return ( 
     <div
       className={`space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-right-6 duration-500 pb-28 relative`}
     >

@@ -312,7 +312,7 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
     } catch (e) { console.error('ERRO na API:', e); } finally { setLoading(false); }
   };
 
-  // ========== Funções de Autenticação ==========
+  //============== Funções de Autenticação
   const onLoginSubmit = async (data) => {
   if (loading) return;
   setLoading(true);
@@ -457,6 +457,8 @@ const onResetSubmit = async (data) => {
     return { maxWeight, sessionVolume, completedCount };
   }, [history, completedExercises, plans, generatedWorkouts]);
 
+
+  //================ funçoes de localStorage
   useEffect(() => {
     localStorage.setItem('@superfrango:view', view);
   }, [view]);
@@ -509,7 +511,7 @@ const onResetSubmit = async (data) => {
     if (isAuthenticated) { fetchPlans(); fetchGeneratedWorkouts(); fetchHistory(); }
   }, [view, activeTab, isAuthenticated]);
 
-  // Telas de autenticação
+  //===================== Telas de autenticação
   if (view === 'forgotPassword' || view === 'resetPassword' || view === 'verify') {
     return (
       <AuthViews
