@@ -313,20 +313,16 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
   };
 
   // ========== Funções de Autenticação ==========
- const onLoginSubmit = async (data) => {
+  const onLoginSubmit = async (data) => {
   if (loading) return;
   setLoading(true);
-
   const result = await login(data);
-
   setLoading(false);
-
   if (result.success) {
     setIsProfileOpen(false);
     setView('dashboard');
     return;
   }
-
   if (result.notVerified) {
     setTempEmail(data.email);
     setUiMessage({ 
@@ -336,11 +332,27 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
     setTimeout(() => setView('verify'), 1500);
     return;
   }
-
   setUiMessage({ 
     type: 'error', 
     text: result.message || 'Email ou senha incorretos' 
   });
+};
+
+const onForgotSubmit = async (data) => {
+  setLoading(true);
+  try {
+    await api.post('/users/forgot-password', data);
+    setTempEmail(data.email);
+    setUiMessage({ type: 'success', text: 'Código enviado para o e-mail!' });
+    setView('resetPassword');
+  } catch (e) {
+    setUiMessage({
+      type: 'error',
+      text: e.response?.data?.message || 'Erro ao enviar código.'
+    });
+  } finally {
+    setLoading(false);
+  }
 };
 
   const onRegisterSubmit = async (data) => {
@@ -354,26 +366,27 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
     finally { setLoading(false); }
   };
 
-  const onVerifySubmit = async (data) => {
-    setLoading(true);
-    try {
-      await api.post('/users/verify-email', { email: tempEmail, code: data.code });
-      setUiMessage({ type: 'success', text: 'E-mail validado, faça login.' });
-      setView('login');
-    } catch (e) { setUiMessage({ type: 'error', text: e.response?.data?.message || 'Código inválido.' }); } 
-    finally { setLoading(false); }
-  };
-
-  const onForgotSubmit = async (data) => {
-    setLoading(true);
-    try {
-      await api.post('/users/forgot-password', data);
-      setTempEmail(data.email);
-      setUiMessage({ type: 'success', text: 'Código enviado!' });
-      setView('resetPassword');
-    } catch (e) { setUiMessage({ type: 'error', text: e.response?.data?.message || 'E-mail não identificado.' }); } 
-    finally { setLoading(false); }
-  };
+ const onVerifySubmit = async (data) => {
+  setLoading(true);
+  try {
+    const response = await api.post('/users/verify-email', {
+      email: tempEmail,
+      code: data.code
+    });
+    const { token, user } = response.data;
+    localStorage.setItem('@superfrango:token', token);
+    login({ token, user }); 
+    setIsProfileOpen(false);
+    setView('dashboard');
+  } catch (e) {
+    setUiMessage({
+      type: 'error',
+      text: e.response?.data?.message || 'Código inválido.'
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
 const onResetSubmit = async (data) => {
   if (!tempEmail) { setView('forgotPassword'); return; }

@@ -19,14 +19,23 @@ export const AuthProvider = ({ children }) => { // cria o provider
     }
   }, [token]);
 
+  // funçao de login
 const login = async (data) => {
+  if (data.token && data.user) {
+    setToken(data.token);
+    setUser(data.user);
+    api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+    localStorage.setItem('@superfrango:token', data.token);
+    localStorage.setItem('@superfrango:user', JSON.stringify(data.user));
+    return { success: true };
+  }
   try {
     const response = await api.post('/users/login', data);
     const { token: receivedToken, user: userData } = response.data;
-
     setToken(receivedToken);
     setUser(userData);
 
+    api.defaults.headers.common['Authorization'] = `Bearer ${receivedToken}`;
     localStorage.setItem('@superfrango:token', receivedToken);
     localStorage.setItem('@superfrango:user', JSON.stringify(userData));
 
@@ -39,7 +48,7 @@ const login = async (data) => {
 
     const message =
       error.response?.data?.message ||
-      error.response?.data?.error || // pega o 429 do rate limit
+      error.response?.data?.error ||
       (status === 429 && 'Muitas tentativas. Tente novamente mais tarde.') ||
       'Email ou senha incorretos';
 
@@ -50,6 +59,7 @@ const login = async (data) => {
     };
   }
 };
+
   // funçao ara o ProfileSideMenu atualizar a foto sem dar refresh na página
   const updateUserData = (newData) => {
     setUser(prev => {
