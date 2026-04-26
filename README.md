@@ -8,12 +8,14 @@
   [![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
   [![Vite](https://img.shields.io/badge/Vite-4.x-646CFF?style=for-the-badge&logo=vite)](https://vitejs.dev/)
   [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
+  [![Zod](https://img.shields.io/badge/Zod-3E6B9E?style=for-the-badge&logo=zod&logoColor=white)](https://zod.dev/)
+  [![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
 
 </div>
 
+---
 
-
-## 📱 **Sobre o Projeto**
+## 📱 Sobre o Projeto
 
 O **Super Frango App** é um aplicativo mobile-first de gerenciamento de treinos desenvolvido para suprir uma necessidade real minha e de um grupo de amigos. Inspirado no nosso grupo "Super Frango" do **[Gym Rats](https://gymrats.app/)** (aplicativo de desafios em grupo na academia), o projeto nasceu da necessidade de **compartilhar treinos** e **acompanhar evolução** de forma prática e personalizada. As cores, o nome e a identidade visual foram totalmente inspirados no grupo, trazendo uma identidade única e familiar para os membros.
 
@@ -21,8 +23,9 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 
 > ⚠️ **Aviso:** Este aplicativo foi desenvolvido **visando experiência mobile**. Para aproveitar ao máximo no desktop, recomendo baixar a extensão **"Mobile Simulator"** do Google Chrome (gratuita) e escolher o dispositivo de sua preferência para uma visualização otimizada.
 
+---
 
-## 🖥️  **Demonstração**
+## 🖥️ Demonstração
 
 <p align="center">
   <img src="./public/images/TELA-LOGIN.png" width="200" alt="Login" style="margin: 0 20px;" />
@@ -33,7 +36,7 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 
 ---
 
-## ⚡ **Funcionalidades**
+## ⚡ Funcionalidades
 
 | Funcionalidade | Descrição |
 |----------------|-----------|
@@ -46,17 +49,17 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 
 ---
 
-## 📱 **Diferenciais de UX Mobile**
+## 📱 Diferenciais de UX Mobile
 
 Para entregar uma experiência próxima a um app nativo, foram implementadas:
 
-- 🪟 **Overlays Inteligentes:** Edições utilizam camadas flutuantes, preservando o scroll e o estado da página principal
-- ⌨️ **Keyboard Awareness:** Detecção automática de teclado no Android para liberar espaço de input
-- 📜 **Scroll Controlado:** Uso de `overscroll-behavior-y: contain` para evitar pull-to-refresh indesejado
+- 🪟 **Overlays Inteligentes** — Edições utilizam camadas flutuantes, preservando o scroll e o estado da página principal
+- ⌨️ **Keyboard Awareness** — Detecção automática de teclado no Android para liberar espaço de input
+- 📜 **Scroll Controlado** — Uso de `overscroll-behavior-y: contain` para evitar pull-to-refresh indesejado
 
 ---
 
-## 🛠️ **Tecnologias**
+## 🛠️ Tecnologias
 
 | Categoria | Tecnologia | Finalidade |
 |:----------|:-----------|:-----------|
@@ -70,47 +73,53 @@ Para entregar uma experiência próxima a um app nativo, foram implementadas:
 
 ---
 
-## 📂 **Estrutura de Pastas**
+## 🗂️ Arquitetura do Projeto
 
 ```
-src/
-├── components/   # UI Reutilizável & Modais (Overlays)
-├── views/        # Telas principais da aplicação
-├── hooks/        # Lógica customizada (ScrollLock, Mobile detection)
-├── services/     # Camada de dados e chamadas API
-└── utils/        # Temas e funções auxiliares
+gym-app-front/
+├── public/
+│   └── images/          # Imagens estáticas e screenshots
+├── src/
+│   ├── assets/          # Ícones e recursos visuais
+│   ├── components/      # Componentes reutilizáveis e Modais
+│   │   └── Modals/      # Overlays e páginas modais
+│   ├── context/
+│   │   └── AuthContext.jsx
+│   ├── hooks/
+│   │   └── useScrollToInput.jsx
+│   ├── schemas/         # Schemas de validação com Zod
+│   ├── services/
+│   │   └── api.jsx      # Camada de chamadas à API REST
+│   ├── utils/
+│   │   └── theme.js     # Temas e funções auxiliares
+│   ├── views/           # Telas principais da aplicação
+│   │   ├── AppViews.jsx
+│   │   ├── AuthViews.jsx
+│   │   └── ModalsViews.jsx
+│   ├── App.jsx
+│   └── main.jsx
+├── .env
+├── index.html
+├── vite.config.js
+└── package.json
 ```
 
 ---
 
-## 📱 **Instalação como PWA (Mobile)**
+## 📱 Instalação como PWA
 
-Acesse o app diretamente: [https://gr-s.onrender.com/super-frango](https://gr-s.onrender.com/super-frango)
+Acesse o app: [https://gr-s.onrender.com/super-frango](https://gr-s.onrender.com/super-frango)
 
 | Plataforma | Como instalar |
 |------------|---------------|
 | **Android** | Chrome → Menu (três pontos) → Instalar aplicativo |
 | **iOS** | Safari → Compartilhar → Adicionar à Tela de Início |
 
-> ✨ Após a instalação, o app terá ícone personalizado e abrirá em tela cheia, sem a barra de endereços do navegador.
+> ✨ Após a instalação, o app abrirá em tela cheia com ícone personalizado, sem a barra de endereços do navegador.
 
 ---
 
-## 🌐 **Deploy na Vercel**
-
-O frontend está hospedado na **Vercel** (plataforma cloud gratuita).
-
-### ✅ Por que Vercel?
-
-- Deploy gratuito e simples
-- Integração direta com GitHub
-- Suporte nativo a React e Vite
-- SSL automático (HTTPS)
-- Preview automático a cada push
-
----
-
-## 💻 **Rodando Localmente**
+## 💻 Rodando Localmente
 
 ```bash
 # Clone o repositório
@@ -128,11 +137,21 @@ npm run dev
 
 ---
 
-## 🐛 **Contribuindo com o Projeto**
+## 🌐 Deploy na Vercel
+
+O frontend está hospedado na **Vercel** (plataforma cloud gratuita).
+
+- ✅ Deploy gratuito e simples
+- ✅ Integração direta com GitHub
+- ✅ Suporte nativo a React e Vite
+- ✅ SSL automático (HTTPS)
+- ✅ Preview automático a cada push
+
+---
+
+## 🐛 Contribuindo com o Projeto
 
 Se você encontrou algum **bug**, tem **sugestão de melhoria** ou ideia de **nova funcionalidade**, ficarei muito grato se compartilhar!
-
-### Como contribuir:
 
 - Abra uma **Issue** no GitHub [clicando aqui](https://github.com/Geovanni-dev/gym-app-front/issues)
 - Descreva detalhadamente o problema ou sugestão
@@ -140,8 +159,8 @@ Se você encontrou algum **bug**, tem **sugestão de melhoria** ou ideia de **no
 
 > 💡 Sua contribuição me ajuda a evoluir como profissional e tornar o projeto cada vez melhor!
 
+---
 
-## 📄 **Licença**
+## 📄 Licença
 
-MIT © [Geovani Rodrigues](https://github.com/Geovanni-dev)
-
+**MIT © [Geovani Rodrigues](https://github.com/Geovanni-dev)**
