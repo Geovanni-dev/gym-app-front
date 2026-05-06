@@ -194,11 +194,21 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
     catch (e) {} finally { setLoading(false); }
   };
 
-  const onDeleteDay = async (planId, dayName) => {
-    setLoading(true);
-    try { await api.delete(`/workout-plans/${planId}/day/${dayName}`); fetchPlans(); } 
-    catch (e) {} finally { setLoading(false); }
-  };
+const onDeleteDay = async (planId, dayName) => {
+  try { 
+    await api.delete(`/workout-plans/${planId}/day/${dayName}`);
+    // Adia a atualização do estado para o próximo ciclo
+    setTimeout(() => {
+      fetchPlans();
+    }, 0);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
+  }
+};
 
   const onReorderDays = async (planId, index, direction) => {
     const currentPlan = plans.find((p) => (p._id || p.id) === planId);
@@ -211,29 +221,60 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
     catch (e) {} finally { setLoading(false); }
   };
 
-  const handleDeletePlan = async (planId) => {
-    if (loading) return;
-    setLoading(true);
-    try { await api.delete(`/workout-plans/${planId}`); setSelectedPlan(null); fetchPlans(); } 
-    catch (e) {} finally { setLoading(false); }
-  };
+const handleDeletePlan = async (planId) => {
+  if (loading) return;
+  // Remove o setLoading(true) daqui
+  try { 
+    await api.delete(`/workout-plans/${planId}`);
+    // Adia a atualização do estado do componente pai para o próximo ciclo.
+    setTimeout(() => {
+      setSelectedPlan(null);
+      fetchPlans();
+    }, 0);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
+  }
+};
 
-  const handleDeleteGeneratedWorkout = async (workoutId) => {
-    if (loading) return;
-    setLoading(true);
-    try { await api.delete(`/workouts/${workoutId}`); setSelectedPlan(null); fetchGeneratedWorkouts(); } 
-    catch (e) {} finally { setLoading(false); }
-  };
+// Código NOVO 
+const handleDeleteGeneratedWorkout = async (workoutId) => {
+  if (loading) return;
+  try { 
+    await api.delete(`/workouts/${workoutId}`);
+    // Adia a atualização do estado do componente pai para o próximo ciclo.
+    setTimeout(() => {
+      setSelectedPlan(null);
+      fetchGeneratedWorkouts();
+    }, 0);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
+  }
+};
 
-  const handleDeleteExercise = async (planId, dayName, exerciseName) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const response = await api.delete(`/workout-plans/${planId}/${dayName}/${encodeURIComponent(exerciseName)}`);
+const handleDeleteExercise = async (planId, dayName, exerciseName) => {
+  if (loading) return;
+  // A requisição continua assíncrona, mas a atualização de estado é adiada levemente.
+  try {
+    const response = await api.delete(`/workout-plans/${planId}/${dayName}/${encodeURIComponent(exerciseName)}`);
+    // Adia a atualização do estado do componente pai para o próximo ciclo do event loop.
+    setTimeout(() => {
       if (response.data.workoutPlan) setSelectedPlan(response.data.workoutPlan);
       fetchPlans();
-    } catch (e) {} finally { setLoading(false); }
-  };
+    }, 0);
+  } catch (e) {} finally {
+    setTimeout(() => {
+      setLoading(false);
+    }, 0);
+  }
+};
 
   const toggleCheck = (key) => {
     setCompletedExercises((prev) => {

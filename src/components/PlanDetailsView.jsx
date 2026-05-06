@@ -185,9 +185,10 @@ export const PlanDetailsView = ({
 
       console.log('PR atualizado, chamando onForceRefresh...');
       if (onForceRefresh) {
-        await onForceRefresh();
-        console.log('onForceRefresh finalizado');
-      }
+      setTimeout(async () => {
+      await onForceRefresh();
+      }, 100);
+}
 
     } catch (e) {
       console.error('Erro ao sincronizar PR', e);
