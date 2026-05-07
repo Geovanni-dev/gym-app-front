@@ -1,3 +1,4 @@
+// src/components/PlanDetailsView.jsx (VERSÃO SEM LÁPIS E LIXEIRA DO PLANO)
 import React, { useState, useEffect, useRef } from 'react';
 import {
   DndContext,
@@ -18,19 +19,17 @@ import {
   Trash2,
   Edit3,
   Check,
-  ChevronUp,
-  ChevronDown,
   Plus,
   X,
-  CheckSquare,
   Dumbbell,
   Zap,
   Flame,
-  Trophy,
-  ChevronRight,
-  CheckCircle2,
+  Calendar,
+  BarChart3,
+  MoreVertical,
 } from 'lucide-react';
 import api from '../services/api';
+import { DayDetailsPage } from './Modals/DayDetailsPage';
 
 // ==================== WRAPPER DO DRAG AND DROP ====================
 const DiaSortableItem = ({ id, children }) => {
@@ -60,30 +59,59 @@ const DiaSortableItem = ({ id, children }) => {
   );
 };
 
-// ==================== WRAPPER DRAG AND DROP EXERCÍCIOS ====================
-const ExercicioSortableItem = ({ id, children }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+// ==================== MENU DROPDOWN DO DIA ====================
+const DayMenu = ({ onEdit, onDelete }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef(null);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    touchAction: 'pan-y',
-    WebkitTouchCallout: 'none',
-    WebkitUserSelect: 'none',
-    userSelect: 'none',
-  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="w-6 h-6 rounded-md bg-white/5 text-gray-400 flex items-center justify-center hover:bg-white/10 hover:text-white transition-all"
+      >
+        <MoreVertical size={12} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute right-0 top-6.5 z-20 bg-[#1a1a1a] border border-white/10 rounded-md shadow-lg overflow-hidden min-w-[90px]">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onEdit();
+            }}
+            className="w-full px-2 py-1 text-left text-[8px] font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-1.5"
+          >
+            <Edit3 size={8} />
+            Editar
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onDelete();
+            }}
+            className="w-full px-2 py-1 text-left text-[8px] font-medium text-gray-300 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-1.5 border-t border-white/5"
+          >
+            <Trash2 size={8} />
+            Excluir
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -117,18 +145,28 @@ export const PlanDetailsView = ({
   const [editingPlanName, setEditingPlanName] = useState(null);
   const [editingDayIdx, setEditingDayIdx] = useState(null);
   const [tempDayName, setTempDayName] = useState('');
-  const [editingExercise, setEditingExercise] = useState(null);
-  const [addingNewDay, setAddingNewDay] = useState(false);
-  const [newDayTitle, setNewDayTitle] = useState('');
-  const [syncingPR, setSyncingPR] = useState(null);
-  const [isDraggingExercise, setIsDraggingExercise] = useState(false);
+  const [holdProgress, setHoldProgress] = useState(0);
   const timerRef = useRef(null);
   const [copied, setCopied] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [localDays, setLocalDays] = useState(plan?.days || []);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const [openDays, setOpenDays] = useState(() => {
-    const saved = localStorage.getItem('@superfrango:openDays');
-    return saved ? JSON.parse(saved) : {};
-  });
+  // Calcular estatísticas gerais do plano
+  const planStats = {
+    totalDays: localDays.length,
+    totalExercises: localDays.reduce((acc, day) => acc + (day.exercises?.length || 0), 0),
+    completedExercises: Object.keys(completedExercises).filter(key => completedExercises[key] === true).length,
+    percent: 0
+  };
+  planStats.percent = planStats.totalExercises > 0 ? Math.round((planStats.completedExercises / planStats.totalExercises) * 100) : 0;
+
+  // Sincroniza localDays quando plan mudar, mas NÃO durante o drag
+  useEffect(() => {
+    if (!isDragging && plan?.days) {
+      setLocalDays(plan.days);
+    }
+  }, [plan?.days, isDragging]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -145,145 +183,68 @@ export const PlanDetailsView = ({
     })
   );
 
-  const exerciseSensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { delay: 300, tolerance: 5 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 300, tolerance: 5 },
-    })
-  );
-
   useEffect(() => {
     document.body.style.overflow = 'auto';
     document.body.style.position = 'static';
     window.scrollTo(0, 0);
   }, []);
 
-  const toggleDayVisibility = (dayName) => {
-    setOpenDays((prev) => {
-      const newState = { ...prev, [dayName]: !prev[dayName] };
-      localStorage.setItem('@superfrango:openDays', JSON.stringify(newState));
-      return newState;
-    });
+  const startHold = () => {
+    timerRef.current = setInterval(() => {
+      setHoldProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(timerRef.current);
+          handleConfirm();
+          return 100;
+        }
+        return prev + 5.5;
+      });
+    }, 16);
   };
 
-  const hasDayCompletedExercises = (dayIdx) => {
-    const day = plan.days[dayIdx];
-    if (!day) return false;
-
-    return day.exercises.some((_, exIdx) => {
-      const key = `${plan._id || plan.id}-${dayIdx}-${exIdx}`;
-      return !!completedExercises[key];
-    });
-  };
-
-  const handleFinishDayWorkout = async (dayIdx) => {
-    const day = plan.days[dayIdx];
-    if (!day) return;
-
-    const planId = plan._id || plan.id;
-    const entriesToLog = [];
-
-    day.exercises.forEach((ex, exIdx) => {
-      const key = `${planId}-${dayIdx}-${exIdx}`;
-      if (completedExercises[key]) {
-        entriesToLog.push({
-          name: ex.name,
-          reps: Number(ex.reps?.split('-')[0]) || 0,
-          weight: Number(ex.weight) || 0,
-          workoutName: `${plan.name} - ${day.name}`
-        });
-      }
-    });
-    if (entriesToLog.length === 0) return;
-
-    try {
-      await api.post('/workouts/log', { exercises: entriesToLog });
-
-      if (onClearDayExercises) {
-        onClearDayExercises(planId, dayIdx);
-      }
-    } catch (e) {
-      console.error('Erro ao registrar treino:', e);
-    }
+  const stopHold = () => {
+    clearInterval(timerRef.current);
+    if (holdProgress < 100) setHoldProgress(0);
   };
 
   const handleConfirm = () => {
     if (confirmTarget.type === 'plan') {
       onDeletePlan(confirmTarget.id);
-    } else if (confirmTarget.type === 'exercise') {
-      onDeleteExercise(confirmTarget.planId, confirmTarget.day, confirmTarget.exercise);
     } else if (confirmTarget.type === 'day') {
       onDeleteDay(confirmTarget.planId, confirmTarget.dayName);
     }
-    setConfirmTarget(null);
+    setTimeout(() => {
+      setConfirmTarget(null);
+      setHoldProgress(0);
+    }, 400);
   };
 
-  const handleAddNewDay = async (e) => {
-    e.preventDefault();
-    if (!newDayTitle.trim()) return;
-    await onAddDay(plan._id || plan.id, newDayTitle);
-    setAddingNewDay(false);
-    setNewDayTitle('');
-  };
-
-  const handleSyncPR = async (dayName, exName, exData) => {
-    setSyncingPR(exName);
-    try {
-      const response = await api.get('/workouts/pr', {
-        params: { exercise: exName.trim() },
-      });
-
-      const prWeight = response.data.personalRecord || response.data.weight || 0;
-
-      if (!prWeight || Number(prWeight) <= 0) {
-        setSyncingPR(null);
-        return;
-      }
-
-      if (isGenerated) {
-        await api.put('/workouts/update-pr', {
-          workoutId: plan._id || plan.id,
-          exerciseName: exName,
-          newPR: Number(prWeight),
-        });
-      } else {
-        await api.put(
-          `/workout-plans/${plan._id || plan.id}/${dayName}/${encodeURIComponent(exName)}`,
-          {
-            ...exData,
-            weight: Number(prWeight),
-          }
-        );
-      }
-
-      console.log('PR atualizado, chamando onForceRefresh...');
-      if (onForceRefresh) {
-        setTimeout(async () => {
-          await onForceRefresh();
-        }, 100);
-      }
-    } catch (e) {
-      console.error('Erro ao sincronizar PR', e);
-    } finally {
-      setSyncingPR(null);
-    }
+  const handleDragStart = () => {
+    setIsDragging(true);
   };
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id) {
+      setIsDragging(false);
+      return;
+    }
+    if (!localDays.length) {
+      setIsDragging(false);
+      return;
+    }
 
     const oldIndex = parseInt(active.id);
     const newIndex = parseInt(over.id);
 
-    const newDaysOrder = [...plan.days];
+    const newDaysOrder = [...localDays];
     const [movedDay] = newDaysOrder.splice(oldIndex, 1);
     newDaysOrder.splice(newIndex, 0, movedDay);
 
     const daysOrder = newDaysOrder.map(day => day.name);
+
+    setLocalDays(newDaysOrder);
 
     if (updatePlanLocally) {
       updatePlanLocally({ ...plan, days: newDaysOrder });
@@ -291,183 +252,166 @@ export const PlanDetailsView = ({
 
     try {
       await api.put(`/workout-plans/${plan._id || plan.id}/reorder`, { daysOrder });
-      if (onForceRefresh && !updatePlanLocally) {
-        await onForceRefresh();
-      }
     } catch (error) {
       console.error('Erro ao reordenar dias:', error);
-      if (onForceRefresh) {
-        await onForceRefresh();
+      setLocalDays(plan?.days || []);
+      if (updatePlanLocally) {
+        updatePlanLocally(plan);
       }
+    } finally {
+      setIsDragging(false);
     }
   };
 
-  const handleDragEndExercises = async (event, dayName, dayIndex) => {
-    setIsDraggingExercise(false);
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = parseInt(active.id);
-    const newIndex = parseInt(over.id);
-
-    const planId = plan._id || plan.id;
-    const day = plan.days[dayIndex];
-    const newExercisesOrder = [...day.exercises];
-    const [movedExercise] = newExercisesOrder.splice(oldIndex, 1);
-    newExercisesOrder.splice(newIndex, 0, movedExercise);
-
-    const exercisesOrder = newExercisesOrder.map(ex => ex._id);
-
+  const handleUpdatePlanLocally = (updatedDay, dayIndex) => {
+    const newDays = [...localDays];
+    newDays[dayIndex] = updatedDay;
+    setLocalDays(newDays);
     if (updatePlanLocally) {
-      const newDays = plan.days.map((d, idx) =>
-        idx === dayIndex ? { ...d, exercises: newExercisesOrder } : d
-      );
       updatePlanLocally({ ...plan, days: newDays });
     }
+  };
 
-    try {
-      await api.put(`/workout-plans/${planId}/reorder-exercises`, { dayName, exercisesOrder });
-      if (onForceRefresh && !updatePlanLocally) {
-        await onForceRefresh();
-      }
-    } catch (error) {
-      console.error('Erro ao reordenar exercícios:', error);
-      if (onForceRefresh) {
-        await onForceRefresh();
-      }
-    }
+  const handleEditDayName = (dayName, newName) => {
+    onUpdateDayName(plan._id || plan.id, dayName, newName);
+    setEditingDayIdx(null);
   };
 
   return (
-    <div
-      className={`space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-right-6 duration-500 pb-28 relative`}
-    >
-      {confirmTarget && (
-        <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
-          <div className="min-h-full flex flex-col items-center justify-center p-4">
-            <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] my-auto">
+    <>
+      {selectedDay && (
+        <DayDetailsPage
+          day={selectedDay.day}
+          dayIndex={selectedDay.dayIndex}
+          planId={plan._id || plan.id}
+          planName={plan.name}
+          onBack={() => setSelectedDay(null)}
+          completedExercises={completedExercises}
+          toggleCheck={toggleCheck}
+          onDeleteDay={onDeleteDay}
+          onDeleteExercise={onDeleteExercise}
+          onOpenAddExercisePage={onOpenAddExercisePage}
+          onOpenEditExercisePage={onOpenEditExercisePage}
+          onOpenEditPRPage={onOpenEditPRPage}
+          onUpdateExercise={onUpdateExercise}
+          onAddExercise={onAddExercise}
+          onFinishWorkout={onFinishWorkout}
+          onClearDayExercises={onClearDayExercises}
+          onForceRefresh={onForceRefresh}
+          updatePlanLocally={handleUpdatePlanLocally}
+          isGenerated={isGenerated}
+        />
+      )}
 
-              <div className="relative bg-[#0a0a0a] p-8 rounded-[30px] z-10 border border-white/5 overflow-hidden">
-                <div className="absolute -right-10 -bottom-10 opacity-10">
-                  {confirmTarget.type === 'plan' ? (
-                    <Dumbbell size={140} strokeWidth={1} className="text-[#dc2626]" />
-                  ) : confirmTarget.type === 'day' ? (
-                    <Zap size={140} strokeWidth={1} className="text-[#dc2626]" />
-                  ) : (
-                    <Flame size={140} strokeWidth={1} className="text-[#dc2626]" />
-                  )}
-                </div>
+      <div
+        className={`min-h-screen bg-black pb-28 relative ${selectedDay ? 'hidden' : ''}`}
+      >
+        {/* Glow de fundo */}
+        <div className="fixed inset-0 pointer-events-none opacity-20 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#ff6600] rounded-full blur-[150px]" />
+        </div>
 
-                <button
-                  onClick={() => setConfirmTarget(null)}
-                  className="absolute top-6 right-6 text-gray-600 hover:text-[#dc2626] transition-colors z-20"
-                >
-                  <X size={20} />
-                </button>
+        {confirmTarget && (
+          <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
+            <div className="min-h-full flex flex-col items-center justify-center p-4">
+              <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] transition-all duration-300 my-auto">
+                <div
+                  className="absolute inset-0 transition-opacity duration-300"
+                  style={{
+                    opacity: holdProgress > 0 ? 0.8 : 0,
+                    background: `conic-gradient(from 0deg, #dc2626 ${holdProgress}%, transparent ${holdProgress}%)`,
+                  }}
+                />
 
-                <div className="flex flex-col items-center text-center relative z-10">
-                  <div className="mb-6 h-16 w-16 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center text-red-700">
-                    <Trash2 size={28} strokeWidth={1.5} />
+                <div className="relative bg-[#0a0a0a] p-8 rounded-[30px] z-10 border border-white/5 overflow-hidden">
+                  <div className="absolute -right-10 -bottom-10 opacity-10">
+                    {confirmTarget.type === 'plan' ? (
+                      <Dumbbell size={140} strokeWidth={1} className="text-[#dc2626]" />
+                    ) : (
+                      <Zap size={140} strokeWidth={1} className="text-[#dc2626]" />
+                    )}
                   </div>
 
-                  <h3 className="text-xl font-black text-white tracking-tighter uppercase">
-                    {confirmTarget.type === 'plan' ? 'EXCLUIR PLANO?' :
-                      confirmTarget.type === 'day' ? 'EXCLUIR DIA?' :
-                        'EXCLUIR EXERCÍCIO?'}
-                  </h3>
-
-                  <p className="mt-3 text-[12px] text-gray-500 leading-relaxed font-medium">
-                    {confirmTarget.type === 'plan' ? 'Todos os dias e exercícios serão perdidos.' :
-                      confirmTarget.type === 'day' ? 'Os exercícios deste dia serão removidos.' :
-                        'Este exercício será removido permanentemente.'}
-                  </p>
-                </div>
-
-                <div className="mt-8 relative z-10 flex gap-3">
                   <button
-                    onClick={() => setConfirmTarget(null)}
-                    className="flex-1 h-14 rounded-2xl border border-white/10 bg-white/5 text-gray-400 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white transition-all duration-200"
+                    onClick={() => {
+                      setConfirmTarget(null);
+                      setHoldProgress(0);
+                      if (timerRef.current) clearInterval(timerRef.current);
+                    }}
+                    className="absolute top-6 right-6 text-gray-600 hover:text-[#dc2626] transition-colors z-20"
                   >
-                    CANCELAR
+                    <X size={20} />
                   </button>
-                  <button
-                    onClick={handleConfirm}
-                    className="flex-1 h-14 rounded-2xl bg-[#dc2626] text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-red-700 active:scale-95 transition-all duration-200"
-                  >
-                    EXCLUIR
-                  </button>
+
+                  <div className="flex flex-col items-center text-center relative z-10">
+                    <div className={`mb-6 h-16 w-16 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center transition-all duration-500 ${holdProgress > 0 ? 'text-[#dc2626] shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-105' : 'text-red-700'}`}>
+                      <Trash2 size={28} strokeWidth={1.5} />
+                    </div>
+
+                    <h3 className="text-xl font-black text-white tracking-tighter uppercase">
+                      {confirmTarget.type === 'plan' ? 'EXCLUIR PLANO?' : 'EXCLUIR DIA?'}
+                    </h3>
+
+                    <p className="mt-3 text-[12px] text-gray-500 leading-relaxed font-medium">
+                      {confirmTarget.type === 'plan' 
+                        ? 'Todos os dias e exercícios serão perdidos.' 
+                        : 'Os exercícios deste dia serão removidos.'}
+                    </p>
+                  </div>
+
+                  <div className="mt-8 relative z-10">
+                    <button
+                      onMouseDown={startHold}
+                      onMouseUp={stopHold}
+                      onMouseLeave={stopHold}
+                      onTouchStart={startHold}
+                      onTouchEnd={stopHold}
+                      className={`relative w-full h-14 rounded-2xl border bg-black/80 border-white/5 transition-all duration-300 select-none cursor-pointer overflow-hidden
+                        ${holdProgress > 0
+                          ? 'shadow-[0_0_40px_rgba(220,38,38,0.2)] scale-[0.98] border-[#dc2626]/50'
+                          : 'shadow-none'
+                        }`}
+                    >
+                      <div
+                        className="absolute inset-y-0 left-0 bg-[#dc2626] transition-all duration-75 ease-linear shadow-[5px_0_15px_rgba(0,0,0,0.3)]"
+                        style={{ width: `${holdProgress}%` }}
+                      />
+                      <span className={`relative z-10 text-[11px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${holdProgress > 50 ? 'text-white' : 'text-gray-400'}`}>
+                        {holdProgress >= 100 ? 'EXCLUÍDO' : 'EXCLUIR'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* cabeçalho do plano */}
-      <div className="flex items-center justify-between px-2 gap-2 sm:gap-4 -mt-[-25px]">
-        <div className="flex items-center gap-3 sm:gap-6 overflow-hidden flex-1 min-w-0">
-          <button
-            onClick={onBack}
-            className="p-2 sm:p-3 bg-white/5 rounded-xl sm:rounded-2xl text-gray-500 hover:text-white hover:bg-white/10 transition-all active:scale-90 flex-shrink-0"
-          >
-            <ArrowLeft size={20} className="sm:size-[28px]" />
-          </button>
-          <div className="group relative overflow-hidden flex-1 min-w-0">
-            {editingPlanName !== null && !isGenerated ? (
-              <div className="flex items-center gap-2 sm:gap-3 w-full">
-                <input
-                  autoFocus
-                  className="bg-transparent text-xl sm:text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-white border-b-2 border-[#ff6600] outline-none flex-1 min-w-0 w-full"
-                  value={editingPlanName}
-                  onChange={(e) => setEditingPlanName(e.target.value)}
-                />
-                <button
-                  onClick={() => {
-                    onUpdatePlanName(plan._id || plan.id, editingPlanName);
-                    setEditingPlanName(null);
-                  }}
-                  className="p-1.5 sm:p-2 text-[#ff6600] flex-shrink-0"
-                >
-                  <Check size={18} className="sm:size-[24px]" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 sm:gap-4 overflow-hidden flex-wrap sm:flex-nowrap">
-                <h1 className="text-xl sm:text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-tight break-words">
+        {/* Conteúdo principal */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-24">
+          
+          {/* Cabeçalho do plano - SEM LÁPIS E SEM LIXEIRA */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={onBack}
+                className="p-2 bg-white/5 rounded-xl text-gray-500 hover:text-white hover:bg-white/10 transition-all border border-white/5 hover:border-[#ff6600]/20"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <div className="flex flex-col">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-tight">
                   {plan.name}
                 </h1>
-                {!isGenerated && (
-                  <button
-                    onClick={() => setEditingPlanName(plan.name)}
-                    className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl text-gray-400 hover:text-[#ff6600] transition-all flex-shrink-0"
-                  >
-                    <Edit3 size={10} />
-                  </button>
-                )}
-              </div>
-            )}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
-              {isGenerated && (
-                <div className="flex items-center gap-1">
-                  <div className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#ff6600] text-black text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-full italic">
-                    FRANGO STUDIO
-                  </div>
-                  <span className="text-[9px] sm:text-[9px] font-bold text-gray-500 uppercase tracking-wider">
-                    auto-treinos
-                  </span>
-                </div>
-              )}
-
-              {!isGenerated && (
-                <>
-                  <div className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#ff6600] text-black text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-full italic">
-                    ID DO PLANO:
-                  </div>
-
-                  {plan.shareCode && (
-                    <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-md pl-2 pr-1.5 py-0.5 transition-all duration-200">
-                      <span className={`text-[12px] sm:text-[9px] font-mono font-bold text-gray-300 tracking-wider transition-all duration-200 ${copied ? 'scale-110 text-[#ff6600]' : ''}`}>
+                <div className="flex flex-wrap items-center gap-3 mt-3">
+                  {isGenerated && (
+                    <div className="px-2 py-0.5 bg-[#ff6600] text-black text-[8px] font-black uppercase tracking-widest rounded-full italic">
+                      FRANGO STUDIO
+                    </div>
+                  )}
+                  {!isGenerated && plan.shareCode && (
+                    <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm rounded-md pl-2 pr-1.5 py-0.5">
+                      <span className="text-[10px] font-mono font-bold text-gray-300">
                         {plan.shareCode}
                       </span>
                       <button
@@ -476,371 +420,153 @@ export const PlanDetailsView = ({
                           setCopied(true);
                           setTimeout(() => setCopied(false), 300);
                         }}
-                        className={`p-0.5 rounded text-gray-500 hover:text-[#ff6600] transition-all duration-200 ${copied ? 'scale-125 text-[#ff6600]' : 'hover:scale-110'}`}
-                        title="Copiar código"
+                        className="p-0.5 rounded text-gray-500 hover:text-[#ff6600] transition-all"
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
                       </button>
                     </div>
                   )}
-                </>
-              )}
+                </div>
+              </div>
+            </div>
+
+            {/* Estatísticas do plano */}
+            <div className="flex flex-col gap-3 mt-6">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <BarChart3 size={14} className="text-[#ff6600]" />
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                    {planStats.completedExercises} / {planStats.totalExercises} EXERCÍCIOS
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar size={14} className="text-[#ff6600]" />
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                    {planStats.totalDays} DIAS
+                  </span>
+                </div>
+              </div>
+              <div className="h-1 w-full max-w-xs bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#ff6600] shadow-[0_0_8px_#ff6600] transition-all duration-500" 
+                  style={{ width: `${planStats.percent}%` }} 
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <button
-          onClick={() => setConfirmTarget({ type: 'plan', id: plan._id || plan.id })}
-          className="text-gray-500 hover:text-red-500 transition-all flex-shrink-0"
-        >
-          <Trash2 size={18} className="sm:size-[24px]" />
-        </button>
-      </div>
 
-      {/* lista de dias com drag and drop */}
-      <div className="grid gap-8 sm:gap-12">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={() => {
-            if (isDraggingExercise) return;
-            setTimeout(() => {
-              setOpenDays({});
-              localStorage.setItem('@superfrango:openDays', JSON.stringify({}));
-            }, 0);
-          }}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={plan.days.map((_, idx) => idx.toString())}
-            strategy={verticalListSortingStrategy}
-          >
-            {plan.days?.map((day, dIdx) => {
-              const isVisible = !!openDays[day.name];
-              const hasCompletedInDay = hasDayCompletedExercises(dIdx);
-
-              return (
-                <DiaSortableItem
-                  key={dIdx}
-                  id={dIdx.toString()}
-                >
-                  {({ dragHandleListeners }) => (
-                    <div className="space-y-4 sm:space-y-6">
-                      <div className="flex items-center gap-2 sm:gap-4 px-2 group/day overflow-hidden">
-                        <div className="h-px flex-grow bg-white/5"></div>
-                        <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
-                          {!isGenerated && (
-                            <div className="flex flex-col gap-1 transition-opacity flex-shrink-0">
-                              <button
-                                disabled={dIdx === 0}
-                                onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'up')}
-                                className="text-gray-600 hover:text-[#ff6600] disabled:opacity-0"
-                              >
-                                <ChevronUp size={12} className="sm:size-[14px]" />
-                              </button>
-                              <button
-                                disabled={dIdx === plan.days.length - 1}
-                                onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'down')}
-                                className="text-gray-600 hover:text-[#ff6600] disabled:opacity-0"
-                              >
-                                <ChevronDown size={12} className="sm:size-[14px]" />
-                              </button>
-                            </div>
-                          )}
-                          {editingDayIdx === dIdx && !isGenerated ? (
-                            <div className="flex items-center gap-2 max-w-full">
-                              <input
-                                autoFocus
-                                className="bg-transparent text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600] outline-none text-center min-w-0 max-w-[120px] sm:max-w-[150px] md:max-w-none"
-                                value={tempDayName}
-                                onChange={(e) => setTempDayName(e.target.value)}
-                              />
-                              <button
-                                onClick={() => {
-                                  onUpdateDayName(plan._id || plan.id, day.name, tempDayName);
-                                  setEditingDayIdx(null);
+          {/* Lista de dias com drag and drop */}
+          <div className="space-y-4">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={localDays.map((_, idx) => idx.toString())}
+                strategy={verticalListSortingStrategy}
+              >
+                {localDays.map((day, dIdx) => {
+                  const dayExercisesCount = day.exercises?.length || 0;
+                  
+                  // Se estiver editando este dia
+                  if (editingDayIdx === dIdx && !isGenerated) {
+                    return (
+                      <div key={dIdx} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
+                        <div className="flex items-center gap-3">
+                          <input
+                            autoFocus
+                            className="flex-1 bg-transparent text-xl sm:text-2xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600] outline-none px-2 py-1"
+                            value={tempDayName}
+                            onChange={(e) => setTempDayName(e.target.value)}
+                          />
+                          <button
+                            onClick={() => handleEditDayName(day.name, tempDayName)}
+                            className="p-2 text-[#ff6600] hover:bg-[#ff6600]/10 rounded-lg transition-all"
+                          >
+                            <Check size={18} />
+                          </button>
+                          <button
+                            onClick={() => setEditingDayIdx(null)}
+                            className="p-2 text-gray-500 hover:text-white rounded-lg transition-all"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <DiaSortableItem key={dIdx} id={dIdx.toString()}>
+                      {({ dragHandleListeners }) => (
+                        <div className="group relative rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 overflow-hidden hover:border-[#ff6600]/30 w-full">
+                          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <Calendar size={80} strokeWidth={1} className="text-[#ff6600]" />
+                          </div>
+                          
+                          {/* Menu de 3 pontinhos no canto superior direito */}
+                          <div className="absolute top-2 right-2 z-20">
+                            {!isGenerated && (
+                              <DayMenu
+                                onEdit={() => {
+                                  setEditingDayIdx(dIdx);
+                                  setTempDayName(day.name);
                                 }}
-                                className="text-[#ff6600] flex-shrink-0"
-                              >
-                                <Check size={16} className="sm:size-[18px]" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
+                                onDelete={() => {
+                                  setConfirmTarget({
+                                    type: 'day',
+                                    planId: plan._id || plan.id,
+                                    dayName: day.name,
+                                  });
+                                }}
+                              />
+                            )}
+                          </div>
+                          
+                          <div className="relative z-10 p-4 sm:p-5 pr-10 sm:pr-12">
+                            <div className="flex items-center justify-between gap-3">
                               <button
-                                onClick={() => toggleDayVisibility(day.name)}
-                                className="flex items-center gap-2 sm:gap-3 group/title flex-shrink-0"
+                                onClick={() => setSelectedDay({ day, dayIndex: dIdx })}
+                                className="flex-1 text-left"
+                                {...dragHandleListeners}
                               >
-                                <h3
-                                  className="text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] tracking-tight break-words transition-all"
-                                  style={{ cursor: 'grab' }}
-                                  {...dragHandleListeners}
-                                >
+                                <h3 className="text-xl sm:text-2xl font-black italic uppercase text-[#ff6600] tracking-tight break-words">
                                   {day.name}
                                 </h3>
-                                <div
-                                  className={`transition-transform duration-300 ${isVisible ? 'rotate-180' : ''} flex-shrink-0`}
-                                >
-                                  <ChevronDown
-                                    size={16}
-                                    className="sm:size-[20px] text-[#ff6600]/40 group-hover/title:text-[#ff6600]"
-                                  />
-                                </div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">
+                                  {dayExercisesCount} {dayExercisesCount === 1 ? 'EXERCÍCIO' : 'EXERCÍCIOS'}
+                                </p>
                               </button>
-                              {!isGenerated && (
-                                <div className="flex items-center gap-1 flex-shrink-0">
-                                  <button
-                                    onClick={() => {
-                                      setEditingDayIdx(dIdx);
-                                      setTempDayName(day.name);
-                                    }}
-                                    className="p-1 text-gray-600 hover:text-white transition-all"
-                                  >
-                                    <Edit3 size={12} className="sm:size-[14px]" />
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setConfirmTarget({
-                                        type: 'day',
-                                        planId: plan._id || plan.id,
-                                        dayName: day.name,
-                                      })
-                                    }
-                                    className="p-1 text-gray-600 hover:text-red-500 transition-all"
-                                  >
-                                    <Trash2 size={12} className="sm:size-[14px]" />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <div className="h-px flex-grow bg-white/5"></div>
-                      </div>
-
-                      {isVisible && (
-                        <>
-                          <DndContext
-                            sensors={exerciseSensors}
-                            collisionDetection={closestCenter}
-                            autoScroll={false}
-                            onDragStart={() => setIsDraggingExercise(true)}
-                            onDragEnd={(event) => handleDragEndExercises(event, day.name, dIdx)}
-                          >
-                            <SortableContext
-                              items={day.exercises.map((_, idx) => idx.toString())}
-                              strategy={verticalListSortingStrategy}
-                            >
-                              <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                                {day.exercises?.map((ex, eIdx) => {
-                                  const checkKey = `${plan._id || plan.id}-${dIdx}-${eIdx}`;
-                                  const isCompleted = !!completedExercises[checkKey];
-                                  const DecorativeIcon =
-                                    eIdx % 3 === 0 ? Dumbbell : eIdx % 3 === 1 ? Zap : Flame;
-
-                                  return (
-                                    <ExercicioSortableItem key={eIdx} id={eIdx.toString()}>
-                                      <div
-                                        className={`group relative min-h-[140px] sm:min-h-[150px] rounded-2xl border overflow-hidden transition-all duration-300 w-full ${isCompleted ? 'border-[#ff6600] scale-[0.99] shadow-[0_0_20px_rgba(255,102,0,0.15)] bg-[#050505]' : 'border-white/20 bg-white/[0.03] hover:border-[#ff6600]/40 shadow-lg'}`}
-                                      >
-                                        <div
-                                          className={`absolute inset-0 transition-colors duration-500 ${isCompleted ? 'bg-[#050505]' : 'bg-gradient-to-br from-[#0a0a0a] via-black to-[#0d0d0d] group-hover:via-[#111111]'}`}
-                                        />
-                                        <div
-                                          className={`absolute -right-3 -bottom-4 transition-opacity duration-500 text-[#ff6600] transform rotate-12 ${isCompleted ? 'opacity-[0.1]' : 'opacity-[0.03] group-hover:opacity-[0.07]'}`}
-                                        >
-                                          <DecorativeIcon
-                                            size={100}
-                                            className="sm:size-[140px]"
-                                            strokeWidth={2.5}
-                                          />
-                                        </div>
-                                        <div
-                                          className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
-                                        />
-
-                                        <div className="relative z-10 h-full pt-10 pb-4 px-4 sm:pt-12 sm:pb-5 sm:px-5 flex items-center justify-between gap-3 w-full">
-                                          <>
-                                            <div
-                                              className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
-                                              onClick={() => toggleCheck(checkKey)}
-                                            >
-                                              <div
-                                                className={`flex-shrink-0 transition-all duration-300 rounded-lg ${isCompleted ? 'text-[#ff6600] scale-110 drop-shadow-[0_0_8px_#ff6600]' : 'text-white/20 group-hover:text-[#ff6600]/50 group-hover:scale-110'}`}
-                                              >
-                                                <CheckSquare
-                                                  className="w-6 h-6 sm:w-7 sm:h-7"
-                                                  strokeWidth={2.5}
-                                                />
-                                              </div>
-                                              <div className="space-y-2 min-w-0 overflow-hidden flex-1">
-                                                <h4
-                                                  className={`text-base sm:text-lg md:text-xl font-black uppercase italic tracking-tight transition-all truncate leading-normal py-1 ${isCompleted ? 'text-[#ff6600]' : 'text-white group-hover:text-[#ff6600]'}`}
-                                                >
-                                                  {ex.name}
-                                                </h4>
-
-                                                <div className="flex items-start gap-4 sm:gap-8">
-                                                  <div className="flex flex-col">
-                                                    <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
-                                                      SÉRIES
-                                                    </p>
-                                                    <p
-                                                      className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
-                                                    >
-                                                      {ex.sets}
-                                                    </p>
-                                                  </div>
-                                                  <div className="flex flex-col">
-                                                    <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
-                                                      REPS
-                                                    </p>
-                                                    <p
-                                                      className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
-                                                    >
-                                                      {ex.reps}
-                                                    </p>
-                                                  </div>
-                                                  <div className="flex flex-col relative group/pr">
-                                                    <p className="text-[8px] sm:text-[9px] font-black text-[#ff6600]/60 uppercase tracking-widest leading-[1.2]">
-                                                      CARGA
-                                                    </p>
-                                                    <div className="flex items-center gap-4 overflow-visible">
-                                                      <p className="text-base sm:text-lg md:text-xl font-black italic text-[#ff6600] leading-tight whitespace-nowrap overflow-visible">
-                                                        {ex.weight}KG
-                                                      </p>
-
-                                                      <button
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleSyncPR(day.name, ex.name, ex);
-                                                        }}
-                                                        onPointerDown={(e) => e.stopPropagation()}
-                                                        className={`p-1 rounded-md transition-all flex-shrink-0 ${syncingPR === ex.name
-                                                          ? 'animate-spin bg-[#ff6600]/20 text-[#ff6600]'
-                                                          : 'bg-[#ff6600]/5 hover:bg-[#ff6600]/20 text-[#ff6600]'
-                                                          }`}
-                                                        title="Sincronizar PR do Histórico"
-                                                      >
-                                                        <Trophy size={10} className="sm:size-[12px]" />
-                                                      </button>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                            <div className="flex flex-col gap-1.5 flex-shrink-0">
-                                              {!isGenerated && (
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setConfirmTarget({
-                                                      type: 'exercise',
-                                                      planId: plan._id || plan.id,
-                                                      day: day.name,
-                                                      exercise: ex.name,
-                                                    });
-                                                  }}
-                                                  onPointerDown={(e) => e.stopPropagation()}
-                                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all"
-                                                >
-                                                  <X size={14} className="sm:size-[16px]" />
-                                                </button>
-                                              )}
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  if (isGenerated) {
-                                                    onOpenEditPRPage?.(
-                                                      plan._id || plan.id,
-                                                      ex.name,
-                                                      ex,
-                                                      onUpdateExercise
-                                                    );
-                                                  } else {
-                                                    onOpenEditExercisePage?.(
-                                                      plan._id || plan.id,
-                                                      day.name,
-                                                      ex.name,
-                                                      ex,
-                                                      isGenerated,
-                                                      onUpdateExercise
-                                                    );
-                                                  }
-                                                }}
-                                                onPointerDown={(e) => e.stopPropagation()}
-                                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
-                                              >
-                                                <Edit3 size={14} className="sm:size-[16px]" />
-                                              </button>
-                                              <div
-                                                className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center transition-all ${isCompleted ? 'bg-[#ff6600]/20 text-[#ff6600]' : 'bg-white/5 text-white/20'}`}
-                                              >
-                                                <Dumbbell size={14} className="sm:size-[16px]" />
-                                              </div>
-                                            </div>
-                                          </>
-                                        </div>
-                                      </div>
-                                    </ExercicioSortableItem>
-                                  );
-                                })}
-                              </div>
-                            </SortableContext>
-                          </DndContext>
-                          <div className="flex justify-center pt-3">
-                            <div
-                              onClick={() => hasCompletedInDay && handleFinishDayWorkout(dIdx)}
-                              className={`transition-all cursor-pointer ${hasCompletedInDay
-                                ? 'text-gray-500 hover:text-gray-300 hover:scale-105 active:scale-95'
-                                : 'text-gray-900 cursor-not-allowed opacity-10'
-                                }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 size={16} className="text-green-900" />
-                                <span className="text-xs sm:text-sm font-black uppercase tracking-wider">Finalizar treino</span>
-                              </div>
                             </div>
                           </div>
-                          {!isGenerated && (
-                            <div className="mt-4">
-                              <button
-                                onClick={() => onOpenAddExercisePage(plan._id || plan.id, day.name, onAddExercise)}
-                                className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 sm:gap-3 group cursor-pointer text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600]"
-                              >
-                                <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">
-                                  <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
-                                </div>
-                                Adicionar Exercício
-                              </button>
-                            </div>
-                          )}
-                        </>
+                        </div>
                       )}
-                    </div>
-                  )}
-                </DiaSortableItem>
-              );
-            })}
-          </SortableContext>
-        </DndContext>
+                    </DiaSortableItem>
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
 
-        {!isGenerated && (
-          <div className="pt-4 px-2">
-            <button
-              onClick={() => onOpenAddDayPage?.(plan._id || plan.id, onAddDay)}
-              className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase text-gray-600 hover:border-[#ff6600] hover:text-[#ff6600] transition-all flex items-center justify-center gap-2 sm:gap-3 group"
-            >
-              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#ff6600] group-hover:text-black transition-all">
-                <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
-              </div>
-              Adicionar dia
-            </button>
+            {/* Botão Adicionar Dia */}
+            {!isGenerated && (
+              <button
+                onClick={() => onOpenAddDayPage?.(plan._id || plan.id, onAddDay)}
+                className="w-full py-6 border-2 border-dashed border-white/10 rounded-2xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-3 text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600] hover:bg-[#ff6600]/5 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">
+                  <Plus size={14} strokeWidth={3} />
+                </div>
+                Adicionar dia
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };

@@ -1,10 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem,
-  Plus, ChevronRight, Activity, Trophy, Clock, ArrowLeft
+  Plus, ChevronRight, Activity, Trophy, Clock, ArrowLeft,
+  MoreVertical, Edit3, Trash2
 } from 'lucide-react';
 import { PlanDetailsView, MetricsGrid, MetricsGridAuto } from '../components';
 import api from '../services/api';
+
+// ==================== MENU DROPDOWN DO PLANO ====================
+// ==================== MENU DROPDOWN DO PLANO ====================
+const PlanMenu = ({ onEdit, onDelete, isGenerated = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="w-6 h-6 rounded-md bg-white/5 text-gray-400 flex items-center justify-center hover:bg-white/10 hover:text-white transition-all"
+      >
+        <MoreVertical size={15} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute right-0 top-8 z-20 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-lg overflow-hidden min-w-[110px]">
+          {!isGenerated && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(false);
+                onEdit();
+              }}
+              className="w-full px-3 py-2 text-left text-[10px] font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2"
+            >
+              <Edit3 size={10} />
+              Editar
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onDelete();
+            }}
+            className={`w-full px-3 py-2 text-left text-[10px] font-medium text-gray-300 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-2 ${!isGenerated ? 'border-t border-white/5' : ''}`}
+          >
+            <Trash2 size={10} />
+            Excluir
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const AppViews = ({ 
   activeTab,
@@ -148,6 +209,24 @@ export const AppViews = ({
                         className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer min-h-[220px] flex flex-col justify-end animate-in fade-in zoom-in w-full
                           ${isActive ? 'scale-[1.02] border-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'}`}
                       >
+                        {/* Menu de 3 pontinhos no canto superior direito */}
+                        <div className="absolute top-3 right-3 z-20">
+                          <PlanMenu
+                            isGenerated={false}
+                            onEdit={() => {
+                              const newName = prompt('Novo nome do plano:', plan.name);
+                              if (newName && newName.trim()) {
+                                onUpdatePlanName(planId, newName);
+                              }
+                            }}
+                            onDelete={() => {
+                              if (window.confirm(`Excluir o plano "${plan.name}"?`)) {
+                                handleDeletePlan(planId);
+                              }
+                            }}
+                          />
+                        </div>
+
                         <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
                         <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
                           <DecorativeIcon size={240} strokeWidth={1} />
@@ -317,6 +396,19 @@ export const AppViews = ({
                         className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer min-h-[220px] flex flex-col justify-end w-full
                           ${isActive ? 'scale-[1.02] border-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'}`}
                       >
+                        {/* Menu de 3 pontinhos no canto superior direito - Apenas EXCLUIR para gerados */}
+                        <div className="absolute top-3 right-3 z-20">
+                          <PlanMenu
+                            isGenerated={true}
+                            onEdit={() => {}}
+                            onDelete={() => {
+                              if (window.confirm(`Excluir o treino "${workout.name}"?`)) {
+                                handleDeleteGeneratedWorkout(workoutId);
+                              }
+                            }}
+                          />
+                        </div>
+
                         <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
                         <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
                           <DecorativeIcon size={240} strokeWidth={1} />
