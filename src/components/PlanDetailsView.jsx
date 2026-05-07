@@ -96,7 +96,6 @@ export const PlanDetailsView = ({
   const [addingNewDay, setAddingNewDay] = useState(false);
   const [newDayTitle, setNewDayTitle] = useState('');
   const [syncingPR, setSyncingPR] = useState(null);
-  const [holdProgress, setHoldProgress] = useState(0);
   const timerRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -177,24 +176,6 @@ export const PlanDetailsView = ({
     }
   };
 
-  const startHold = () => {
-    timerRef.current = setInterval(() => {
-      setHoldProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timerRef.current);
-          handleConfirm();
-          return 100;
-        }
-        return prev + 5.5;
-      });
-    }, 16);
-  };
-
-  const stopHold = () => {
-    clearInterval(timerRef.current);
-    if (holdProgress < 100) setHoldProgress(0);
-  };
-
   const handleConfirm = () => {
     if (confirmTarget.type === 'plan') {
       onDeletePlan(confirmTarget.id);
@@ -203,10 +184,7 @@ export const PlanDetailsView = ({
     } else if (confirmTarget.type === 'day') {
       onDeleteDay(confirmTarget.planId, confirmTarget.dayName);
     }
-    setTimeout(() => {
-      setConfirmTarget(null);
-      setHoldProgress(0);
-    }, 400);
+    setConfirmTarget(null);
   };
 
   const handleAddNewDay = async (e) => {
@@ -302,14 +280,7 @@ export const PlanDetailsView = ({
       {confirmTarget && (
         <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
           <div className="min-h-full flex flex-col items-center justify-center p-4">
-            <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] transition-all duration-300 my-auto">
-              <div
-                className="absolute inset-0 transition-opacity duration-300"
-                style={{
-                  opacity: holdProgress > 0 ? 0.8 : 0,
-                  background: `conic-gradient(from 0deg, #dc2626 ${holdProgress}%, transparent ${holdProgress}%)`,
-                }}
-              />
+            <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] my-auto">
 
               <div className="relative bg-[#0a0a0a] p-8 rounded-[30px] z-10 border border-white/5 overflow-hidden">
                 <div className="absolute -right-10 -bottom-10 opacity-10">
@@ -323,18 +294,14 @@ export const PlanDetailsView = ({
                 </div>
 
                 <button
-                  onClick={() => {
-                    setConfirmTarget(null);
-                    setHoldProgress(0);
-                    if (timerRef.current) clearInterval(timerRef.current);
-                  }}
+                  onClick={() => setConfirmTarget(null)}
                   className="absolute top-6 right-6 text-gray-600 hover:text-[#dc2626] transition-colors z-20"
                 >
                   <X size={20} />
                 </button>
 
                 <div className="flex flex-col items-center text-center relative z-10">
-                  <div className={`mb-6 h-16 w-16 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center transition-all duration-500 ${holdProgress > 0 ? 'text-[#dc2626] shadow-[0_0_20px_rgba(220,38,38,0.3)] scale-105' : 'text-red-700'}`}>
+                  <div className="mb-6 h-16 w-16 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center text-red-700">
                     <Trash2 size={28} strokeWidth={1.5} />
                   </div>
 
@@ -351,26 +318,18 @@ export const PlanDetailsView = ({
                   </p>
                 </div>
 
-                <div className="mt-8 relative z-10">
+                <div className="mt-8 relative z-10 flex gap-3">
                   <button
-                    onMouseDown={startHold}
-                    onMouseUp={stopHold}
-                    onMouseLeave={stopHold}
-                    onTouchStart={startHold}
-                    onTouchEnd={stopHold}
-                    className={`relative w-full h-14 rounded-2xl border bg-black/80 border-white/5 transition-all duration-300 select-none cursor-pointer overflow-hidden
-                      ${holdProgress > 0
-                        ? 'shadow-[0_0_40px_rgba(220,38,38,0.2)] scale-[0.98] border-[#dc2626]/50'
-                        : 'shadow-none'
-                      }`}
+                    onClick={() => setConfirmTarget(null)}
+                    className="flex-1 h-14 rounded-2xl border border-white/10 bg-white/5 text-gray-400 text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white transition-all duration-200"
                   >
-                    <div
-                      className="absolute inset-y-0 left-0 bg-[#dc2626] transition-all duration-75 ease-linear shadow-[5px_0_15px_rgba(0,0,0,0.3)]"
-                      style={{ width: `${holdProgress}%` }}
-                    />
-                    <span className={`relative z-10 text-[11px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${holdProgress > 50 ? 'text-white' : 'text-gray-400'}`}>
-                      {holdProgress >= 100 ? 'EXCLUÍDO' : 'EXCLUIR'}
-                    </span>
+                    CANCELAR
+                  </button>
+                  <button
+                    onClick={handleConfirm}
+                    className="flex-1 h-14 rounded-2xl bg-[#dc2626] text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-red-700 active:scale-95 transition-all duration-200"
+                  >
+                    EXCLUIR
                   </button>
                 </div>
               </div>
