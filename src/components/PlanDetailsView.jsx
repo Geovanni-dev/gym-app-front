@@ -185,7 +185,7 @@ export const PlanDetailsView = ({
           handleConfirm();
           return 100;
         }
-        return prev + 1.8;
+        return prev + 5.5;
       });
     }, 16);
   };
