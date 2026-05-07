@@ -661,7 +661,7 @@ export const PlanDetailsView = ({
                                           className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
                                         />
 
-                                        <div className="relative z-10 h-full p-4 sm:p-5 mt-3 flex items-center justify-between gap-3 w-full">
+                                        <div className="relative z-10 h-full pt-10 pb-4 px-4 sm:pt-12 sm:pb-5 sm:px-5 flex items-center justify-between gap-3 w-full">
                                           <>
                                             <div
                                               className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
