@@ -43,12 +43,16 @@ const DiaSortableItem = ({ id, children, isGenerated, isAnyDayOpen }) => {
     isDragging,
   } = useSortable({ id });
 
-  const style = {
+ const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    touchAction: 'none',
-    cursor: !isGenerated ? 'grab' : 'default', // Sempre mãozinha se não for gerado
+    cursor: !isGenerated ? 'grab' : 'default',
+    touchAction: isDragging ? 'none' : 'pan-y',
+
+    WebkitTouchCallout: 'none', 
+    WebkitUserSelect: 'none',     
+    userSelect: 'none',          
   };
 
   return (
@@ -117,9 +121,12 @@ export const PlanDetailsView = ({
   })
 );
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+useEffect(() => {
+  // GARANTIA DE BACK-END: Resetamos qualquer trava de scroll residual
+  document.body.style.overflow = 'auto';
+  document.body.style.position = 'static';
+  window.scrollTo(0, 0);
+}, []);
 
   const toggleDayVisibility = (dayName) => {
     setOpenDays((prev) => {
