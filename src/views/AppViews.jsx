@@ -53,7 +53,8 @@ export const AppViews = ({
   isGeneratingCustom,
   setIsGeneratingCustom,
   isTransitioning,
-  setView
+  setView,
+  updatePlanLocally
 }) => {
   // Dashboard - Planos Manuais
   if (activeTab === 'dashboard') {
@@ -72,6 +73,7 @@ export const AppViews = ({
           onDeleteExercise={handleDeleteExercise}
           onUpdatePlanName={onUpdatePlanName}
           onUpdateDayName={onUpdateDayName}
+          updatePlanLocally={updatePlanLocally} 
           onUpdateExercise={onUpdateExercise}
           onAddExercise={onAddExercise}
           onReorderDays={onReorderDays}

@@ -1,5 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
   ArrowLeft,
   Trash2,
   Edit3,
@@ -13,12 +27,38 @@ import {
   Zap,
   Flame,
   Trophy,
-  AlertTriangle,
   ChevronRight,
   CheckCircle2,
 } from 'lucide-react';
 import api from '../services/api';
 
+// ==================== WRAPPER PARA DRAG AND DROP ====================
+const DiaSortableItem = ({ id, children, isGenerated, isAnyDayOpen }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    touchAction: 'none',
+    cursor: !isGenerated ? 'grab' : 'default', // Sempre mãozinha se não for gerado
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  );
+};
+
+// ==================== COMPONENTE PRINCIPAL ====================
 export const PlanDetailsView = ({
   plan,
   onBack,
@@ -28,6 +68,7 @@ export const PlanDetailsView = ({
   onDeleteExercise,
   onUpdatePlanName,
   onUpdateDayName,
+  updatePlanLocally,
   onUpdateExercise,
   onReorderDays,
   onAddExercise,
@@ -59,6 +100,22 @@ export const PlanDetailsView = ({
     const saved = localStorage.getItem('@superfrango:openDays');
     return saved ? JSON.parse(saved) : {};
   });
+  
+  // Configuração dos sensores para drag com delay de 400ms
+  const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      delay: 400,
+      tolerance: 8,
+    },
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 400,
+      tolerance: 8,
+    },
+  })
+);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -185,11 +242,10 @@ export const PlanDetailsView = ({
 
       console.log('PR atualizado, chamando onForceRefresh...');
       if (onForceRefresh) {
-      setTimeout(async () => {
-      await onForceRefresh();
-      }, 100);
-}
-
+        setTimeout(async () => {
+          await onForceRefresh();
+        }, 100);
+      }
     } catch (e) {
       console.error('Erro ao sincronizar PR', e);
     } finally {
@@ -197,12 +253,54 @@ export const PlanDetailsView = ({
     }
   };
 
-  return ( 
+  // Manipulador de fim do drag
+
+const handleDragEnd = async (event) => {
+  const { active, over } = event;
+  
+  if (!over || active.id === over.id) return;
+  
+  const oldIndex = parseInt(active.id);
+  const newIndex = parseInt(over.id);
+  
+  // Verifica se o dia que está sendo arrastado está aberto
+  const activeDay = plan.days[oldIndex];
+  if (activeDay && openDays[activeDay.name]) {
+    return;
+  }
+  
+  // Cria nova ordem
+  const newDaysOrder = [...plan.days];
+  const [movedDay] = newDaysOrder.splice(oldIndex, 1);
+  newDaysOrder.splice(newIndex, 0, movedDay);
+  
+  const daysOrder = newDaysOrder.map(day => day.name);
+  
+  // ATUALIZA UI IMEDIATAMENTE
+  if (updatePlanLocally) {
+    updatePlanLocally({ ...plan, days: newDaysOrder });
+  }
+  
+  // FAZ REQUISIÇÃO ÚNICA
+  try {
+    await api.put(`/workout-plans/${plan._id || plan.id}/reorder`, { daysOrder });
+    // SÓ ATUALIZA DE NOVO SE NECESSÁRIO (opcional, pra garantir sync)
+    if (onForceRefresh && !updatePlanLocally) {
+      await onForceRefresh();
+    }
+  } catch (error) {
+    console.error('Erro ao reordenar dias:', error);
+    if (onForceRefresh) {
+      await onForceRefresh(); // Recarrega em caso de erro
+    }
+  }
+};
+
+  return (
     <div
       className={`space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-right-6 duration-500 pb-28 relative`}
     >
-
-        {confirmTarget && (
+      {confirmTarget && (
         <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-md overflow-y-auto">
           <div className="min-h-full flex flex-col items-center justify-center p-4">
             <div className="relative p-[2px] rounded-[32px] overflow-hidden w-full max-w-[340px] transition-all duration-300 my-auto">
@@ -326,7 +424,6 @@ export const PlanDetailsView = ({
               </div>
             )}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
-              
               {isGenerated && (
                 <div className="flex items-center gap-1">
                   <div className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#ff6600] text-black text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-full italic">
@@ -338,7 +435,6 @@ export const PlanDetailsView = ({
                 </div>
               )}
 
-              
               {!isGenerated && (
                 <>
                   <div className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#ff6600] text-black text-[8px] sm:text-[9px] font-black uppercase tracking-widest rounded-full italic">
@@ -378,304 +474,331 @@ export const PlanDetailsView = ({
           <Trash2 size={18} className="sm:size-[24px]" />
         </button>
       </div>
-      {/* DIAS DO PLANO */}
+
+      {/* DIAS DO PLANO COM DRAG AND DROP */}
       <div className="grid gap-8 sm:gap-12">
-        {plan.days?.map((day, dIdx) => {
-          const isVisible = !!openDays[day.name];
-          const hasCompletedInDay = hasDayCompletedExercises(dIdx);
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+        onDragStart={() => {
+  // Dá 1ms de folga para o dnd-kit iniciar antes de sumirmos com os elementos
+  setTimeout(() => {
+    setOpenDays({});
+    localStorage.setItem('@superfrango:openDays', JSON.stringify({}));
+  }, 0);
+}}
+  onDragEnd={handleDragEnd}
+>
+          <SortableContext
+            items={plan.days.map((_, idx) => idx.toString())}
+            strategy={verticalListSortingStrategy}
+          >
+            {plan.days?.map((day, dIdx) => {
+            const isVisible = !!openDays[day.name];
+            const hasCompletedInDay = hasDayCompletedExercises(dIdx);
+               const isDayOpen = !!openDays[day.name]; // Verifica se o dia está aberto
 
-          return (
-            <div key={dIdx} className="space-y-4 sm:space-y-6">
-              <div className="flex items-center gap-2 sm:gap-4 px-2 group/day overflow-hidden">
-                <div className="h-px flex-grow bg-white/5"></div>
-                <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
-                  {!isGenerated && (
-                    <div className="flex flex-col gap-1 transition-opacity flex-shrink-0">
-                      <button
-                        disabled={dIdx === 0}
-                        onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'up')}
-                        className="text-gray-600 hover:text-[#ff6600] disabled:opacity-0"
-                      >
-                        <ChevronUp size={12} className="sm:size-[14px]" />
-                      </button>
-                      <button
-                        disabled={dIdx === plan.days.length - 1}
-                        onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'down')}
-                        className="text-gray-600 hover:text-[#ff6600] disabled:opacity-0"
-                      >
-                        <ChevronDown size={12} className="sm:size-[14px]" />
-                      </button>
-                    </div>
-                  )}
-                  {editingDayIdx === dIdx && !isGenerated ? (
-                    <div className="flex items-center gap-2 max-w-full">
-                      <input
-                        autoFocus
-                        className="bg-transparent text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600] outline-none text-center min-w-0 max-w-[120px] sm:max-w-[150px] md:max-w-none"
-                        value={tempDayName}
-                        onChange={(e) => setTempDayName(e.target.value)}
-                      />
-                      <button
-                        onClick={() => {
-                          onUpdateDayName(plan._id || plan.id, day.name, tempDayName);
-                          setEditingDayIdx(null);
-                        }}
-                        className="text-[#ff6600] flex-shrink-0"
-                      >
-                        <Check size={16} className="sm:size-[18px]" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
-                      <button
-                        onClick={() => toggleDayVisibility(day.name)}
-                        className="flex items-center gap-2 sm:gap-3 group/title flex-shrink-0"
-                      >
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] tracking-tight break-words transition-all">
-                          {day.name}
-                        </h3>
-                        <div
-                          className={`transition-transform duration-300 ${isVisible ? 'rotate-180' : ''} flex-shrink-0`}
-                        >
-                          <ChevronDown
-                            size={16}
-                            className="sm:size-[20px] text-[#ff6600]/40 group-hover/title:text-[#ff6600]"
-                          />
-                        </div>
-                      </button>
-                      {!isGenerated && (
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            onClick={() => {
-                              setEditingDayIdx(dIdx);
-                              setTempDayName(day.name);
-                            }}
-                            className="p-1 text-gray-600 hover:text-white transition-all"
-                          >
-                            <Edit3 size={12} className="sm:size-[14px]" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              setConfirmTarget({
-                                type: 'day',
-                                planId: plan._id || plan.id,
-                                dayName: day.name,
-                              })
-                            }
-                            className="p-1 text-gray-600 hover:text-red-500 transition-all"
-                          >
-                            <Trash2 size={12} className="sm:size-[14px]" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="h-px flex-grow bg-white/5"></div>
-              </div>
-
-              {isVisible && (
-                <>
-                  <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                    {day.exercises?.map((ex, eIdx) => {
-                      const checkKey = `${plan._id || plan.id}-${dIdx}-${eIdx}`;
-                      const isCompleted = !!completedExercises[checkKey];
-                      const DecorativeIcon =
-                        eIdx % 3 === 0 ? Dumbbell : eIdx % 3 === 1 ? Zap : Flame;
-
-                      return (
-                        <div
-                          key={eIdx}
-                          className={`group relative min-h-[140px] sm:min-h-[150px] rounded-2xl border overflow-hidden transition-all duration-300 w-full ${isCompleted ? 'border-[#ff6600] scale-[0.99] shadow-[0_0_20px_rgba(255,102,0,0.15)] bg-[#050505]' : 'border-white/20 bg-white/[0.03] hover:border-[#ff6600]/40 shadow-lg'}`}
-                        >
-                          <div
-                            className={`absolute inset-0 transition-colors duration-500 ${isCompleted ? 'bg-[#050505]' : 'bg-gradient-to-br from-[#0a0a0a] via-black to-[#0d0d0d] group-hover:via-[#111111]'}`}
-                          />
-                          <div
-                            className={`absolute -right-3 -bottom-4 transition-opacity duration-500 text-[#ff6600] transform rotate-12 ${isCompleted ? 'opacity-[0.1]' : 'opacity-[0.03] group-hover:opacity-[0.07]'}`}
-                          >
-                            <DecorativeIcon
-                              size={100}
-                              className="sm:size-[140px]"
-                              strokeWidth={2.5}
-                            />
+            return (
+               <DiaSortableItem
+  key={dIdx}
+  id={dIdx.toString()}
+  isGenerated={isGenerated}
+  isOpen={!!openDays[day.name]}  // Verifica se o dia está aberto
+>
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="flex items-center gap-2 sm:gap-4 px-2 group/day overflow-hidden">
+                      <div className="h-px flex-grow bg-white/5"></div>
+                      <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
+                        {!isGenerated && (
+                          <div className="flex flex-col gap-1 transition-opacity flex-shrink-0">
+                            <button
+                              disabled={dIdx === 0}
+                              onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'up')}
+                              className="text-gray-600 hover:text-[#ff6600] disabled:opacity-0"
+                            >
+                              <ChevronUp size={12} className="sm:size-[14px]" />
+                            </button>
+                            <button
+                              disabled={dIdx === plan.days.length - 1}
+                              onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'down')}
+                              className="text-gray-600 hover:text-[#ff6600] disabled:opacity-0"
+                            >
+                              <ChevronDown size={12} className="sm:size-[14px]" />
+                            </button>
                           </div>
-                          <div
-                            className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
-                          />
-
-                          <div className="relative z-10 h-full p-4 sm:p-5 flex items-center justify-between gap-3 w-full">
-                            <>
+                        )}
+                        {editingDayIdx === dIdx && !isGenerated ? (
+                          <div className="flex items-center gap-2 max-w-full">
+                            <input
+                              autoFocus
+                              className="bg-transparent text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600] outline-none text-center min-w-0 max-w-[120px] sm:max-w-[150px] md:max-w-none"
+                              value={tempDayName}
+                              onChange={(e) => setTempDayName(e.target.value)}
+                            />
+                            <button
+                              onClick={() => {
+                                onUpdateDayName(plan._id || plan.id, day.name, tempDayName);
+                                setEditingDayIdx(null);
+                              }}
+                              className="text-[#ff6600] flex-shrink-0"
+                            >
+                              <Check size={16} className="sm:size-[18px]" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
+                            <button
+                              onClick={() => toggleDayVisibility(day.name)}
+                              className="flex items-center gap-2 sm:gap-3 group/title flex-shrink-0"
+                            >
+                              <h3 className="text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] tracking-tight break-words transition-all">
+                                {day.name}
+                              </h3>
                               <div
-                                className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
-                                onClick={() => toggleCheck(checkKey)}
+                                className={`transition-transform duration-300 ${isVisible ? 'rotate-180' : ''} flex-shrink-0`}
+                              >
+                                <ChevronDown
+                                  size={16}
+                                  className="sm:size-[20px] text-[#ff6600]/40 group-hover/title:text-[#ff6600]"
+                                />
+                              </div>
+                            </button>
+                            {!isGenerated && (
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <button
+                                  onClick={() => {
+                                    setEditingDayIdx(dIdx);
+                                    setTempDayName(day.name);
+                                  }}
+                                  className="p-1 text-gray-600 hover:text-white transition-all"
+                                >
+                                  <Edit3 size={12} className="sm:size-[14px]" />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setConfirmTarget({
+                                      type: 'day',
+                                      planId: plan._id || plan.id,
+                                      dayName: day.name,
+                                    })
+                                  }
+                                  className="p-1 text-gray-600 hover:text-red-500 transition-all"
+                                >
+                                  <Trash2 size={12} className="sm:size-[14px]" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="h-px flex-grow bg-white/5"></div>
+                    </div>
+
+                    {isVisible && (
+                      <>
+                        <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+                          {day.exercises?.map((ex, eIdx) => {
+                            const checkKey = `${plan._id || plan.id}-${dIdx}-${eIdx}`;
+                            const isCompleted = !!completedExercises[checkKey];
+                            const DecorativeIcon =
+                              eIdx % 3 === 0 ? Dumbbell : eIdx % 3 === 1 ? Zap : Flame;
+
+                            return (
+                              <div
+                                key={eIdx}
+                                className={`group relative min-h-[140px] sm:min-h-[150px] rounded-2xl border overflow-hidden transition-all duration-300 w-full ${isCompleted ? 'border-[#ff6600] scale-[0.99] shadow-[0_0_20px_rgba(255,102,0,0.15)] bg-[#050505]' : 'border-white/20 bg-white/[0.03] hover:border-[#ff6600]/40 shadow-lg'}`}
                               >
                                 <div
-                                  className={`flex-shrink-0 transition-all duration-300 rounded-lg ${isCompleted ? 'text-[#ff6600] scale-110 drop-shadow-[0_0_8px_#ff6600]' : 'text-white/20 group-hover:text-[#ff6600]/50 group-hover:scale-110'}`}
+                                  className={`absolute inset-0 transition-colors duration-500 ${isCompleted ? 'bg-[#050505]' : 'bg-gradient-to-br from-[#0a0a0a] via-black to-[#0d0d0d] group-hover:via-[#111111]'}`}
+                                />
+                                <div
+                                  className={`absolute -right-3 -bottom-4 transition-opacity duration-500 text-[#ff6600] transform rotate-12 ${isCompleted ? 'opacity-[0.1]' : 'opacity-[0.03] group-hover:opacity-[0.07]'}`}
                                 >
-                                  <CheckSquare
-                                    className="w-6 h-6 sm:w-7 sm:h-7"
+                                  <DecorativeIcon
+                                    size={100}
+                                    className="sm:size-[140px]"
                                     strokeWidth={2.5}
                                   />
                                 </div>
-                                <div className="space-y-2 min-w-0 overflow-hidden flex-1">
-                                  <h4
-                                    className={`text-base sm:text-lg md:text-xl font-black uppercase italic tracking-tight transition-all truncate leading-normal py-1 ${isCompleted ? 'text-[#ff6600]' : 'text-white group-hover:text-[#ff6600]'}`}
-                                  >
-                                    {ex.name}
-                                  </h4>
+                                <div
+                                  className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
+                                />
 
-                                  <div className="flex items-start gap-4 sm:gap-8">
-                                    <div className="flex flex-col">
-                                      <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
-                                        SÉRIES
-                                      </p>
-                                      <p
-                                        className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
+                                <div className="relative z-10 h-full p-4 sm:p-5 flex items-center justify-between gap-3 w-full">
+                                  <>
+                                    <div
+                                      className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
+                                      onClick={() => toggleCheck(checkKey)}
+                                    >
+                                      <div
+                                        className={`flex-shrink-0 transition-all duration-300 rounded-lg ${isCompleted ? 'text-[#ff6600] scale-110 drop-shadow-[0_0_8px_#ff6600]' : 'text-white/20 group-hover:text-[#ff6600]/50 group-hover:scale-110'}`}
                                       >
-                                        {ex.sets}
-                                      </p>
-                                    </div>
-                                    <div className="flex flex-col">
-                                      <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
-                                        REPS
-                                      </p>
-                                      <p
-                                        className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
-                                      >
-                                        {ex.reps}
-                                      </p>
-                                    </div>
-                                    <div className="flex flex-col relative group/pr">
-                                      <p className="text-[8px] sm:text-[9px] font-black text-[#ff6600]/60 uppercase tracking-widest leading-[1.2]">
-                                        CARGA
-                                      </p>
-                                      <div className="flex items-center gap-4 overflow-visible">
-                                        <p className="text-base sm:text-lg md:text-xl font-black italic text-[#ff6600] leading-tight whitespace-nowrap overflow-visible">
-                                          {ex.weight}KG
-                                        </p>
+                                        <CheckSquare
+                                          className="w-6 h-6 sm:w-7 sm:h-7"
+                                          strokeWidth={2.5}
+                                        />
+                                      </div>
+                                      <div className="space-y-2 min-w-0 overflow-hidden flex-1">
+                                        <h4
+                                          className={`text-base sm:text-lg md:text-xl font-black uppercase italic tracking-tight transition-all truncate leading-normal py-1 ${isCompleted ? 'text-[#ff6600]' : 'text-white group-hover:text-[#ff6600]'}`}
+                                        >
+                                          {ex.name}
+                                        </h4>
 
+                                        <div className="flex items-start gap-4 sm:gap-8">
+                                          <div className="flex flex-col">
+                                            <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
+                                              SÉRIES
+                                            </p>
+                                            <p
+                                              className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
+                                            >
+                                              {ex.sets}
+                                            </p>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
+                                              REPS
+                                            </p>
+                                            <p
+                                              className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
+                                            >
+                                              {ex.reps}
+                                            </p>
+                                          </div>
+                                          <div className="flex flex-col relative group/pr">
+                                            <p className="text-[8px] sm:text-[9px] font-black text-[#ff6600]/60 uppercase tracking-widest leading-[1.2]">
+                                              CARGA
+                                            </p>
+                                            <div className="flex items-center gap-4 overflow-visible">
+                                              <p className="text-base sm:text-lg md:text-xl font-black italic text-[#ff6600] leading-tight whitespace-nowrap overflow-visible">
+                                                {ex.weight}KG
+                                              </p>
+
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleSyncPR(day.name, ex.name, ex);
+                                                }}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                className={`p-1 rounded-md transition-all flex-shrink-0 ${syncingPR === ex.name
+                                                    ? 'animate-spin bg-[#ff6600]/20 text-[#ff6600]'
+                                                    : 'bg-[#ff6600]/5 hover:bg-[#ff6600]/20 text-[#ff6600]'
+                                                  }`}
+                                                title="Sincronizar PR do Histórico"
+                                              >
+                                                <Trophy size={10} className="sm:size-[12px]" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 flex-shrink-0">
+                                      {!isGenerated && (
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleSyncPR(day.name, ex.name, ex);
+                                            setConfirmTarget({
+                                              type: 'exercise',
+                                              planId: plan._id || plan.id,
+                                              day: day.name,
+                                              exercise: ex.name,
+                                            });
                                           }}
-                                          className={`p-1 rounded-md transition-all flex-shrink-0 ${syncingPR === ex.name
-                                              ? 'animate-spin bg-[#ff6600]/20 text-[#ff6600]'
-                                              : 'bg-[#ff6600]/5 hover:bg-[#ff6600]/20 text-[#ff6600]'
-                                            }`}
-                                          title="Sincronizar PR do Histórico"
+                                          onPointerDown={(e) => e.stopPropagation()}
+                                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all"
                                         >
-                                          <Trophy size={10} className="sm:size-[12px]" />
+                                          <X size={14} className="sm:size-[16px]" />
                                         </button>
+                                      )}
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (isGenerated) {
+                                            onOpenEditPRPage?.(
+                                              plan._id || plan.id,
+                                              ex.name,
+                                              ex,
+                                              onUpdateExercise
+                                            );
+                                          } else {
+                                            onOpenEditExercisePage?.(
+                                              plan._id || plan.id,
+                                              day.name,
+                                              ex.name,
+                                              ex,
+                                              isGenerated,
+                                              onUpdateExercise
+                                            );
+                                          }
+                                        }}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
+                                      >
+                                        <Edit3 size={14} className="sm:size-[16px]" />
+                                      </button>
+                                      <div
+                                        className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center transition-all ${isCompleted ? 'bg-[#ff6600]/20 text-[#ff6600]' : 'bg-white/5 text-white/20'}`}
+                                      >
+                                        <Dumbbell size={14} className="sm:size-[16px]" />
                                       </div>
                                     </div>
-                                  </div>
+                                  </>
                                 </div>
                               </div>
-                              <div className="flex flex-col gap-1.5 flex-shrink-0">
-                                {!isGenerated && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setConfirmTarget({
-                                        type: 'exercise',
-                                        planId: plan._id || plan.id,
-                                        day: day.name,
-                                        exercise: ex.name,
-                                      });
-                                    }}
-                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all"
-                                  >
-                                    <X size={14} className="sm:size-[16px]" />
-                                  </button>
-                                )}
-                              <button
-  onClick={(e) => {
-    e.stopPropagation();
-    if (isGenerated) {
-      // Abre a página simplificada (Só peso) para planos automáticos
-      onOpenEditPRPage?. (
-        plan._id || plan.id,
-        ex.name,
-        ex,
-        onUpdateExercise
-      );
-    } else {
-      // Abre a página completa (Nome, Sets, Reps) para planos manuais
-      onOpenEditExercisePage?.(
-        plan._id || plan.id,
-        day.name,
-        ex.name,
-        ex,
-        isGenerated,
-        onUpdateExercise
-      );
-    }
-  }}
-  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
->
-  <Edit3 size={14} className="sm:size-[16px]" />
-</button>
-                                <div
-                                  className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center transition-all ${isCompleted ? 'bg-[#ff6600]/20 text-[#ff6600]' : 'bg-white/5 text-white/20'}`}
-                                >
-                                  <Dumbbell size={14} className="sm:size-[16px]" />
-                                </div>
-                              </div>
-                            </>
+                            );
+                          })}
+                        </div>
+                        <div className="flex justify-center pt-3">
+                          <div
+                            onClick={() => hasCompletedInDay && handleFinishDayWorkout(dIdx)}
+                            className={`transition-all cursor-pointer ${hasCompletedInDay
+                              ? 'text-gray-500 hover:text-gray-300 hover:scale-105 active:scale-95'
+                              : 'text-gray-900 cursor-not-allowed opacity-10'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 size={16} className="text-green-900" />
+                              <span className="text-xs sm:text-sm font-black uppercase tracking-wider">Finalizar treino</span>
+                            </div>
                           </div>
                         </div>
-                      );
-                    })}
+                        {!isGenerated && (
+                          <div className="mt-4">
+                            <button
+                              onClick={() => onOpenAddExercisePage(plan._id || plan.id, day.name, onAddExercise)}
+                              className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 sm:gap-3 group cursor-pointer text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600]"
+                            >
+                              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">
+                                <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
+                              </div>
+                              Adicionar Exercício
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                  <div className="flex justify-center pt-3">
-                    <div
-                      onClick={() => hasCompletedInDay && handleFinishDayWorkout(dIdx)}
-                      className={`transition-all cursor-pointer ${hasCompletedInDay
-                          ? 'text-gray-500 hover:text-gray-300 hover:scale-105 active:scale-95'
-                          : 'text-gray-900 cursor-not-allowed opacity-10'
-                        }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 size={16} className="text-green-900" />
-                        <span className="text-xs sm:text-sm font-black uppercase tracking-wider">Finalizar treino</span>
-                      </div>
-                    </div>
-                  </div>
-                  {/* BOTÃO ADICIONAR EXERCÍCIO */}
-                  {!isGenerated && (
-                  <div className="mt-4">
-                    <button
-  onClick={() => onOpenAddExercisePage(plan._id || plan.id, day.name, onAddExercise)}
-  className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 sm:gap-3 group cursor-pointer text-gray-500 hover:border-[#ff6600] hover:text-[#ff6600]"
->
-  <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center transition-all group-hover:bg-[#ff6600] group-hover:text-black">
-    <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
-  </div>
-  Adicionar Exercício
-</button>
-                  </div>
-                  )}
-                </>
-              )}
-            </div>
-          );
-        })}
+                </DiaSortableItem>
+              );
+            })}
+          </SortableContext>
+        </DndContext>
 
-       {!isGenerated && (
-  <div className="pt-4 px-2">
-    <button
-      onClick={() => onOpenAddDayPage?.(plan._id || plan.id, onAddDay)}
-      className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase text-gray-600 hover:border-[#ff6600] hover:text-[#ff6600] transition-all flex items-center justify-center gap-2 sm:gap-3 group"
-    >
-      <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#ff6600] group-hover:text-black transition-all">
-        <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
-      </div>
-      Adicionar dia
-    </button>
-  </div>
-)}
+        {!isGenerated && (
+          <div className="pt-4 px-2">
+            <button
+              onClick={() => onOpenAddDayPage?.(plan._id || plan.id, onAddDay)}
+              className="w-full py-3 sm:py-6 border-2 border-dashed border-white/5 rounded-[1.5rem] sm:rounded-[2rem] text-[12px] sm:text-[10px] font-black uppercase text-gray-600 hover:border-[#ff6600] hover:text-[#ff6600] transition-all flex items-center justify-center gap-2 sm:gap-3 group"
+            >
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#ff6600] group-hover:text-black transition-all">
+                <Plus size={12} strokeWidth={3} className="sm:size-[18px]" />
+              </div>
+              Adicionar dia
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

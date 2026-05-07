@@ -139,12 +139,22 @@ useEffect(() => {
     } catch (e) { console.error('Erro ao carregar treinos gerados', e); }
   };
 
-  const fetchHistory = async () => {
-    try {
-      const response = await api.get('/workouts/history');
-      setHistory(response.data.data || response.data || []);
-    } catch (e) { console.error('Erro ao carregar histórico', e); setHistory([]); }
-  };
+const fetchHistory = async () => {
+  try {
+    const response = await api.get('/workouts/history');
+    const rawData = response.data.data || response.data || [];
+    
+    // Ordena por data/hora: o primeiro que foi feito (mais antigo) fica no topo da lista
+    const sortedHistory = [...rawData].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    setHistory(sortedHistory);
+  } catch (e) { 
+    console.error('Erro ao carregar histórico', e); 
+    setHistory([]); 
+  }
+};
 
   const onUpdatePlanName = async (planId, newName) => {
     setLoading(true);
@@ -292,31 +302,43 @@ const handleDeleteExercise = async (planId, dayName, exerciseName) => {
   };
 
   const onFinishWorkout = async (plan) => {
-    setLoading(true);
-    try {
-      const planId = plan._id || plan.id;
-      const entriesToLog = [];
-      plan.days.forEach((day, dIdx) => {
-        day.exercises.forEach((ex, eIdx) => {
-          const key = `${planId}-${dIdx}-${eIdx}`;
-          if (completedExercises[key]) {
-            entriesToLog.push({
-              name: ex.name,
-              reps: Number(ex.reps.split('-')[0]) || 0,
-              weight: Number(ex.weight) || 0,
-              workoutName: `${plan.name} - ${day.name}`,
-            });
-          }
-        });
+  setLoading(true);
+  try {
+    const planId = plan._id || plan.id;
+    const entriesToLog = [];
+
+    // 1. Coletamos todos os exercícios marcados e incluímos o timestamp do clique
+    plan.days.forEach((day, dIdx) => {
+      day.exercises.forEach((ex, eIdx) => {
+        const key = `${planId}-${dIdx}-${eIdx}`;
+        if (completedExercises[key]) {
+          entriesToLog.push({
+            name: ex.name,
+            reps: Number(ex.reps.split('-')[0]) || 0,
+            weight: Number(ex.weight) || 0,
+            workoutName: `${plan.name} - ${day.name}`,
+            // Usamos o timestamp exato de quando você clicou no check
+            completedAt: completedExercises[key].timestamp 
+          });
+        }
       });
-      if (entriesToLog.length === 0) return;
-      await api.post('/workouts/log', { exercises: entriesToLog });
-      const updatedChecks = { ...completedExercises };
-      Object.keys(updatedChecks).forEach((k) => { if (k.startsWith(`${planId}-`)) delete updatedChecks[k]; });
-      setCompletedExercises(updatedChecks);
-      fetchHistory();
-    } catch (e) {} finally { setLoading(false); }
-  };
+    });
+
+    if (entriesToLog.length === 0) return;
+    entriesToLog.sort((a, b) => a.completedAt - b.completedAt);
+    await api.post('/workouts/log', { exercises: entriesToLog });
+
+    // Limpeza de estado e refresh
+    const updatedChecks = { ...completedExercises };
+    Object.keys(updatedChecks).forEach((k) => { if (k.startsWith(`${planId}-`)) delete updatedChecks[k]; });
+    setCompletedExercises(updatedChecks);
+    fetchHistory();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const onForceRefresh = async () => {
     try {
@@ -330,6 +352,14 @@ const handleDeleteExercise = async (planId, dayName, exerciseName) => {
       }
     } catch (e) { console.error("Erro ao sincronizar dados:", e); }
   };
+
+  // Função para atualizar o plano localmente após uma edição, sem precisar refazer toda a requisição
+ const updatePlanLocally = (updatedPlan) => {
+  setSelectedPlan(updatedPlan);
+  setPlans(prevPlans => prevPlans.map(p => 
+    (p._id || p.id) === (updatedPlan._id || updatedPlan.id) ? updatedPlan : p
+  ));
+};
 
   const finalResetAction = async () => {
     setLoading(true);
@@ -736,6 +766,7 @@ const onResetSubmit = async (data) => {
             onOpenImportPage={onOpenImportPage}
             handleDeleteExercise={handleDeleteExercise}
             onUpdatePlanName={onUpdatePlanName}
+            updatePlanLocally={updatePlanLocally} 
             onUpdateDayName={onUpdateDayName}
             onUpdateExercise={onUpdateExercise}
             onAddExercise={onAddExercise}
