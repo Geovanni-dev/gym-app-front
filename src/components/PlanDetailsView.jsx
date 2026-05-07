@@ -47,18 +47,44 @@ const DiaSortableItem = ({ id, children }) => {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    // cursor fica só no h3 que é o handle
     touchAction: 'pan-y',
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
     userSelect: 'none',
   };
 
-  // só passo o setNodeRef e attributes pro wrapper
-  // os listeners vão separado pra eu aplicar só onde quero
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       {children({ dragHandleListeners: listeners })}
+    </div>
+  );
+};
+
+// ==================== WRAPPER DRAG AND DROP EXERCÍCIOS ====================
+const ExercicioSortableItem = ({ id, children }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    // quando está arrastando bloqueia o scroll, senão permite pan-y normal
+    touchAction: isDragging ? 'none' : 'pan-y',
+    WebkitTouchCallout: 'none',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
     </div>
   );
 };
@@ -267,6 +293,42 @@ export const PlanDetailsView = ({
     } catch (error) {
       console.error('Erro ao reordenar dias:', error);
       // se der erro recarrego pra não ficar fora de sincronia
+      if (onForceRefresh) {
+        await onForceRefresh();
+      }
+    }
+  };
+
+  const handleDragEndExercises = async (event, dayName, dayIndex) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = parseInt(active.id);
+    const newIndex = parseInt(over.id);
+
+    const planId = plan._id || plan.id;
+    const day = plan.days[dayIndex];
+    const newExercisesOrder = [...day.exercises];
+    const [movedExercise] = newExercisesOrder.splice(oldIndex, 1);
+    newExercisesOrder.splice(newIndex, 0, movedExercise);
+
+    const exercisesOrder = newExercisesOrder.map(ex => ex._id);
+
+    if (updatePlanLocally) {
+      const newDays = plan.days.map((d, idx) =>
+        idx === dayIndex ? { ...d, exercises: newExercisesOrder } : d
+      );
+      updatePlanLocally({ ...plan, days: newDays });
+    }
+
+    try {
+      await api.put(`/workout-plans/${planId}/reorder-exercises`, { dayName, exercisesOrder });
+      if (onForceRefresh && !updatePlanLocally) {
+        await onForceRefresh();
+      }
+    } catch (error) {
+      console.error('Erro ao reordenar exercícios:', error);
       if (onForceRefresh) {
         await onForceRefresh();
       }
@@ -561,160 +623,173 @@ export const PlanDetailsView = ({
 
                       {isVisible && (
                         <>
-                          <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
-                            {day.exercises?.map((ex, eIdx) => {
-                              const checkKey = `${plan._id || plan.id}-${dIdx}-${eIdx}`;
-                              const isCompleted = !!completedExercises[checkKey];
-                              const DecorativeIcon =
-                                eIdx % 3 === 0 ? Dumbbell : eIdx % 3 === 1 ? Zap : Flame;
+                          <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={(event) => handleDragEndExercises(event, day.name, dIdx)}
+                          >
+                            <SortableContext
+                              items={day.exercises.map((_, idx) => idx.toString())}
+                              strategy={verticalListSortingStrategy}
+                            >
+                              <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 animate-in fade-in slide-in-from-top-4 duration-500 ease-out">
+                                {day.exercises?.map((ex, eIdx) => {
+                                  const checkKey = `${plan._id || plan.id}-${dIdx}-${eIdx}`;
+                                  const isCompleted = !!completedExercises[checkKey];
+                                  const DecorativeIcon =
+                                    eIdx % 3 === 0 ? Dumbbell : eIdx % 3 === 1 ? Zap : Flame;
 
-                              return (
-                                <div
-                                  key={eIdx}
-                                  className={`group relative min-h-[140px] sm:min-h-[150px] rounded-2xl border overflow-hidden transition-all duration-300 w-full ${isCompleted ? 'border-[#ff6600] scale-[0.99] shadow-[0_0_20px_rgba(255,102,0,0.15)] bg-[#050505]' : 'border-white/20 bg-white/[0.03] hover:border-[#ff6600]/40 shadow-lg'}`}
-                                >
-                                  <div
-                                    className={`absolute inset-0 transition-colors duration-500 ${isCompleted ? 'bg-[#050505]' : 'bg-gradient-to-br from-[#0a0a0a] via-black to-[#0d0d0d] group-hover:via-[#111111]'}`}
-                                  />
-                                  <div
-                                    className={`absolute -right-3 -bottom-4 transition-opacity duration-500 text-[#ff6600] transform rotate-12 ${isCompleted ? 'opacity-[0.1]' : 'opacity-[0.03] group-hover:opacity-[0.07]'}`}
-                                  >
-                                    <DecorativeIcon
-                                      size={100}
-                                      className="sm:size-[140px]"
-                                      strokeWidth={2.5}
-                                    />
-                                  </div>
-                                  <div
-                                    className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
-                                  />
-
-                                  <div className="relative z-10 h-full p-4 sm:p-5 flex items-center justify-between gap-3 w-full">
-                                    <>
+                                  return (
+                                    <ExercicioSortableItem key={eIdx} id={eIdx.toString()}>
                                       <div
-                                        className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
-                                        onClick={() => toggleCheck(checkKey)}
+                                        className={`group relative min-h-[140px] sm:min-h-[150px] rounded-2xl border overflow-hidden transition-all duration-300 w-full ${isCompleted ? 'border-[#ff6600] scale-[0.99] shadow-[0_0_20px_rgba(255,102,0,0.15)] bg-[#050505]' : 'border-white/20 bg-white/[0.03] hover:border-[#ff6600]/40 shadow-lg'}`}
                                       >
                                         <div
-                                          className={`flex-shrink-0 transition-all duration-300 rounded-lg ${isCompleted ? 'text-[#ff6600] scale-110 drop-shadow-[0_0_8px_#ff6600]' : 'text-white/20 group-hover:text-[#ff6600]/50 group-hover:scale-110'}`}
+                                          className={`absolute inset-0 transition-colors duration-500 ${isCompleted ? 'bg-[#050505]' : 'bg-gradient-to-br from-[#0a0a0a] via-black to-[#0d0d0d] group-hover:via-[#111111]'}`}
+                                        />
+                                        <div
+                                          className={`absolute -right-3 -bottom-4 transition-opacity duration-500 text-[#ff6600] transform rotate-12 ${isCompleted ? 'opacity-[0.1]' : 'opacity-[0.03] group-hover:opacity-[0.07]'}`}
                                         >
-                                          <CheckSquare
-                                            className="w-6 h-6 sm:w-7 sm:h-7"
+                                          <DecorativeIcon
+                                            size={100}
+                                            className="sm:size-[140px]"
                                             strokeWidth={2.5}
                                           />
                                         </div>
-                                        <div className="space-y-2 min-w-0 overflow-hidden flex-1">
-                                          <h4
-                                            className={`text-base sm:text-lg md:text-xl font-black uppercase italic tracking-tight transition-all truncate leading-normal py-1 ${isCompleted ? 'text-[#ff6600]' : 'text-white group-hover:text-[#ff6600]'}`}
-                                          >
-                                            {ex.name}
-                                          </h4>
+                                        <div
+                                          className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
+                                        />
 
-                                          <div className="flex items-start gap-4 sm:gap-8">
-                                            <div className="flex flex-col">
-                                              <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
-                                                SÉRIES
-                                              </p>
-                                              <p
-                                                className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
+                                        
+<div className="relative z-10 h-full pt-8 pb-4 px-4 sm:pt-10 sm:pb-5 sm:px-5 flex items-center justify-between gap-3 w-full">
+                                          <>
+                                            <div
+                                              className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
+                                              onClick={() => toggleCheck(checkKey)}
+                                            >
+                                              <div
+                                                className={`flex-shrink-0 transition-all duration-300 rounded-lg ${isCompleted ? 'text-[#ff6600] scale-110 drop-shadow-[0_0_8px_#ff6600]' : 'text-white/20 group-hover:text-[#ff6600]/50 group-hover:scale-110'}`}
                                               >
-                                                {ex.sets}
-                                              </p>
-                                            </div>
-                                            <div className="flex flex-col">
-                                              <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
-                                                REPS
-                                              </p>
-                                              <p
-                                                className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
-                                              >
-                                                {ex.reps}
-                                              </p>
-                                            </div>
-                                            <div className="flex flex-col relative group/pr">
-                                              <p className="text-[8px] sm:text-[9px] font-black text-[#ff6600]/60 uppercase tracking-widest leading-[1.2]">
-                                                CARGA
-                                              </p>
-                                              <div className="flex items-center gap-4 overflow-visible">
-                                                <p className="text-base sm:text-lg md:text-xl font-black italic text-[#ff6600] leading-tight whitespace-nowrap overflow-visible">
-                                                  {ex.weight}KG
-                                                </p>
+                                                <CheckSquare
+                                                  className="w-6 h-6 sm:w-7 sm:h-7"
+                                                  strokeWidth={2.5}
+                                                />
+                                              </div>
+                                              <div className="space-y-2 min-w-0 overflow-hidden flex-1">
+                                                <h4
+                                                  className={`text-base sm:text-lg md:text-xl font-black uppercase italic tracking-tight transition-all truncate leading-normal py-1 ${isCompleted ? 'text-[#ff6600]' : 'text-white group-hover:text-[#ff6600]'}`}
+                                                >
+                                                  {ex.name}
+                                                </h4>
 
+                                                <div className="flex items-start gap-4 sm:gap-8">
+                                                  <div className="flex flex-col">
+                                                    <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
+                                                      SÉRIES
+                                                    </p>
+                                                    <p
+                                                      className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
+                                                    >
+                                                      {ex.sets}
+                                                    </p>
+                                                  </div>
+                                                  <div className="flex flex-col">
+                                                    <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-[1.2]">
+                                                      REPS
+                                                    </p>
+                                                    <p
+                                                      className={`text-base sm:text-lg md:text-xl font-black italic transition-colors leading-tight ${isCompleted ? 'text-[#ff6600]' : 'text-white'}`}
+                                                    >
+                                                      {ex.reps}
+                                                    </p>
+                                                  </div>
+                                                  <div className="flex flex-col relative group/pr">
+                                                    <p className="text-[8px] sm:text-[9px] font-black text-[#ff6600]/60 uppercase tracking-widest leading-[1.2]">
+                                                      CARGA
+                                                    </p>
+                                                    <div className="flex items-center gap-4 overflow-visible">
+                                                      <p className="text-base sm:text-lg md:text-xl font-black italic text-[#ff6600] leading-tight whitespace-nowrap overflow-visible">
+                                                        {ex.weight}KG
+                                                      </p>
+
+                                                      <button
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleSyncPR(day.name, ex.name, ex);
+                                                        }}
+                                                        onPointerDown={(e) => e.stopPropagation()}
+                                                        className={`p-1 rounded-md transition-all flex-shrink-0 ${syncingPR === ex.name
+                                                          ? 'animate-spin bg-[#ff6600]/20 text-[#ff6600]'
+                                                          : 'bg-[#ff6600]/5 hover:bg-[#ff6600]/20 text-[#ff6600]'
+                                                          }`}
+                                                        title="Sincronizar PR do Histórico"
+                                                      >
+                                                        <Trophy size={10} className="sm:size-[12px]" />
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <div className="flex flex-col gap-1.5 flex-shrink-0">
+                                              {!isGenerated && (
                                                 <button
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleSyncPR(day.name, ex.name, ex);
+                                                    setConfirmTarget({
+                                                      type: 'exercise',
+                                                      planId: plan._id || plan.id,
+                                                      day: day.name,
+                                                      exercise: ex.name,
+                                                    });
                                                   }}
                                                   onPointerDown={(e) => e.stopPropagation()}
-                                                  className={`p-1 rounded-md transition-all flex-shrink-0 ${syncingPR === ex.name
-                                                    ? 'animate-spin bg-[#ff6600]/20 text-[#ff6600]'
-                                                    : 'bg-[#ff6600]/5 hover:bg-[#ff6600]/20 text-[#ff6600]'
-                                                    }`}
-                                                  title="Sincronizar PR do Histórico"
+                                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all"
                                                 >
-                                                  <Trophy size={10} className="sm:size-[12px]" />
+                                                  <X size={14} className="sm:size-[16px]" />
                                                 </button>
+                                              )}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  if (isGenerated) {
+                                                    onOpenEditPRPage?.(
+                                                      plan._id || plan.id,
+                                                      ex.name,
+                                                      ex,
+                                                      onUpdateExercise
+                                                    );
+                                                  } else {
+                                                    onOpenEditExercisePage?.(
+                                                      plan._id || plan.id,
+                                                      day.name,
+                                                      ex.name,
+                                                      ex,
+                                                      isGenerated,
+                                                      onUpdateExercise
+                                                    );
+                                                  }
+                                                }}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
+                                              >
+                                                <Edit3 size={14} className="sm:size-[16px]" />
+                                              </button>
+                                              <div
+                                                className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center transition-all ${isCompleted ? 'bg-[#ff6600]/20 text-[#ff6600]' : 'bg-white/5 text-white/20'}`}
+                                              >
+                                                <Dumbbell size={14} className="sm:size-[16px]" />
                                               </div>
                                             </div>
-                                          </div>
+                                          </>
                                         </div>
                                       </div>
-                                      <div className="flex flex-col gap-1.5 flex-shrink-0">
-                                        {!isGenerated && (
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setConfirmTarget({
-                                                type: 'exercise',
-                                                planId: plan._id || plan.id,
-                                                day: day.name,
-                                                exercise: ex.name,
-                                              });
-                                            }}
-                                            onPointerDown={(e) => e.stopPropagation()}
-                                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-red-500/10 hover:text-red-500 transition-all"
-                                          >
-                                            <X size={14} className="sm:size-[16px]" />
-                                          </button>
-                                        )}
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (isGenerated) {
-                                              onOpenEditPRPage?.(
-                                                plan._id || plan.id,
-                                                ex.name,
-                                                ex,
-                                                onUpdateExercise
-                                              );
-                                            } else {
-                                              onOpenEditExercisePage?.(
-                                                plan._id || plan.id,
-                                                day.name,
-                                                ex.name,
-                                                ex,
-                                                isGenerated,
-                                                onUpdateExercise
-                                              );
-                                            }
-                                          }}
-                                          onPointerDown={(e) => e.stopPropagation()}
-                                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all"
-                                        >
-                                          <Edit3 size={14} className="sm:size-[16px]" />
-                                        </button>
-                                        <div
-                                          className={`hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-xl items-center justify-center transition-all ${isCompleted ? 'bg-[#ff6600]/20 text-[#ff6600]' : 'bg-white/5 text-white/20'}`}
-                                        >
-                                          <Dumbbell size={14} className="sm:size-[16px]" />
-                                        </div>
-                                      </div>
-                                    </>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                                    </ExercicioSortableItem>
+                                  );
+                                })}
+                              </div>
+                            </SortableContext>
+                          </DndContext>
                           <div className="flex justify-center pt-3">
                             <div
                               onClick={() => hasCompletedInDay && handleFinishDayWorkout(dIdx)}
