@@ -75,8 +75,7 @@ const ExercicioSortableItem = ({ id, children }) => {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    // quando está arrastando bloqueia o scroll, senão permite pan-y normal
-    touchAction: isDragging ? 'none' : 'pan-y',
+    touchAction: 'pan-y',
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
     userSelect: 'none',
@@ -122,16 +121,15 @@ export const PlanDetailsView = ({
   const [addingNewDay, setAddingNewDay] = useState(false);
   const [newDayTitle, setNewDayTitle] = useState('');
   const [syncingPR, setSyncingPR] = useState(null);
+  const [isDraggingExercise, setIsDraggingExercise] = useState(false);
   const timerRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
-  // estados de navegação
   const [openDays, setOpenDays] = useState(() => {
     const saved = localStorage.getItem('@superfrango:openDays');
     return saved ? JSON.parse(saved) : {};
   });
 
-  // delay de 800ms — no mobile precisa segurar mais pra não conflitar com o toggle
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -144,6 +142,15 @@ export const PlanDetailsView = ({
         delay: 800,
         tolerance: 8,
       },
+    })
+  );
+
+  const exerciseSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 300, tolerance: 5 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 300, tolerance: 5 },
     })
   );
 
@@ -264,7 +271,6 @@ export const PlanDetailsView = ({
     }
   };
 
-  // quando soltar o drag atualizo a ordem localmente e mando pro back
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
@@ -273,14 +279,12 @@ export const PlanDetailsView = ({
     const oldIndex = parseInt(active.id);
     const newIndex = parseInt(over.id);
 
-    // cria a nova ordem
     const newDaysOrder = [...plan.days];
     const [movedDay] = newDaysOrder.splice(oldIndex, 1);
     newDaysOrder.splice(newIndex, 0, movedDay);
 
     const daysOrder = newDaysOrder.map(day => day.name);
 
-    // atualiza a UI antes de esperar o back responder
     if (updatePlanLocally) {
       updatePlanLocally({ ...plan, days: newDaysOrder });
     }
@@ -292,7 +296,6 @@ export const PlanDetailsView = ({
       }
     } catch (error) {
       console.error('Erro ao reordenar dias:', error);
-      // se der erro recarrego pra não ficar fora de sincronia
       if (onForceRefresh) {
         await onForceRefresh();
       }
@@ -300,6 +303,7 @@ export const PlanDetailsView = ({
   };
 
   const handleDragEndExercises = async (event, dayName, dayIndex) => {
+    setIsDraggingExercise(false);
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -501,7 +505,7 @@ export const PlanDetailsView = ({
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragStart={() => {
-            // fecho todos os dias quando começo a arrastar
+            if (isDraggingExercise) return;
             setTimeout(() => {
               setOpenDays({});
               localStorage.setItem('@superfrango:openDays', JSON.stringify({}));
@@ -522,7 +526,6 @@ export const PlanDetailsView = ({
                   key={dIdx}
                   id={dIdx.toString()}
                 >
-                  {/* uso render-prop pra receber os listeners e colocar só no h3 */}
                   {({ dragHandleListeners }) => (
                     <div className="space-y-4 sm:space-y-6">
                       <div className="flex items-center gap-2 sm:gap-4 px-2 group/day overflow-hidden">
@@ -530,7 +533,6 @@ export const PlanDetailsView = ({
                         <div className="flex items-center gap-2 sm:gap-3 overflow-hidden flex-wrap sm:flex-nowrap">
                           {!isGenerated && (
                             <div className="flex flex-col gap-1 transition-opacity flex-shrink-0">
-                              {/* setas não ativam drag, só reordenam via click */}
                               <button
                                 disabled={dIdx === 0}
                                 onClick={() => onReorderDays(plan._id || plan.id, dIdx, 'up')}
@@ -548,7 +550,6 @@ export const PlanDetailsView = ({
                             </div>
                           )}
                           {editingDayIdx === dIdx && !isGenerated ? (
-                            // quando tô editando o nome não quero que o drag interfira
                             <div className="flex items-center gap-2 max-w-full">
                               <input
                                 autoFocus
@@ -572,7 +573,6 @@ export const PlanDetailsView = ({
                                 onClick={() => toggleDayVisibility(day.name)}
                                 className="flex items-center gap-2 sm:gap-3 group/title flex-shrink-0"
                               >
-                                {/* só o h3 tem os listeners — é o único lugar que ativa o drag */}
                                 <h3
                                   className="text-lg sm:text-xl md:text-2xl font-black italic uppercase text-[#ff6600] tracking-tight break-words transition-all"
                                   style={{ cursor: 'grab' }}
@@ -591,7 +591,6 @@ export const PlanDetailsView = ({
                               </button>
                               {!isGenerated && (
                                 <div className="flex items-center gap-1 flex-shrink-0">
-                                  {/* botões de editar e excluir ficam sem listeners */}
                                   <button
                                     onClick={() => {
                                       setEditingDayIdx(dIdx);
@@ -624,8 +623,10 @@ export const PlanDetailsView = ({
                       {isVisible && (
                         <>
                           <DndContext
-                            sensors={sensors}
+                            sensors={exerciseSensors}
                             collisionDetection={closestCenter}
+                            autoScroll={false}
+                            onDragStart={() => setIsDraggingExercise(true)}
                             onDragEnd={(event) => handleDragEndExercises(event, day.name, dIdx)}
                           >
                             <SortableContext
@@ -660,8 +661,7 @@ export const PlanDetailsView = ({
                                           className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${isCompleted ? 'bg-[#ff6600]' : 'bg-[#ff6600] opacity-30 group-hover:opacity-100 group-hover:w-2'}`}
                                         />
 
-                                        
-<div className="relative z-10 h-full pt-8 pb-4 px-4 sm:pt-10 sm:pb-5 sm:px-5 flex items-center justify-between gap-3 w-full">
+                                        <div className="relative z-10 h-full p-4 sm:p-5 mt-3 flex items-center justify-between gap-3 w-full">
                                           <>
                                             <div
                                               className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0 cursor-pointer"
