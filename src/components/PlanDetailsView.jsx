@@ -47,8 +47,16 @@ const GYM_PHOTOS = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=85',
 ];
 
-// Cria mapa de fotos vinculadas ao ID/nome do dia (nao a posicao)
-const assignPhotosMap = (days) => {
+// Chave para salvar as fotos no localStorage
+const PHOTOS_STORAGE_KEY = (planId) => `@superfrango:day_photos_${planId}`;
+
+// Carrega fotos salvas do localStorage
+const loadSavedPhotos = (planId, days) => {
+  const saved = localStorage.getItem(PHOTOS_STORAGE_KEY(planId));
+  if (saved) {
+    return JSON.parse(saved);
+  }
+  // Se não tem salvo, cria mapa inicial
   const map = {};
   (days || []).forEach((day, idx) => {
     const key = day._id || day.name || `day-${idx}`;
@@ -102,11 +110,11 @@ const DayMenu = ({ onEdit, onDelete, onChangePhoto }) => {
         onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
         className="w-9 h-9 rounded-xl bg-black/50 backdrop-blur-sm text-white/80 flex items-center justify-center hover:bg-black/70 hover:text-white transition-all border border-white/10"
       >
-        <MoreVertical size={16} />
+        <MoreVertical size={17} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-11 z-30 bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden min-w-[150px]">
+        <div className="absolute right-0 top-9 z-30 bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden min-w-[140px]">
           <button
             onClick={(e) => { e.stopPropagation(); setIsOpen(false); onEdit(); }}
             className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2.5"
@@ -252,11 +260,19 @@ export const PlanDetailsView = ({
   const [selectedDay, setSelectedDay] = useState(null);
   const [localDays, setLocalDays] = useState(plan?.days || []);
   const [isReorderMode, setIsReorderMode] = useState(false);
-  const [dayPhotosMap, setDayPhotosMap] = useState(() => assignPhotosMap(plan?.days || []));
+  // Carrega fotos salvas do localStorage
+  const [dayPhotosMap, setDayPhotosMap] = useState(() => loadSavedPhotos(planId, plan?.days || []));
   const [photoPickerIdx, setPhotoPickerIdx] = useState(null);
   const [pressedIdx, setPressedIdx] = useState(null);
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Salva fotos no localStorage sempre que o mapa mudar
+  useEffect(() => {
+    if (planId && Object.keys(dayPhotosMap).length > 0) {
+      localStorage.setItem(PHOTOS_STORAGE_KEY(planId), JSON.stringify(dayPhotosMap));
+    }
+  }, [dayPhotosMap, planId]);
 
   // Helper para obter foto de um dia pelo seu ID/nome
   const getDayPhoto = (day, idx) => {
@@ -319,7 +335,6 @@ export const PlanDetailsView = ({
       await api.put(`/workout-plans/${planId}/reorder`, {
         daysOrder: newDays.map((d) => d.name),
       });
-      // Não chama onForceRefresh para evitar sobrescrever o estado local
     } catch (err) {
       console.error('Erro ao reordenar dias:', err);
       setLocalDays(plan?.days || []);
@@ -336,10 +351,18 @@ export const PlanDetailsView = ({
 
   const handleEditDayName = (dayName, newName) => {
     if (!newName.trim()) return;
+    // Preserva a foto do dia antigo para o novo nome
+    const oldPhoto = dayPhotosMap[dayName];
     onUpdateDayName(planId, dayName, newName.trim());
     setLocalDays((prev) =>
       prev.map((d) => (d.name === dayName ? { ...d, name: newName.trim() } : d))
     );
+    setDayPhotosMap((prev) => {
+      const newMap = { ...prev };
+      newMap[newName.trim()] = oldPhoto;
+      delete newMap[dayName];
+      return newMap;
+    });
     setEditingDayIdx(null);
   };
 
@@ -388,8 +411,8 @@ export const PlanDetailsView = ({
           selectedDay ? 'hidden' : ''
         }`}
       >
-        {/* Glow de fundo */}
-        <div className="fixed inset-0 pointer-events-none opacity-20 overflow-hidden">
+        {/* Glow de fundo - removido para fundo totalmente preto */}
+        <div className="fixed inset-0 pointer-events-none opacity-20 overflow-hidden hidden">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#ff6600] rounded-full blur-[150px]" />
         </div>
 
@@ -445,7 +468,7 @@ export const PlanDetailsView = ({
               </div>
             </div>
 
-           {/* Share code + badge */}
+            {/* Share code + badge */}
             <div className="flex items-center gap-3 mt-2">
               {isGenerated && (
                 <span className="px-2.5 py-0.5 bg-[#ff6600] text-black text-[9px] font-black uppercase tracking-widest rounded-full italic">
@@ -453,8 +476,8 @@ export const PlanDetailsView = ({
                 </span>
               )}
               {!isGenerated && plan.shareCode && (
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg pl-8 pr-2 py-1">
-                  <span className="text-[13px] font-mono font-bold text-gray-400 tracking-widest">
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg pl-5 pr-2 py-1">
+                  <span className="text-[10px] font-mono font-bold text-gray-400 tracking-widest">
                     {plan.shareCode}
                   </span>
                   <button
@@ -471,7 +494,6 @@ export const PlanDetailsView = ({
                 </div>
               )}
               
-
               {/* Contador de dias estilizado */}
               <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-7 py-1.5 ml-auto">
                 <span className="text-[11px] font-black text-[#ff6600] uppercase tracking-widest">
@@ -497,7 +519,7 @@ export const PlanDetailsView = ({
               items={localDays.map((_, idx) => idx.toString())}
               strategy={verticalListSortingStrategy}
             >
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5">
                 {localDays.map((day, dIdx) => {
                   const photo = getDayPhoto(day, dIdx);
                   const exerciseCount = day.exercises?.length || 0;
@@ -506,33 +528,37 @@ export const PlanDetailsView = ({
 
                   if (editingDayIdx === dIdx && !isGenerated) {
                     return (
-                      <div
-                        key={day._id || dIdx}
-                        className="rounded-3xl border border-[#ff6600]/30 bg-white/[0.03] p-6 flex items-center gap-3 min-h-[80px]"
-                      >
-                        <input
-                          autoFocus
-                          className="flex-1 bg-transparent text-2xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600]/60 outline-none py-1"
-                          value={tempDayName}
-                          onChange={(e) => setTempDayName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleEditDayName(day.name, tempDayName);
-                            if (e.key === 'Escape') setEditingDayIdx(null);
-                          }}
-                        />
-                        <button
-                          onClick={() => handleEditDayName(day.name, tempDayName)}
-                          className="p-2 text-[#ff6600] hover:bg-[#ff6600]/10 rounded-xl transition-all"
-                        >
-                          <Check size={18} />
-                        </button>
-                        <button
-                          onClick={() => setEditingDayIdx(null)}
-                          className="p-2 text-gray-600 hover:text-white rounded-xl transition-all"
-                        >
-                          <X size={18} />
-                        </button>
-                      </div>
+                   <div
+  key={day._id || dIdx}
+  className="rounded-3xl border border-[#ff6600]/30 bg-white/[0.03] p-4 sm:p-5"
+>
+  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+    <input
+      autoFocus
+      className="flex-1 w-full bg-transparent text-xl sm:text-2xl font-black italic uppercase text-[#ff6600] border-b border-[#ff6600]/60 outline-none py-1 px-1"
+      value={tempDayName}
+      onChange={(e) => setTempDayName(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') handleEditDayName(day.name, tempDayName);
+        if (e.key === 'Escape') setEditingDayIdx(null);
+      }}
+    />
+    <div className="flex items-center gap-2 self-end sm:self-auto">
+      <button
+        onClick={() => handleEditDayName(day.name, tempDayName)}
+        className="p-2 text-[#ff6600] hover:bg-[#ff6600]/10 rounded-xl transition-all"
+      >
+        <Check size={18} />
+      </button>
+      <button
+        onClick={() => setEditingDayIdx(null)}
+        className="p-2 text-gray-500 hover:text-white rounded-xl transition-all"
+      >
+        <X size={18} />
+      </button>
+    </div>
+  </div>
+</div>
                     );
                   }
 
@@ -550,30 +576,33 @@ export const PlanDetailsView = ({
                               setSelectedPhotoIdx(selectedPhotoIdx === dIdx ? null : dIdx);
                             }
                           }}
-                          className={`relative h-56 sm:h-64 rounded-3xl overflow-hidden select-none shadow-xl transition-all duration-500 ${
+                          className={`relative h-70 sm:h-60 rounded-3xl overflow-hidden select-none shadow-xl transition-all duration-500 ${
                             isReorderMode ? 'cursor-default' : 'cursor-pointer group'
                           } ${
                             isDragging
                               ? 'shadow-[0_0_40px_rgba(255,102,0,0.25)] ring-1 ring-[#ff6600]/50 scale-[1.02]'
                               : 'hover:shadow-[0_0_30px_rgba(255,102,0,0.15)]'
-                          }`}
+                          } border border-[#ff6600]/30`}
                         >
-                          {/* Foto de fundo */}
+                          {/* Foto de fundo com grayscale suavizado */}
                           <div
-                            className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ${
+                            className={`absolute inset-0 bg-cover bg-center transition-all duration-700 ${
                               isPhotoSelected
-                                ? 'grayscale-0 brightness-[0.9] scale-110'
-                                : `grayscale brightness-[0.7] contrast-[1.1] ${!isReorderMode ? 'group-hover:grayscale-0 group-hover:brightness-[0.9] group-hover:scale-110' : ''}`
+                                ? 'grayscale-0 brightness-100 scale-110'
+                                : `grayscale-[0.85] brightness-[0.85] ${!isReorderMode ? 'group-hover:grayscale-0 group-hover:brightness-100 group-hover:scale-110' : ''}`
                             }`}
                             style={{ backgroundImage: `url('${photo}')` }}
                           />
 
                           {/* Overlay gradiente */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-black/30 transition-all duration-500 group-hover:from-black/80" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-black/20 transition-all duration-500 group-hover:from-black/80" />
 
-                          {/* Borda laranja sutil */}
+                          {/* Borda laranja fixa nos cards */}
+                          <div className="absolute inset-0 rounded-3xl pointer-events-none ring-1 ring-[#ff6600]/30" />
+
+                          {/* Borda laranja mais forte no hover */}
                           <div className={`absolute inset-0 rounded-3xl pointer-events-none transition-all duration-500 ${
-                            !isDragging && !isReorderMode ? 'group-hover:shadow-[inset_0_0_0_1.5px_rgba(255,102,0,0.3)]' : ''
+                            !isDragging && !isReorderMode ? 'group-hover:ring-2 group-hover:ring-[#ff6600]/60' : ''
                           }`} />
 
                           {/* Barra inferior animada */}
@@ -616,14 +645,14 @@ export const PlanDetailsView = ({
 
                           {/* Rodapé: nome + contador + botão entrar */}
                           <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 flex items-end justify-between gap-4">
-                            <div className="min-w-0">
-                              <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mb-2 transition-all duration-300 group-hover:text-white/70">
+                            <div className="min-w-0 overflow-hidden">
+                              <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mb-2 transition-all duration-300 group-hover:text-white/70 truncate">
                                 {exerciseCount}{' '}
                                 {exerciseCount === 1 ? 'EXERCÍCIO' : 'EXERCÍCIOS'}
                               </p>
-                              <h3 className="text-2xl sm:text-3xl font-black italic uppercase tracking-tighter text-white leading-none truncate drop-shadow-lg transition-all duration-300">
-                                {day.name}
-                              </h3>
+                              <h3 className="text-xl sm:text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-white leading-tight break-words drop-shadow-lg transition-all duration-300 max-w-[85%]">
+  {day.name}
+</h3>
                             </div>
 
                             {!isReorderMode && (
