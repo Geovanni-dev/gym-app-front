@@ -204,33 +204,56 @@ export const DayDetailsPage = ({
     return () => setIsReorderMode(false);
   }, []);
 
-  const handleAddExercise = async (planId, dayName, onAddExerciseCallback) => {
-    onOpenAddExercisePage(planId, dayName, async (planId, dayName, exerciseData) => {
-      const newExercise = await onAddExerciseCallback(planId, dayName, exerciseData);
-      if (newExercise && newExercise.exercise) {
-        setExercises(prev => [...prev, newExercise.exercise]);
-      } else if (exerciseData) {
-        setExercises(prev => [...prev, { _id: Date.now().toString(), ...exerciseData }]);
+
+const handleAddExercise = async (planId, dayName, onAddExerciseCallback) => {
+  onOpenAddExercisePage(planId, dayName, async (planId, dayName, exerciseData) => {
+    const updatedPlan = await onAddExerciseCallback(planId, dayName, exerciseData);
+    
+    if (updatedPlan?.days) {
+      // Pega o dia correto do plano atualizado com _ids reais
+      const updatedDay = updatedPlan.days[dayIndex];
+      if (updatedDay?.exercises) {
+        setExercises(updatedDay.exercises);
+        if (updatePlanLocally) updatePlanLocally({ ...day, exercises: updatedDay.exercises }, dayIndex);
+        return;
       }
-      if (onForceRefresh) setTimeout(() => onForceRefresh(), 100);
-    });
-  };
+    }
+    // fallback
+    if (exerciseData) {
+      setExercises(prev => [...prev, { _id: Date.now().toString(), ...exerciseData }]);
+    }
+  });
+};
 
-  const handleDeleteExercise = async (planId, dayName, exerciseName) => {
-    await onDeleteExercise(planId, dayName, exerciseName);
-    setExercises(prev => prev.filter(ex => ex.name !== exerciseName));
-    if (onForceRefresh) setTimeout(() => onForceRefresh(), 100);
-  };
+const handleDeleteExercise = async (planId, dayName, exerciseName) => {
+  const updatedPlan = await onDeleteExercise(planId, dayName, exerciseName);
+  if (updatedPlan?.days) {
+    const updatedDay = updatedPlan.days[dayIndex];
+    if (updatedDay?.exercises) {
+      setExercises(updatedDay.exercises);
+      if (updatePlanLocally) updatePlanLocally({ ...day, exercises: updatedDay.exercises }, dayIndex);
+      return;
+    }
+  }
+  setExercises(prev => prev.filter(ex => ex.name !== exerciseName));
+};
 
-  const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGenerated, onUpdateExerciseCallback) => {
-    onOpenEditExercisePage(planId, dayName, exerciseName, exerciseData, isGenerated, async (planId, dayName, exerciseName, updatedData) => {
-      await onUpdateExerciseCallback(planId, dayName, exerciseName, updatedData);
-      setExercises(prev => prev.map(ex =>
-        ex.name === exerciseName ? { ...ex, ...updatedData } : ex
-      ));
-      if (onForceRefresh) setTimeout(() => onForceRefresh(), 100);
-    });
-  };
+const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGenerated, onUpdateExerciseCallback) => {
+  onOpenEditExercisePage(planId, dayName, exerciseName, exerciseData, isGenerated, async (planId, dayName, exerciseName, updatedData) => {
+    const updatedPlan = await onUpdateExerciseCallback(planId, dayName, exerciseName, updatedData);
+    if (updatedPlan?.days) {
+      const updatedDay = updatedPlan.days[dayIndex];
+      if (updatedDay?.exercises) {
+        setExercises(updatedDay.exercises);
+        if (updatePlanLocally) updatePlanLocally({ ...day, exercises: updatedDay.exercises }, dayIndex);
+        return;
+      }
+    }
+    setExercises(prev => prev.map(ex =>
+      ex.name === exerciseName ? { ...ex, ...updatedData } : ex
+    ));
+  });
+};
 
   const stats = useMemo(() => {
     const total = exercises.length;

@@ -173,36 +173,49 @@ const onUpdateDayName = async (planId, oldDayName, newDayName) => {
     setLoading(false);
   }
 };
-  const onUpdateExercise = async (planId, dayName, exerciseName, data, isGenerated = false) => {
-    setLoading(true);
-    try {
-      if (isGenerated) {
-        await api.put('/workouts/update-pr', { workoutId: planId, exerciseName: exerciseName, newPR: Number(data.weight) });
-      } else {
-        await api.put(`/workout-plans/${planId}/${dayName}/${encodeURIComponent(exerciseName)}`, data);
-      }
-      fetchPlans();
-      fetchGeneratedWorkouts();
-    } catch (e) { console.error('Erro detalhado:', e.response?.data); } 
-    finally { setLoading(false); }
-  };
 
-  const onAddExercise = async (planId, dayName, data) => {
-    setLoading(true);
-    try {
-      const response = await api.post(`/workout-plans/${planId}/exercise`, { dayName, ...data });
-      if (response.data.workoutPlan) {
-        setSelectedPlan(response.data.workoutPlan);
-        setPlans(prevPlans => prevPlans.map(p => (p._id || p.id) === planId ? response.data.workoutPlan : p));
-      }
-    } catch (e) { console.error(e); } finally { setLoading(false); }
-  };
+const onUpdateExercise = async (planId, dayName, exerciseName, data, isGenerated = false) => {
+  setLoading(true);
+  try {
+    if (isGenerated) {
+      await api.put('/workouts/update-pr', { workoutId: planId, exerciseName, newPR: Number(data.weight) });
+    } else {
+      const response = await api.put(`/workout-plans/${planId}/${dayName}/${encodeURIComponent(exerciseName)}`, data);
+      return response.data.workoutPlan; // ← ÚNICO ACRÉSCIMO
+    }
+    fetchPlans();
+    fetchGeneratedWorkouts();
+  } catch (e) { console.error(e); } finally { setLoading(false); }
+};
 
-  const onAddDay = async (planId, dayName) => {
-    setLoading(true);
-    try { await api.post(`/workout-plans/${planId}/day`, { name: dayName }); fetchPlans(); } 
-    catch (e) {} finally { setLoading(false); }
-  };
+const onAddExercise = async (planId, dayName, data) => {
+  setLoading(true);
+  try {
+    const response = await api.post(`/workout-plans/${planId}/exercise`, { dayName, ...data });
+    if (response.data.workoutPlan) {
+      setSelectedPlan(response.data.workoutPlan);
+      setPlans(prevPlans => prevPlans.map(p => (p._id || p.id) === planId ? response.data.workoutPlan : p));
+    }
+    return response.data.workoutPlan; // 
+  } catch (e) { console.error(e); } finally { setLoading(false); }
+};
+
+const onAddDay = async (planId, dayName) => {
+  setLoading(true);
+  try {
+    await api.post(`/workout-plans/${planId}/day`, { name: dayName });
+    // Remove o console.log com postRes
+    const response = await api.get('/workout-plans');
+    const formattedPlans = response.data.map((p) => ({ ...p, daysCount: p.days?.length || 0 }));
+    setPlans(formattedPlans);
+    const updated = formattedPlans.find(p => (p._id || p.id) === planId);
+    if (updated) setSelectedPlan(updated);
+  } catch (e) { 
+    console.error(e); 
+  } finally { 
+    setLoading(false); 
+  }
+};
 
 const onDeleteDay = async (planId, dayName) => {
   try { 
@@ -271,18 +284,15 @@ const handleDeleteGeneratedWorkout = async (workoutId) => {
 
 const handleDeleteExercise = async (planId, dayName, exerciseName) => {
   if (loading) return;
-  // A requisição continua assíncrona, mas a atualização de estado é adiada levemente.
   try {
     const response = await api.delete(`/workout-plans/${planId}/${dayName}/${encodeURIComponent(exerciseName)}`);
-    // Adia a atualização do estado do componente pai para o próximo ciclo do event loop.
     setTimeout(() => {
       if (response.data.workoutPlan) setSelectedPlan(response.data.workoutPlan);
       fetchPlans();
     }, 0);
+    return response.data.workoutPlan; 
   } catch (e) {} finally {
-    setTimeout(() => {
-      setLoading(false);
-    }, 0);
+    setTimeout(() => setLoading(false), 0);
   }
 };
 

@@ -280,26 +280,32 @@ export const PlanDetailsView = ({
     return dayPhotosMap[key] || GYM_PHOTOS[idx % GYM_PHOTOS.length];
   };
 
-  useEffect(() => {
-    if (plan?.days) {
-      // Só atualiza se a ordem for diferente (evita re-renderização desnecessária)
-      const hasChanged = JSON.stringify(plan.days.map(d => d.name)) !== JSON.stringify(localDays.map(d => d.name));
-      if (hasChanged) {
-        setLocalDays(plan.days);
-      }
-      // Apenas adiciona fotos para dias NOVOS, mantendo as existentes
-      setDayPhotosMap((prev) => {
-        const newMap = { ...prev };
-        plan.days.forEach((day, idx) => {
-          const key = day._id || day.name || `day-${idx}`;
-          if (!newMap[key]) {
-            newMap[key] = GYM_PHOTOS[idx % GYM_PHOTOS.length];
+useEffect(() => {
+  if (plan?.days) {
+    setLocalDays((prevLocalDays) => {
+      if (selectedDay !== null) {
+        return plan.days.map((serverDay, idx) => {
+          if (idx === selectedDay.dayIndex) {
+            return prevLocalDays[idx] || serverDay;
           }
+          return serverDay;
         });
-        return newMap;
+      }
+      return plan.days;
+    });
+
+    setDayPhotosMap((prev) => {
+      const newMap = { ...prev };
+      plan.days.forEach((day, idx) => {
+        const key = day._id || day.name || `day-${idx}`;
+        if (!newMap[key]) {
+          newMap[key] = GYM_PHOTOS[idx % GYM_PHOTOS.length];
+        }
       });
-    }
-  }, [plan?.days, localDays]);
+      return newMap;
+    });
+  }
+}, [plan?.days]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => { return () => setIsReorderMode(false); }, []);
 
@@ -345,6 +351,7 @@ export const PlanDetailsView = ({
   const handleUpdatePlanLocally = (updatedDay, dayIndex) => {
     const newDays = [...localDays];
     newDays[dayIndex] = updatedDay;
+     setSelectedDay({ day: updatedDay, dayIndex });
     setLocalDays(newDays);
     if (updatePlanLocally) updatePlanLocally({ ...plan, days: newDays });
   };
@@ -470,41 +477,31 @@ export const PlanDetailsView = ({
 
             {/* Share code + badge */}
             <div className="flex items-center gap-3 mt-2">
-              {isGenerated && (
-                <span className="px-2.5 py-0.5 bg-[#ff6600] text-black text-[9px] font-black uppercase tracking-widest rounded-full italic">
-                  FRANGO STUDIO
-                </span>
-              )}
-              {!isGenerated && plan.shareCode && (
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg pl-5 pr-2 py-1">
-                  <span className="text-[10px] font-mono font-bold text-gray-400 tracking-widest">
-                    {plan.shareCode}
-                  </span>
-                  <button
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(plan.shareCode);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 1500);
-                    }}
-                    className="p-1 rounded text-gray-600 hover:text-[#ff6600] transition-all"
-                    title="Copiar código"
-                  >
-                    {copied ? <CheckCheck size={12} className="text-[#ff6600]" /> : <Copy size={12} />}
-                  </button>
-                </div>
-              )}
-              
-              {/* Contador de dias estilizado */}
-              <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-7 py-1.5 ml-auto">
-                <span className="text-[11px] font-black text-[#ff6600] uppercase tracking-widest">
-                  {localDays.length === 1 ? 'DIA' : 'TREINOS'}
-                </span>
-                <span className="w-px h-3 bg-white/20" />
-                <span className="text-[11px] font-black text-gray-400">
-                  {localDays.length}
-                </span>
-              </div>
-            </div>
+  {/* FRANGO STUDIO - camada da frente */}
+  <span className="px-2.5 py-1 ml-5 bg-[#ff6600] text-black text-[9.5px] font-black uppercase tracking-widest rounded-full italic z-10 relative">
+    FRANGO STUDIO
+  </span>
+
+  {/* shareCode - camada de trás */}
+  {!isGenerated && plan.shareCode && (
+    <div className="flex items-center gap-2 bg-gray border border-white/40 rounded-full pl-9 pr-1 ml-[-36px]">
+      <span className="text-[8px] font-mono font-bold text-gray-400 tracking-widest">
+        {plan.shareCode}
+      </span>
+      <button
+        onClick={async () => {
+          await navigator.clipboard.writeText(plan.shareCode);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        className="p-1 rounded text-gray-600 hover:text-[#ff6600] transition-all"
+        title="Copiar código"
+      >
+        {copied ? <CheckCheck size={12} className="text-[#ff6600]" /> : <Copy size={12} />}
+      </button>
+    </div>
+  )}
+</div>
           </div>
 
           {/* ── LISTA DE DIAS ── */}
