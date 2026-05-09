@@ -62,7 +62,7 @@ const ExercicioSortableItem = ({ id, children, isReorderMode }) => {
 };
 
 // ==================== COMPONENTE DO MENU DROPDOWN ====================
-const ExerciseMenu = ({ onEdit, onDelete }) => {
+const ExerciseMenu = ({ onEdit, onDelete, isGenerated = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -90,28 +90,32 @@ const ExerciseMenu = ({ onEdit, onDelete }) => {
 
       {isOpen && (
         <div className="absolute right-0 top-10 z-20 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden min-w-[130px] animate-in fade-in slide-in-from-top-2 duration-200">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsOpen(false);
-              onEdit();
-            }}
-            className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2"
-          >
-            <Edit3 size={14} />
-            Editar
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsOpen(false);
-              onDelete();
-            }}
-            className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-2"
-          >
-            <Trash2 size={14} />
-            Excluir
-          </button>
+          {isGenerated ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsOpen(false); onEdit(); }}
+              className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2"
+            >
+              <Trophy size={14} />
+              Editar PR
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); onEdit(); }}
+                className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2"
+              >
+                <Edit3 size={14} />
+                Editar
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); onDelete(); }}
+                className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-2"
+              >
+                <Trash2 size={14} />
+                Excluir
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -210,7 +214,6 @@ const handleAddExercise = async (planId, dayName, onAddExerciseCallback) => {
     const updatedPlan = await onAddExerciseCallback(planId, dayName, exerciseData);
     
     if (updatedPlan?.days) {
-      // Pega o dia correto do plano atualizado com _ids reais
       const updatedDay = updatedPlan.days[dayIndex];
       if (updatedDay?.exercises) {
         setExercises(updatedDay.exercises);
@@ -336,16 +339,17 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
     const newExercisesOrder = arrayMove([...exercises], oldIndex, newIndex);
     setExercises(newExercisesOrder);
     if (updatePlanLocally) updatePlanLocally({ ...day, exercises: newExercisesOrder }, dayIndex);
+
+    const hasInvalidIds = newExercisesOrder.some(ex => !ex._id || ex._id.toString().length > 20);
+    if (hasInvalidIds) return;
+
     try {
       await api.put(`/workout-plans/${planId}/reorder-exercises`, {
         dayName: day.name,
         exercisesOrder: newExercisesOrder.map(ex => ex._id),
       });
-      if (onForceRefresh && !updatePlanLocally) setTimeout(() => onForceRefresh(), 100);
     } catch (error) {
       console.error('Erro ao reordenar exercícios:', error);
-      setExercises(day?.exercises || []);
-      if (updatePlanLocally) updatePlanLocally(day, dayIndex);
     }
   };
 
@@ -398,7 +402,7 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
         </div>
 
         {/* Barra de ações */}
-        <div className="flex items-center justify-end gap-3 -mt-19 mb-6">
+        <div className={`flex items-center justify-end gap-3 mb-6 ${!isGenerated ? '-mt-19' : 'mt-2'}`}>
           {!isGenerated && exercises.length > 1 && (
             <button
               onClick={() => setIsReorderMode(prev => !prev)}
@@ -478,18 +482,27 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
                               <GripVertical size={16} />
                             </div>
                           ) : (
-                            <ExerciseMenu
-                              onEdit={() => {
-                                if (isGenerated) {
-                                  onOpenEditPRPage?.(planId, ex.name, ex, onUpdateExercise);
-                                } else {
-                                  handleEditExercise(planId, day.name, ex.name, ex, isGenerated, onUpdateExercise);
-                                }
-                              }}
-                              onDelete={() =>
-                                setConfirmTarget({ type: 'exercise', planId, day: day.name, exercise: ex.name })
-                              }
-                            />
+                           <ExerciseMenu
+  isGenerated={isGenerated}
+  onEdit={() => {
+    if (isGenerated) {
+      onOpenEditPRPage?.(planId, ex.name, ex, async (planId, _, exerciseName, data) => {
+        const updatedPlan = await onUpdateExercise(planId, null, exerciseName, data, true);
+        setExercises(prev => prev.map(e =>
+          e.name === exerciseName ? { ...e, weight: data.weight } : e
+        ));
+        if (updatedPlan?.days && updatePlanLocally) {
+          updatePlanLocally({ ...day, exercises: updatedPlan.days[dayIndex]?.exercises || [] }, dayIndex);
+        }
+      });
+    } else {
+      handleEditExercise(planId, day.name, ex.name, ex, isGenerated, onUpdateExercise);
+    }
+  }}
+  onDelete={() =>
+    setConfirmTarget({ type: 'exercise', planId, day: day.name, exercise: ex.name })
+  }
+/>
                           )}
                         </div>
 

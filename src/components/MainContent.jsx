@@ -114,30 +114,36 @@ useEffect(() => {
     } catch (e) { console.error('Erro ao carregar planos', e); }
   };
 
-  const fetchGeneratedWorkouts = async () => {
-    try {
-      const response = await api.get('/workouts/my-workouts');
-      const formatted = response.data.map((w) => ({
+const fetchGeneratedWorkouts = async () => {
+  try {
+    const response = await api.get('/workouts/my-workouts');
+    const formatted = response.data.map((w) => {
+      const existing = generatedWorkouts.find(g => (g._id || g.id) === (w._id || w.id));
+      return {
         ...w,
         name: `PROTOCOLO ${w.goal?.toUpperCase() || 'AUTO'}`,
         daysCount: w.days || 0,
-        days: w.split?.map((s) => ({
+        days: w.split?.map((s, sIdx) => ({
           name: s.day,
-          exercises: s.exercises?.map((ex) => ({
-            name: typeof ex === 'string' ? ex : ex.name || ex.exercise || 'Exercício',
-            sets: w.sets || 3,
-            reps: w.reps || '8-12',
-            weight: ex.weight || 0,
-          })) || [],
+          exercises: s.exercises?.map((ex, eIdx) => {
+            const existingEx = existing?.days?.[sIdx]?.exercises?.[eIdx];
+            return {
+              name: typeof ex === 'string' ? ex : ex.name || ex.exercise || 'Exercício',
+              sets: w.sets || 3,
+              reps: w.reps || '8-12',
+              weight: existingEx?.weight ?? ex.weight ?? 0,
+            };
+          }) || [],
         })) || [],
-      }));
-      setGeneratedWorkouts(formatted);
-      if (selectedPlan && activeTab === 'generator' && formatted.some((w) => (w._id || w.id) === (selectedPlan._id || selectedPlan.id))) {
-        const updated = formatted.find((w) => (w._id || w.id) === (selectedPlan._id || selectedPlan.id));
-        if (updated) setSelectedPlan(updated);
-      }
-    } catch (e) { console.error('Erro ao carregar treinos gerados', e); }
-  };
+      };
+    });
+    setGeneratedWorkouts(formatted);
+    if (selectedPlan && activeTab === 'generator' && formatted.some((w) => (w._id || w.id) === (selectedPlan._id || selectedPlan.id))) {
+      const updated = formatted.find((w) => (w._id || w.id) === (selectedPlan._id || selectedPlan.id));
+      if (updated) setSelectedPlan(updated);
+    }
+  } catch (e) { console.error('Erro ao carregar treinos gerados', e); }
+};
 
 const fetchHistory = async () => {
   try {
@@ -179,12 +185,32 @@ const onUpdateExercise = async (planId, dayName, exerciseName, data, isGenerated
   try {
     if (isGenerated) {
       await api.put('/workouts/update-pr', { workoutId: planId, exerciseName, newPR: Number(data.weight) });
+      setGeneratedWorkouts(prev => prev.map(w => {
+        if ((w._id || w.id) !== planId) return w;
+        return {
+          ...w,
+          days: w.days.map(d => ({
+            ...d,
+            exercises: d.exercises.map(e =>
+              e.name === exerciseName ? { ...e, weight: Number(data.weight) } : e
+            )
+          }))
+        };
+      }));
+      const updated = generatedWorkouts.find(w => (w._id || w.id) === planId);
+      if (updated) {
+        const updatedDays = updated.days.map(d => ({
+          ...d,
+          exercises: d.exercises.map(e =>
+            e.name === exerciseName ? { ...e, weight: Number(data.weight) } : e
+          )
+        }));
+        return { ...updated, days: updatedDays };
+      }
     } else {
       const response = await api.put(`/workout-plans/${planId}/${dayName}/${encodeURIComponent(exerciseName)}`, data);
-      return response.data.workoutPlan; // ← ÚNICO ACRÉSCIMO
+      return response.data.workoutPlan;
     }
-    fetchPlans();
-    fetchGeneratedWorkouts();
   } catch (e) { console.error(e); } finally { setLoading(false); }
 };
 
@@ -196,7 +222,7 @@ const onAddExercise = async (planId, dayName, data) => {
       setSelectedPlan(response.data.workoutPlan);
       setPlans(prevPlans => prevPlans.map(p => (p._id || p.id) === planId ? response.data.workoutPlan : p));
     }
-    return response.data.workoutPlan; // 
+    return response.data.workoutPlan;
   } catch (e) { console.error(e); } finally { setLoading(false); }
 };
 
@@ -364,10 +390,13 @@ const handleDeleteExercise = async (planId, dayName, exerciseName) => {
   };
 
   // Função para atualizar o plano localmente após uma edição, sem precisar refazer toda a requisição
- const updatePlanLocally = (updatedPlan) => {
+const updatePlanLocally = (updatedPlan) => {
   setSelectedPlan(updatedPlan);
   setPlans(prevPlans => prevPlans.map(p => 
     (p._id || p.id) === (updatedPlan._id || updatedPlan.id) ? updatedPlan : p
+  ));
+  setGeneratedWorkouts(prev => prev.map(w =>
+    (w._id || w.id) === (updatedPlan._id || updatedPlan.id) ? updatedPlan : w
   ));
 };
 
@@ -589,7 +618,11 @@ const onResetSubmit = async (data) => {
     formForgot.reset();
     formReset.reset();
     formChangePassword.reset();
-    if (isAuthenticated) { fetchPlans(); fetchGeneratedWorkouts(); fetchHistory(); }
+    if (isAuthenticated) { 
+  fetchPlans();
+  if (generatedWorkouts.length === 0) fetchGeneratedWorkouts();
+  fetchHistory(); 
+}
   }, [view, activeTab, isAuthenticated]);
 
   //===================== Telas de autenticação

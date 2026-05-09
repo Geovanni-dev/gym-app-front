@@ -384,6 +384,7 @@ export const AppViews = ({
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-2">
                   {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
+                  
                     const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
                     const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
                     const workoutId = workout._id || workout.id;

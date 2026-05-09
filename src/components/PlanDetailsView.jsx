@@ -348,13 +348,14 @@ useEffect(() => {
     }
   };
 
-  const handleUpdatePlanLocally = (updatedDay, dayIndex) => {
-    const newDays = [...localDays];
-    newDays[dayIndex] = updatedDay;
-     setSelectedDay({ day: updatedDay, dayIndex });
-    setLocalDays(newDays);
-    if (updatePlanLocally) updatePlanLocally({ ...plan, days: newDays });
-  };
+const handleUpdatePlanLocally = (updatedDay, dayIndex) => {
+  const newDays = [...localDays];
+  newDays[dayIndex] = updatedDay;
+  setSelectedDay({ day: updatedDay, dayIndex });
+  setLocalDays(newDays);
+  const updatedPlan = { ...plan, days: newDays };
+  if (updatePlanLocally) updatePlanLocally(updatedPlan);
+};
 
   const handleEditDayName = (dayName, newName) => {
     if (!newName.trim()) return;
