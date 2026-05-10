@@ -35,16 +35,16 @@ import { DayDetailsPage } from './Modals/DayDetailsPage';
 
 // ==================== 10 FOTOS ÚNICAS DE ACADEMIA ====================
 const GYM_PHOTOS = [
-  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=85',
-  'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=900&q=85',
-  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=900&q=85',
+  'https://images.unsplash.com/photo-1434682772747-f16d3ea162c3?w=900&q=85',
+  'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=900&q=85',
   'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=900&q=85',
-  'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=900&q=85',
-  'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=900&q=85',
-  'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=900&q=85',
-  'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=900&q=85',
+  'https://images.unsplash.com/photo-1546483875-ad9014c88eba?w=900&q=85',
   'https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=900&q=85',
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=85',
+  'https://images.unsplash.com/photo-1604233098531-90b71b1b17a6?w=900&q=85',
+  'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=900&q=85',
+  'https://images.unsplash.com/photo-1534368270820-9de3d8053204?w=900&q=85',
+  'https://images.unsplash.com/photo-1606889463862-a8fc57a706ce?w=900&q=85',
+  'https://images.unsplash.com/photo-1648995361141-30676a75fd27?w=900&q=85',
 ];
 
 // Chave para salvar as fotos no localStorage
@@ -92,7 +92,7 @@ const DiaSortableItem = ({ id, children }) => {
 };
 
 // ==================== MENU DO DIA ====================
-const DayMenu = ({ onEdit, onDelete, onChangePhoto }) => {
+const DayMenu = ({ onEdit, onDelete, onChangePhoto, isGenerated = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -115,24 +115,35 @@ const DayMenu = ({ onEdit, onDelete, onChangePhoto }) => {
 
       {isOpen && (
         <div className="absolute right-0 top-9 z-30 bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden min-w-[140px]">
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsOpen(false); onEdit(); }}
-            className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2.5"
-          >
-            <Edit3 size={14} /> Editar nome
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsOpen(false); onChangePhoto(); }}
-            className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-white/5 hover:text-white transition-all flex items-center gap-2.5 border-t border-white/5"
-          >
-            <ImageIcon size={14} /> Trocar foto
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsOpen(false); onDelete(); }}
-            className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-red-500/10 hover:text-red-400 transition-all flex items-center gap-2.5 border-t border-white/5"
-          >
-            <Trash2 size={14} /> Excluir
-          </button>
+          {isGenerated ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsOpen(false); onChangePhoto(); }}
+              className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-white/5 hover:text-white transition-all flex items-center gap-2.5"
+            >
+              <ImageIcon size={14} /> Trocar foto
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); onEdit(); }}
+                className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2.5"
+              >
+                <Edit3 size={14} /> Editar nome
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); onChangePhoto(); }}
+                className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-white/5 hover:text-white transition-all flex items-center gap-2.5 border-t border-white/5"
+              >
+                <ImageIcon size={14} /> Trocar foto
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); onDelete(); }}
+                className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-red-500/10 hover:text-red-400 transition-all flex items-center gap-2.5 border-t border-white/5"
+              >
+                <Trash2 size={14} /> Excluir
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -622,22 +633,21 @@ const handleUpdatePlanLocally = (updatedDay, dayIndex) => {
                                 <GripVertical size={16} />
                               </div>
                             ) : (
-                              !isGenerated && (
-                                <DayMenu
-                                  onEdit={() => {
-                                    setEditingDayIdx(dIdx);
-                                    setTempDayName(day.name);
-                                  }}
-                                  onChangePhoto={() => setPhotoPickerIdx(dIdx)}
-                                  onDelete={() =>
-                                    setConfirmTarget({
-                                      type: 'day',
-                                      planId,
-                                      dayName: day.name,
-                                    })
-                                  }
-                                />
-                              )
+                              <DayMenu
+                                onEdit={() => {
+                                  setEditingDayIdx(dIdx);
+                                  setTempDayName(day.name);
+                                }}
+                                onChangePhoto={() => setPhotoPickerIdx(dIdx)}
+                                onDelete={() =>
+                                  setConfirmTarget({
+                                    type: 'day',
+                                    planId,
+                                    dayName: day.name,
+                                  })
+                                }
+                                isGenerated={isGenerated}
+                              />
                             )}
                           </div>
 

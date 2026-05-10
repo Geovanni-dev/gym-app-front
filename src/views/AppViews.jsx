@@ -2,14 +2,78 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem,
   Plus, ChevronRight, Activity, Trophy, Clock, ArrowLeft,
-  MoreVertical, Edit3, Trash2
+  MoreVertical, Edit3, Trash2, ImageIcon, Check, X
 } from 'lucide-react';
 import { PlanDetailsView, MetricsGrid, MetricsGridAuto } from '../components';
 import api from '../services/api';
 
+// ==================== 10 FOTOS PARA OS CARDS DOS PLANOS ====================
+const PLAN_PHOTOS = [
+  'https://images.unsplash.com/photo-1590487988256-9ed24133863e?w=600&q=80', //academia escura
+
+  'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=80', // mulher fazendo agachamento 
+
+  'https://images.unsplash.com/photo-1637430308606-86576d8fef3c?w=600&q=80',// academia iluminada
+  'https://images.unsplash.com/photo-1521805103424-d8f8430e8933?w=600&q=80', // pesos no chão
+
+  'https://images.unsplash.com/photo-1570829460005-c840387bb1ca?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzV8fGd5bXxlbnwwfHwwfHx8MA%3D%3D',//  academia iluminada
+
+  'https://media.istockphoto.com/id/2226632206/pt/foto/exercise-girl-and-running-on-treadmill-in-gym-at-night-for-agility-training-speed-development.jpg?s=612x612&w=0&k=20&c=mGbmPwafL-IpsugF4bI6MDDguN41VgE9CvY54ycottw=', // mulher fazendo esteira
+
+  'https://images.unsplash.com/photo-1674834727206-4bc272bfd8da?w=600&q=80',// academia com luz natural
+
+  'https://images.unsplash.com/photo-1579758682665-53a1a614eea6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OTZ8fGd5bXxlbnwwfHwwfHx8MA%3D%3D', // homem parado
+];
+
+// Chave para salvar as fotos dos planos no localStorage
+const PLAN_PHOTOS_KEY = (planId) => `@superfrango:plan_photo_${planId}`;
+
+// Carrega foto salva do plano
+const loadPlanPhoto = (planId) => {
+  const saved = localStorage.getItem(PLAN_PHOTOS_KEY(planId));
+  return saved || null;
+};
+
+// ==================== MODAL DE CONFIRMAÇÃO PARA EXCLUIR PLANO ====================
+const ConfirmDeletePlanModal = ({ planName, onConfirm, onCancel }) => {
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 w-full max-w-[320px] relative overflow-hidden">
+        <div className="absolute -right-8 -bottom-8 opacity-10">
+          <Trash2 size={120} strokeWidth={1} className="text-[#dc2626]" />
+        </div>
+        <div className="flex flex-col items-center text-center relative z-10">
+          <div className="mb-5 h-14 w-14 rounded-2xl bg-red-900/20 border border-red-800/30 flex items-center justify-center text-red-600">
+            <Trash2 size={24} strokeWidth={1.5} />
+          </div>
+          <h3 className="text-lg font-black text-white tracking-tighter uppercase">
+            Excluir plano?
+          </h3>
+          <p className="mt-2 text-[12px] text-gray-500 leading-relaxed">
+            Todos os dias e exercícios serão perdidos permanentemente.
+          </p>
+        </div>
+        <div className="mt-7 flex gap-3 relative z-10">
+          <button
+            onClick={onCancel}
+            className="flex-1 h-12 rounded-2xl border border-white/10 bg-white/5 text-gray-400 text-[11px] font-black uppercase tracking-[0.15em] hover:bg-white/10 hover:text-white transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 h-12 rounded-2xl bg-[#dc2626] text-white text-[11px] font-black uppercase tracking-[0.15em] hover:bg-red-700 active:scale-95 transition-all"
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ==================== MENU DROPDOWN DO PLANO ====================
-// ==================== MENU DROPDOWN DO PLANO ====================
-const PlanMenu = ({ onEdit, onDelete, isGenerated = false }) => {
+const PlanMenu = ({ onEdit, onDelete, onChangePhoto, isGenerated = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -30,13 +94,13 @@ const PlanMenu = ({ onEdit, onDelete, isGenerated = false }) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="w-6 h-6 rounded-md bg-white/5 text-gray-400 flex items-center justify-center hover:bg-white/10 hover:text-white transition-all"
+        className="w-8 h-8 rounded-md bg-black/60 backdrop-blur-sm text-gray-400 flex items-center justify-center hover:bg-black/80 hover:text-white transition-all border border-white/10"
       >
-        <MoreVertical size={15} />
+        <MoreVertical size={14} />
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 top-8 z-20 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-lg overflow-hidden min-w-[110px]">
+        <div className="absolute right-0 top-11 z-20 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-lg overflow-hidden min-w-[120px]">
           {!isGenerated && (
             <button
               onClick={(e) => {
@@ -44,7 +108,7 @@ const PlanMenu = ({ onEdit, onDelete, isGenerated = false }) => {
                 setIsOpen(false);
                 onEdit();
               }}
-              className="w-full px-3 py-2 text-left text-[10px] font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2"
+              className="w-full px-3 py-2.5 text-left text-[10px] font-medium text-gray-300 hover:bg-[#ff6600]/10 hover:text-[#ff6600] transition-all flex items-center gap-2"
             >
               <Edit3 size={10} />
               Editar
@@ -54,15 +118,132 @@ const PlanMenu = ({ onEdit, onDelete, isGenerated = false }) => {
             onClick={(e) => {
               e.stopPropagation();
               setIsOpen(false);
+              onChangePhoto();
+            }}
+            className="w-full px-3 py-2.5 text-left text-[10px] font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-all flex items-center gap-2 border-t border-white/5"
+          >
+            <ImageIcon size={10} />
+            Trocar foto
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
               onDelete();
             }}
-            className={`w-full px-3 py-2 text-left text-[10px] font-medium text-gray-300 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-2 ${!isGenerated ? 'border-t border-white/5' : ''}`}
+            className={`w-full px-3 py-2.5 text-left text-[10px] font-medium text-gray-300 hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center gap-2 border-t border-white/5`}
           >
             <Trash2 size={10} />
             Excluir
           </button>
         </div>
       )}
+    </div>
+  );
+};
+
+// ==================== PICKER DE FOTOS PARA PLANOS ====================
+const PlanPhotoPicker = ({ currentPhoto, onSelect, onClose }) => (
+  <div
+    className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+    onClick={onClose}
+  >
+    <div
+      className="bg-[#111] border border-white/10 rounded-3xl p-6 w-full max-w-sm"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-sm font-black uppercase tracking-widest text-white">Escolher foto</h3>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg text-gray-500 hover:text-white transition-all"
+        >
+          <X size={18} />
+        </button>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {PLAN_PHOTOS.map((photo, i) => (
+          <button
+            key={i}
+            onClick={() => { onSelect(photo); onClose(); }}
+            className={`relative h-20 rounded-xl overflow-hidden transition-all active:scale-90 ${
+              currentPhoto === photo
+                ? 'ring-2 ring-[#ff6600] ring-offset-2 ring-offset-[#111]'
+                : 'opacity-60 hover:opacity-100 hover:scale-105'
+            }`}
+          >
+            <img src={photo} alt="" className="w-full h-full object-cover" loading="lazy" />
+            {currentPhoto === photo && (
+              <div className="absolute inset-0 bg-[#ff6600]/25 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-[#ff6600] flex items-center justify-center">
+                  <Check size={11} className="text-black" strokeWidth={3} />
+                </div>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ==================== MODAL DE EDIÇÃO DE NOME DO PLANO ====================
+const EditPlanNameModal = ({ currentName, onSave, onClose }) => {
+  const [newName, setNewName] = useState(currentName);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#111] border border-white/10 rounded-3xl p-6 w-full max-w-sm"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-sm font-black uppercase tracking-widest text-white">Editar nome</h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-500 hover:text-white transition-all"
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-base outline-none focus:border-[#ff6600] transition-all"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSave(newName);
+            if (e.key === 'Escape') onClose();
+          }}
+        />
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 h-11 rounded-xl border border-white/10 bg-white/5 text-gray-400 text-[11px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSave(newName)}
+            className="flex-1 h-11 rounded-xl bg-[#ff6600] text-black text-[11px] font-black uppercase tracking-widest hover:bg-[#ff5500] transition-all"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -117,6 +298,38 @@ export const AppViews = ({
   setView,
   updatePlanLocally
 }) => {
+  const [planPhotosMap, setPlanPhotosMap] = useState({});
+  const [photoPickerPlanId, setPhotoPickerPlanId] = useState(null);
+  const [editingPlanId, setEditingPlanId] = useState(null);
+  const [editingPlanName, setEditingPlanName] = useState('');
+  const [deleteConfirmPlan, setDeleteConfirmPlan] = useState(null);
+  const [deleteConfirmAutoPlan, setDeleteConfirmAutoPlan] = useState(null);
+
+useEffect(() => {
+  const savedPhotos = {};
+  
+  // Carrega fotos dos planos manuais
+  plans.forEach(plan => {
+    const planId = plan._id || plan.id;
+    const savedPhoto = loadPlanPhoto(planId);
+    if (savedPhoto) savedPhotos[planId] = savedPhoto;
+  });
+  
+  // Carrega fotos dos planos automáticos
+  generatedWorkouts.forEach(workout => {
+    const workoutId = workout._id || workout.id;
+    const savedPhoto = loadPlanPhoto(workoutId);
+    if (savedPhoto) savedPhotos[workoutId] = savedPhoto;
+  });
+  
+  setPlanPhotosMap(savedPhotos);
+}, [plans, generatedWorkouts]);  
+
+  const handleChangePlanPhoto = (planId, photo) => {
+    localStorage.setItem(PLAN_PHOTOS_KEY(planId), photo);
+    setPlanPhotosMap(prev => ({ ...prev, [planId]: photo }));
+  };
+
   // Dashboard - Planos Manuais
   if (activeTab === 'dashboard') {
     if (selectedPlan) {
@@ -149,6 +362,38 @@ export const AppViews = ({
 
     return (
       <>
+        {deleteConfirmPlan && (
+          <ConfirmDeletePlanModal
+            planName={deleteConfirmPlan.name}
+            onConfirm={() => {
+              handleDeletePlan(deleteConfirmPlan.id);
+              setDeleteConfirmPlan(null);
+            }}
+            onCancel={() => setDeleteConfirmPlan(null)}
+          />
+        )}
+        {photoPickerPlanId !== null && (
+          <PlanPhotoPicker
+            currentPhoto={planPhotosMap[photoPickerPlanId] || PLAN_PHOTOS[0]}
+            onSelect={(photo) => handleChangePlanPhoto(photoPickerPlanId, photo)}
+            onClose={() => setPhotoPickerPlanId(null)}
+          />
+        )}
+        {editingPlanId !== null && (
+          <EditPlanNameModal
+            currentName={editingPlanName}
+            onSave={(newName) => {
+              if (newName?.trim()) onUpdatePlanName(editingPlanId, newName.trim());
+              setEditingPlanId(null);
+              setEditingPlanName('');
+            }}
+            onClose={() => {
+              setEditingPlanId(null);
+              setEditingPlanName('');
+            }}
+          />
+        )}
+
         <div className="space-y-10 animate-in fade-in duration-700">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
             <div className="space-y-1 -mt-[-35px]">
@@ -160,17 +405,10 @@ export const AppViews = ({
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowCreatePlan(true)}
-                className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-[#ff6600] transition-all shadow-xl active:scale-95"
-              >
+              <button onClick={() => setShowCreatePlan(true)} className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-[#ff6600] transition-all shadow-xl active:scale-95">
                 <Plus size={16} strokeWidth={3} /> Criar treino
               </button>
-              <button
-                onClick={() => onOpenImportPage(fetchPlans)}
-                className="p-3 rounded-2xl bg-white text-black hover:bg-[#ff6600] hover:text-black transition-all active:scale-95"
-                title="Importar plano"
-              >
+              <button onClick={() => onOpenImportPage(fetchPlans)} className="p-3 rounded-2xl bg-white text-black hover:bg-[#ff6600] hover:text-black transition-all active:scale-95" title="Importar plano">
                 <svg width="25" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
                   <polyline points="8 12 12 16 16 12" />
@@ -198,58 +436,45 @@ export const AppViews = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-2">
                   {plans.slice(0, visiblePlans).map((plan, idx) => {
                     const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
-                    const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
                     const planId = plan._id || plan.id;
                     const isActive = activeManualCard === planId;
+                    const planPhoto = planPhotosMap[planId] || PLAN_PHOTOS[idx % PLAN_PHOTOS.length];
 
                     return (
-                      <div
-                        key={planId || `temp-${idx}`}
-                        onClick={() => setActiveManualCard(isActive ? null : planId)}
-                        className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer min-h-[220px] flex flex-col justify-end animate-in fade-in zoom-in w-full
-                          ${isActive ? 'scale-[1.02] border-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'}`}
-                      >
-                        {/* Menu de 3 pontinhos no canto superior direito */}
+                      <div key={planId || idx} onClick={() => setActiveManualCard(isActive ? null : planId)} className={`group relative p-0 rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-500 min-h-[220px] flex flex-col justify-end ${isActive ? 'scale-[1.02] ring-2 ring-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-[#ff6600]/50 shadow-xl'}`}>
+                        {/* Foto SEM grayscale - colorida com overlay escuro */}
+                        <div
+                          className={`absolute inset-0 bg-cover bg-center transition-all duration-700 brightness-[0.5] group-hover:brightness-[0.7] group-hover:scale-110 ${
+                            isActive ? 'brightness-[0.7] scale-110' : ''
+                          }`}
+                          style={{ backgroundImage: `url('${planPhoto}')` }}
+                        />
+                        {/* Overlay gradiente escuro */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30 group-hover:from-black/85 transition-all duration-500" />
                         <div className="absolute top-3 right-3 z-20">
                           <PlanMenu
                             isGenerated={false}
-                            onEdit={() => {
-                              const newName = prompt('Novo nome do plano:', plan.name);
-                              if (newName && newName.trim()) {
-                                onUpdatePlanName(planId, newName);
-                              }
-                            }}
-                            onDelete={() => {
-                              if (window.confirm(`Excluir o plano "${plan.name}"?`)) {
-                                handleDeletePlan(planId);
-                              }
-                            }}
+                            onEdit={() => { setEditingPlanId(planId); setEditingPlanName(plan.name); }}
+                            onChangePhoto={() => setPhotoPickerPlanId(planId)}
+                            onDelete={() => setDeleteConfirmPlan({ id: planId, name: plan.name })}
                           />
                         </div>
-
-                        <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
-                        <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
-                          <DecorativeIcon size={240} strokeWidth={1} />
-                        </div>
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/20'}`} />
-                        <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0'}`} />
-                        <div className="space-y-4 relative z-10">
-                          <div className="space-y-1">
-                            <div className={`w-12 h-1.5 rounded-full mb-4 transition-all duration-500 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-white/10'}`}></div>
-                            <h3 className={`text-2xl font-black italic uppercase tracking-tighter leading-none transition-colors ${isActive ? 'text-[#ff6600]' : 'text-white'}`}>
-                              {plan.name}
-                            </h3>
-                          </div>
-                          <div className="flex items-center justify-between pt-2">
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Arquitetura</span>
-                              <span className="text-xs font-bold text-white">{plan.daysCount} DIAS DE TREINO</span>
-                            </div>
-                            <div onClick={(e) => { e.stopPropagation(); setSelectedPlan(plan); }} className={`w-12 h-12 rounded-2xl border transition-all duration-200 flex items-center justify-center shadow-lg active:scale-125 ${isActive ? 'bg-[#ff6600] border-[#ff6600] text-black scale-110' : 'bg-black border-white/5 text-gray-500'}`}>
-                              <ChevronRight size={24} strokeWidth={3} className="transition-transform duration-200" />
+                        <div className="relative z-10 p-6 pb-5">
+                          <div className="space-y-2">
+                            <div className={`w-10 h-1 rounded-full mb-2 transition-all duration-500 ${isActive ? 'bg-[#ff6600] shadow-[0_0_10px_#ff6600]' : 'bg-[#ff6600]/60 group-hover:bg-[#ff6600]'}`} />
+                            <h3 className={`text-xl font-black italic uppercase tracking-tighter leading-tight transition-colors ${isActive ? 'text-[#ff6600]' : 'text-white'}`}>{plan.name}</h3>
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="flex flex-col">
+                                <span className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em]">Arquitetura</span>
+                                <span className="text-[10px] font-bold text-white/80">{plan.daysCount} DIAS</span>
+                              </div>
+                              <div onClick={(e) => { e.stopPropagation(); setSelectedPlan(plan); }} className={`w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center shadow-lg active:scale-110 ${isActive ? 'bg-[#ff6600] border-[#ff6600] text-black scale-105' : 'bg-black/60 border-white/10 text-gray-400 backdrop-blur-sm'}`}>
+                                <ChevronRight size={20} strokeWidth={3} />
+                              </div>
                             </div>
                           </div>
                         </div>
+                        <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_10px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`} />
                       </div>
                     );
                   })}
@@ -270,51 +495,33 @@ export const AppViews = ({
           </div>
         </div>
 
-        {/* FOOTER DASHBOARD */}
         {!selectedPlan && (
-         <footer className="mt-1 mb-9 py-6 border-t border-transparent">
-  <div className="text-center">
-    <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
-      © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
-    </p>
-    <div className="flex items-center justify-center gap-6 mt-3">
-      <a
-        href="https://github.com/Geovanni-dev"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-        </svg>
-        GitHub
-      </a>
-
-      <a
-        href="https://www.linkedin.com/in/geovani-rodrigues-dev/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
-        </svg>
-        LinkedIn
-      </a>
-
-      <a
-        href="https://wa.me/5562984585485"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
-        </svg>
-        WhatsApp
-      </a>
-    </div>
-  </div>
+          <footer className="mt-1 mb-9 py-6 border-t border-transparent">
+            <div className="text-center">
+              <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
+                © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
+              </p>
+              <div className="flex items-center justify-center gap-6 mt-3">
+                <a href="https://github.com/Geovanni-dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group">
+                  <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                  </svg>
+                  GitHub
+                </a>
+                <a href="https://www.linkedin.com/in/geovani-rodrigues-dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group">
+                  <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
+                  </svg>
+                  LinkedIn
+                </a>
+                <a href="https://wa.me/5562984585485" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group">
+                  <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
+                  </svg>
+                  WhatsApp
+                </a>
+              </div>
+            </div>
           </footer>
         )}
       </>
@@ -350,6 +557,24 @@ export const AppViews = ({
 
     return (
       <>
+        {deleteConfirmAutoPlan && (
+          <ConfirmDeletePlanModal
+            planName={deleteConfirmAutoPlan.name}
+            onConfirm={() => {
+              handleDeleteGeneratedWorkout(deleteConfirmAutoPlan.id);
+              setDeleteConfirmAutoPlan(null);
+            }}
+            onCancel={() => setDeleteConfirmAutoPlan(null)}
+          />
+        )}
+        {photoPickerPlanId !== null && (
+          <PlanPhotoPicker
+            currentPhoto={planPhotosMap[photoPickerPlanId] || PLAN_PHOTOS[0]}
+            onSelect={(photo) => handleChangePlanPhoto(photoPickerPlanId, photo)}
+            onClose={() => setPhotoPickerPlanId(null)}
+          />
+        )}
+
         <div className="space-y-10 animate-in fade-in duration-700">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
             <div className="space-y-1 -mt-[-35px]">
@@ -384,55 +609,44 @@ export const AppViews = ({
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-2">
                   {generatedWorkouts.slice(0, visibleWorkouts).map((workout, idx) => {
-                  
-                    const decorativeIcons = [Dumbbell, Zap, Flame, Heart, Star, Crown, Anchor, Gem];
-                    const DecorativeIcon = decorativeIcons[idx % decorativeIcons.length];
                     const workoutId = workout._id || workout.id;
                     const isActive = activeAutoCard === workoutId;
+                    const workoutPhoto = planPhotosMap[workoutId] || PLAN_PHOTOS[idx % PLAN_PHOTOS.length];
 
                     return (
-                      <div
-                        key={workoutId || idx}
-                        onClick={() => setActiveAutoCard(isActive ? null : workoutId)}
-                        className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 overflow-hidden cursor-pointer min-h-[220px] flex flex-col justify-end w-full
-                          ${isActive ? 'scale-[1.02] border-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' : 'border-[#ff6600]/10 hover:border-[#ff6600]/30 shadow-xl'}`}
-                      >
-                        {/* Menu de 3 pontinhos no canto superior direito - Apenas EXCLUIR para gerados */}
+                      <div key={workoutId || idx} onClick={() => setActiveAutoCard(isActive ? null : workoutId)} className={`group relative p-0 rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-500 min-h-[220px] flex flex-col justify-end ${isActive ? 'scale-[1.02] ring-2 ring-[#ff6600] shadow-[0_0_30px_rgba(255,102,0,0.2)]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-[#ff6600]/50 shadow-xl'}`}>
+                        {/* Foto SEM grayscale - colorida com overlay escuro */}
+                        <div
+                          className={`absolute inset-0 bg-cover bg-center transition-all duration-700 brightness-[0.5] group-hover:brightness-[0.7] group-hover:scale-110 ${
+                            isActive ? 'brightness-[0.7] scale-110' : ''
+                          }`}
+                          style={{ backgroundImage: `url('${workoutPhoto}')` }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30 group-hover:from-black/85 transition-all duration-500" />
                         <div className="absolute top-3 right-3 z-20">
                           <PlanMenu
                             isGenerated={true}
                             onEdit={() => {}}
-                            onDelete={() => {
-                              if (window.confirm(`Excluir o treino "${workout.name}"?`)) {
-                                handleDeleteGeneratedWorkout(workoutId);
-                              }
-                            }}
+                            onChangePhoto={() => setPhotoPickerPlanId(workoutId)}
+                            onDelete={() => setDeleteConfirmAutoPlan({ id: workoutId, name: workout.name })}
                           />
                         </div>
-
-                        <div className={`absolute inset-0 bg-gradient-to-br from-[#0a0a0a] transition-colors duration-500 ${isActive ? 'via-[#2a1000] to-[#3d1a00]' : 'via-[#1a0a00] to-[#2a1000]'}`} />
-                        <div className={`absolute -right-8 -top-8 transition-all duration-700 transform rotate-12 ${isActive ? 'text-[#ff6600]/[0.12] scale-110' : 'text-[#ff6600]/[0.04]'}`}>
-                          <DecorativeIcon size={240} strokeWidth={1} />
-                        </div>
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-[#ff6600]/20'}`} />
-                        <div className={`absolute bottom-0 left-0 h-[3px] bg-[#ff6600] shadow-[0_0_15px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0'}`} />
-                        <div className="space-y-4 relative z-10">
-                          <div className="space-y-1">
-                            <div className={`w-12 h-1.5 rounded-full mb-4 transition-all duration-500 ${isActive ? 'bg-[#ff6600] shadow-[0_0_15px_#ff6600]' : 'bg-white/10'}`}></div>
-                            <h3 className={`text-2xl font-black italic uppercase tracking-tighter leading-none transition-colors ${isActive ? 'text-[#ff6600]' : 'text-white'}`}>
-                              {workout.name}
-                            </h3>
-                          </div>
-                          <div className="flex items-center justify-between pt-2">
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Treino Gerado</span>
-                              <span className="text-xs font-bold text-white uppercase">{workout.goal} • {workout.daysCount} DIAS</span>
-                            </div>
-                            <div onClick={(e) => { e.stopPropagation(); setSelectedPlan(workout); }} className={`w-12 h-12 rounded-2xl border transition-all duration-200 flex items-center justify-center shadow-lg active:scale-125 ${isActive ? 'bg-[#ff6600] border-[#ff6600] text-black scale-110' : 'bg-black border-white/5 text-gray-500'}`}>
-                              <ChevronRight size={24} strokeWidth={3} />
+                        <div className="relative z-10 p-6 pb-5">
+                          <div className="space-y-2">
+                            <div className={`w-10 h-1 rounded-full mb-2 transition-all duration-500 ${isActive ? 'bg-[#ff6600] shadow-[0_0_10px_#ff6600]' : 'bg-[#ff6600]/60 group-hover:bg-[#ff6600]'}`} />
+                            <h3 className={`text-xl font-black italic uppercase tracking-tighter leading-tight transition-colors ${isActive ? 'text-[#ff6600]' : 'text-white'}`}>{workout.name}</h3>
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="flex flex-col">
+                                <span className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em]">Treino Gerado</span>
+                                <span className="text-[10px] font-bold text-white/80 uppercase">{workout.goal} • {workout.daysCount} DiAS</span>
+                              </div>
+                              <div onClick={(e) => { e.stopPropagation(); setSelectedPlan(workout); }} className={`w-10 h-10 rounded-xl border transition-all duration-200 flex items-center justify-center shadow-lg active:scale-110 ${isActive ? 'bg-[#ff6600] border-[#ff6600] text-black scale-105' : 'bg-black/60 border-white/10 text-gray-400 backdrop-blur-sm'}`}>
+                                <ChevronRight size={20} strokeWidth={3} />
+                              </div>
                             </div>
                           </div>
                         </div>
+                        <div className={`absolute bottom-0 left-0 h-[2px] bg-[#ff6600] shadow-[0_0_10px_#ff6600] transition-all duration-700 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`} />
                       </div>
                     );
                   })}
@@ -453,228 +667,159 @@ export const AppViews = ({
           </div>
         </div>
 
-        {/* FOOTER GENERATOR */}
         <footer className="mt-1 mb-9 py-6 border-t border-transparent">
-  <div className="text-center">
-    <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
-      © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
-    </p>
-    <div className="flex items-center justify-center gap-6 mt-3">
-      <a
-        href="https://github.com/Geovanni-dev"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-        </svg>
-        GitHub
-      </a>
-
-      <a
-        href="https://www.linkedin.com/in/geovani-rodrigues-dev/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
-        </svg>
-        LinkedIn
-      </a>
-
-      <a
-        href="https://wa.me/5562984585485"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group"
-      >
-        <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
-        </svg>
-        WhatsApp
-      </a>
-    </div>
-  </div>
-         </footer>
+          <div className="text-center">
+            <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
+              © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
+            </p>
+            <div className="flex items-center justify-center gap-6 mt-3">
+              <a href="https://github.com/Geovanni-dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group">
+                <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+                GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/geovani-rodrigues-dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group">
+                <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
+                </svg>
+                LinkedIn
+              </a>
+              <a href="https://wa.me/5562984585485" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group">
+                <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
+                </svg>
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </footer>
       </>
     );
   }
 
   // History - Evolução
-if (activeTab === 'history') {
-  return (
-    <>
-      <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in duration-500 px-2 pb-10 -mt-[-35px]">
-        <div className="text-center space-y-2 relative flex flex-col items-center">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-[#ff6600]">EVOLUÇÃO</h1>
-          <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
-          {history.length > 0 && (
-            <div className="mt-2 md:absolute md:top-0 md:right-0 md:mt-0">
-              <span onClick={() => onOpenResetHistoryPage(finalResetAction)} className="text-[10px] font-bold text-red-500/50 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-widest">
-                Limpar histórico
-              </span>
+  if (activeTab === 'history') {
+    return (
+      <>
+        <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in duration-500 px-2 pb-10 -mt-[-35px]">
+          <div className="text-center space-y-2 relative flex flex-col items-center">
+            <h1 className="text-5xl font-black italic uppercase tracking-tighter text-[#ff6600]">EVOLUÇÃO</h1>
+            <p className="text-gray-500 font-bold uppercase text-xs tracking-[0.3em]">Seu registro de força</p>
+            {history.length > 0 && (
+              <div className="mt-2 md:absolute md:top-0 md:right-0 md:mt-0">
+                <span onClick={() => onOpenResetHistoryPage(finalResetAction)} className="text-[10px] font-bold text-red-500/50 hover:text-red-500 transition-colors cursor-pointer uppercase tracking-widest">
+                  Limpar histórico
+                </span>
+              </div>
+            )}
+          </div>
+
+          {history.length === 0 ? (
+            <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>
+              <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em]">Ainda não há histórico de exercicios.</p>
             </div>
+          ) : (
+            (() => {
+              const sessions = new Map();
+              history.forEach((log) => {
+                const dateObj = new Date(log.date);
+                const dateKey = dateObj.toISOString().split('T')[0];
+                const sessionKey = `${log.workoutName || 'TREINO'}|${dateKey}`;
+                if (!sessions.has(sessionKey)) {
+                  sessions.set(sessionKey, {
+                    workoutName: log.workoutName || 'TREINO',
+                    date: log.date,
+                    dateKey: dateKey,
+                    exercises: []
+                  });
+                }
+                sessions.get(sessionKey).exercises.push(log);
+              });
+              const sessionGroups = Array.from(sessions.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+              return sessionGroups.map((session, sessionIdx) => {
+                const workoutDisplayName = session.workoutName.split(' - ')[1] || session.workoutName;
+                const sessionDate = new Date(session.date);
+                const formattedDate = sessionDate.toLocaleDateString('pt-BR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                });
+                return (
+                  <div key={sessionIdx} className="space-y-4 mb-8">
+                    <div className="flex items-center gap-2 px-2">
+                      <div className="h-px flex-grow bg-[#ff6600]/20"></div>
+                      <div className="flex flex-col items-center px-3">
+                        <h2 className="text-sm sm:text-base font-black italic uppercase tracking-wider text-[#ff6600]">{workoutDisplayName}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Clock size={10} className="text-gray-500" />
+                          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{formattedDate}</p>
+                        </div>
+                      </div>
+                      <div className="h-px flex-grow bg-[#ff6600]/20"></div>
+                    </div>
+                    <div className="space-y-3">
+                      {session.exercises.map((log, idx) => (
+                        <div key={idx} onClick={async () => { try { const res = await api.get(`/workouts/history/${encodeURIComponent(log.exerciseName || log.name)}`); setSelectedExerciseHistory({ name: log.exerciseName || log.name, logs: res.data }); } catch (e) { console.error(e); } }} className="group relative p-4 rounded-2xl bg-black/1 backdrop-blur-sm border border-white/10 hover:border-[#ff6600]/60 transition-all flex items-center justify-between overflow-hidden cursor-pointer shadow-2xl">
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff6600]/10 group-hover:bg-[#ff6600] transition-all"></div>
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-[#ff6600]/5 flex items-center justify-center text-[#ff6600] group-hover:bg-[#ff6600] group-hover:text-black transition-all shadow-lg flex-shrink-0">
+                              <Trophy size={18} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-sm sm:text-base font-black italic uppercase text-white leading-tight group-hover:text-[#ff6600] transition-colors overflow-hidden text-ellipsis whitespace-nowrap">
+                                {log.exerciseName || log.name}
+                              </h3>
+                            </div>
+                          </div>
+                          <div className="text-right flex items-center gap-3 flex-shrink-0">
+                            <div className="flex flex-col items-end">
+                              <p className="text-xl font-black italic text-[#ff6600] leading-none">{log.weight}<span className="text-xs">KG</span></p>
+                              <p className="text-[9px] font-black uppercase text-gray-600">{log.reps} Reps</p>
+                            </div>
+                            <ChevronRight className="text-gray-800 group-hover:text-[#ff6600] transition-colors" size={16} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              });
+            })()
           )}
         </div>
-
-        {history.length === 0 ? (
-          <div className="py-20 text-center space-y-6 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[2.5rem]">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-gray-700 mx-auto"><Activity size={32} /></div>
-            <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em]">Ainda não há histórico de exercicios.</p>
+        <footer className="mt-1 mb-9 py-6 border-t border-transparent">
+          <div className="text-center">
+            <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
+              © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
+            </p>
+            <div className="flex items-center justify-center gap-6 mt-3">
+              <a href="https://github.com/Geovanni-dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group">
+                <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+                GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/geovani-rodrigues-dev/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group">
+                <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
+                </svg>
+                LinkedIn
+              </a>
+              <a href="https://wa.me/5562984585485" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group">
+                <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
+                </svg>
+                WhatsApp
+              </a>
+            </div>
           </div>
-        ) : (
-          (() => {
-            
-            const sessions = new Map();
-            
-            history.forEach((log) => {
-              const dateObj = new Date(log.date);
-              const dateKey = dateObj.toISOString().split('T')[0]; 
-              
-              
-              const sessionKey = `${log.workoutName || 'TREINO'}|${dateKey}`;
-              
-              if (!sessions.has(sessionKey)) {
-                sessions.set(sessionKey, {
-                  workoutName: log.workoutName || 'TREINO',
-                  date: log.date, 
-                  dateKey: dateKey,
-                  exercises: []
-                });
-              }
-              
-              sessions.get(sessionKey).exercises.push(log);
-            });
-            
-            
-            const sessionGroups = Array.from(sessions.values())
-              .sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            return sessionGroups.map((session, sessionIdx) => {
-              
-              const workoutDisplayName = session.workoutName.split(' - ')[1] || session.workoutName;
-              const sessionDate = new Date(session.date);
-              const formattedDate = sessionDate.toLocaleDateString('pt-BR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              });
-              
-              return (
-                <div key={sessionIdx} className="space-y-4 mb-8">
-                  <div className="flex items-center gap-2 px-2">
-                    <div className="h-px flex-grow bg-[#ff6600]/20"></div>
-                    <div className="flex flex-col items-center px-3">
-                      <h2 className="text-sm sm:text-base font-black italic uppercase tracking-wider text-[#ff6600]">
-                        {workoutDisplayName}
-                      </h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Clock size={10} className="text-gray-500" />
-                        <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
-                          {formattedDate}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="h-px flex-grow bg-[#ff6600]/20"></div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {session.exercises.map((log, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={async () => { 
-                          try { 
-                            const res = await api.get(`/workouts/history/${encodeURIComponent(log.exerciseName || log.name)}`); 
-                            setSelectedExerciseHistory({ name: log.exerciseName || log.name, logs: res.data }); 
-                          } catch (e) { 
-                            console.error(e); 
-                          } 
-                        }} 
-                        className="group relative p-4 rounded-2xl bg-black/1 backdrop-blur-sm border border-white/10 hover:border-[#ff6600]/60 transition-all flex items-center justify-between overflow-hidden cursor-pointer shadow-2xl"
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff6600]/10 group-hover:bg-[#ff6600] transition-all"></div>
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-[#ff6600]/5 flex items-center justify-center text-[#ff6600] group-hover:bg-[#ff6600] group-hover:text-black transition-all shadow-lg flex-shrink-0">
-                            <Trophy size={18} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-sm sm:text-base font-black italic uppercase text-white leading-tight group-hover:text-[#ff6600] transition-colors overflow-hidden text-ellipsis whitespace-nowrap">
-                              {log.exerciseName || log.name}
-                            </h3>
-                          </div>
-                        </div>
-                        <div className="text-right flex items-center gap-3 flex-shrink-0">
-                          <div className="flex flex-col items-end">
-                            <p className="text-xl font-black italic text-[#ff6600] leading-none">
-                              {log.weight}<span className="text-xs">KG</span>
-                            </p>
-                            <p className="text-[9px] font-black uppercase text-gray-600">
-                              {log.reps} Reps
-                            </p>
-                          </div>
-                          <ChevronRight className="text-gray-800 group-hover:text-[#ff6600] transition-colors" size={16} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            });
-          })()
-        )}
-      </div>
-
-      {/* FOOTER HISTORY */}
-      <footer className="mt-1 mb-9 py-6 border-t border-transparent">
-        <div className="text-center">
-          <p className="text-[8px] font-black italic text-gray-600 uppercase tracking-[0.2em]">
-            © {new Date().getFullYear()} Geovani Rodrigues <span className="text-white inline-block mx-1">·</span> Super Frango App
-          </p>
-          <div className="flex items-center justify-center gap-6 mt-3">
-            <a
-              href="https://github.com/Geovanni-dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-white active:scale-110 transition-all duration-200 group"
-            >
-              <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-              </svg>
-              GitHub
-            </a>
-
-            <a
-              href="https://www.linkedin.com/in/geovani-rodrigues-dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#0077b5] active:scale-110 transition-all duration-200 group"
-            >
-              <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.208 0 22.225 0z" />
-              </svg>
-              LinkedIn
-            </a>
-
-            <a
-              href="https://wa.me/5562984585485"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-gray-500 active:text-[#25D366] active:scale-110 transition-all duration-200 group"
-            >
-              <svg className="active:scale-110 transition-transform" height="12" width="12" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.51 3.45 1.47 4.92L2 22l5.35-1.43c1.43.86 3.07 1.32 4.76 1.32 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.12c-1.49 0-2.95-.4-4.21-1.16l-.3-.18-3.18.85.85-3.09-.19-.31c-.82-1.32-1.25-2.83-1.25-4.37 0-4.56 3.71-8.27 8.27-8.27 4.56 0 8.27 3.71 8.27 8.27s-3.71 8.28-8.27 8.28zm4.53-6.19c-.25-.13-1.47-.73-1.7-.81-.23-.08-.39-.13-.56.13s-.64.81-.78.97c-.14.16-.28.18-.53.05-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.39.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.26-.42.09-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.32-.23.26-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.68.46-.05 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.11-.21-.18-.46-.31z" />
-              </svg>
-              WhatsApp
-            </a>
-          </div>
-        </div>
-      </footer>
-    </>
-  );
-}
+        </footer>
+      </>
+    );
+  }
 
   return null;
 };
