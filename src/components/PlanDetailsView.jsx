@@ -1,4 +1,4 @@
-// src/components/PlanDetailsView.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   DndContext,
@@ -293,18 +293,21 @@ export const PlanDetailsView = ({
 
 useEffect(() => {
   if (plan?.days) {
-    setLocalDays((prevLocalDays) => {
-      if (selectedDay !== null) {
-        return plan.days.map((serverDay, idx) => {
-          if (idx === selectedDay.dayIndex) {
-            return prevLocalDays[idx] || serverDay;
-          }
-          return serverDay;
-        });
+    setLocalDays((prev) => {
+      // Se a quantidade de dias mudou (criou um novo ou deletou), aí sim resetamos tudo
+      if (prev.length !== plan.days.length) {
+        return plan.days;
       }
-      return plan.days;
+      
+      // Se a quantidade for a mesma, vamos apenas atualizar os DADOS dos exercícios,
+      // mas mantemos a ORDEM que o usuário já organizou no estado local (prev)
+      return prev.map(localDay => {
+        const updatedFromApi = plan.days.find(d => (d._id || d.name) === (localDay._id || localDay.name));
+        return updatedFromApi ? { ...updatedFromApi } : localDay;
+      });
     });
 
+    // Atualiza as fotos apenas se houver dias novos
     setDayPhotosMap((prev) => {
       const newMap = { ...prev };
       plan.days.forEach((day, idx) => {
@@ -316,7 +319,7 @@ useEffect(() => {
       return newMap;
     });
   }
-}, [plan?.days]); // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [plan?.days]);
 
   useEffect(() => { return () => setIsReorderMode(false); }, []);
 

@@ -1,4 +1,4 @@
-// src/components/Modals/DayDetailsPage.jsx
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   DndContext,
@@ -200,8 +200,22 @@ export const DayDetailsPage = ({
   // Hover do banner para a animação da barra inferior
   const [isBannerHovered, setIsBannerHovered] = useState(false);
 
-  useEffect(() => {
-    setExercises(day?.exercises || []);
+useEffect(() => {
+    if (day?.exercises) {
+      setExercises((prev) => {
+        // Se a quantidade mudou (exercício novo ou deletado), resetamos tudo
+        if (prev.length !== day.exercises.length) {
+          return day.exercises;
+        }
+        
+        // Se a quantidade é a mesma (foi apenas uma edição de peso ou nome),
+        // mantemos a ORDEM atual (prev) e apenas atualizamos os dados internos
+        return prev.map(localEx => {
+          const updated = day.exercises.find(e => (e._id || e.name) === (localEx._id || localEx.name));
+          return updated ? updated : localEx;
+        });
+      });
+    }
   }, [day?.exercises]);
 
   useEffect(() => {
@@ -260,7 +274,7 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
 
   const stats = useMemo(() => {
     const total = exercises.length;
-    const done = exercises.filter((_, i) => completedExercises[`${planId}-${dayIndex}-${i}`]).length;
+    const done = exercises.filter((ex) => completedExercises[`${planId}-${dayIndex}-${ex._id || ex.name}`]).length;
     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
     return { total, done, percent };
   }, [exercises, completedExercises, planId, dayIndex]);
@@ -277,8 +291,8 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
   const handleFinishDayWorkout = async () => {
     if (isFinishing) return;
     const entriesToLog = [];
-    exercises.forEach((ex, exIdx) => {
-      const key = `${planId}-${dayIndex}-${exIdx}`;
+    exercises.forEach((ex) => {
+  const key = `${planId}-${dayIndex}-${ex._id || ex.name}`;
       if (completedExercises[key]) {
         entriesToLog.push({
           name: ex.name,
@@ -331,27 +345,36 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
     }
   };
 
-  const handleDragEnd = async (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = parseInt(active.id);
-    const newIndex = parseInt(over.id);
-    const newExercisesOrder = arrayMove([...exercises], oldIndex, newIndex);
-    setExercises(newExercisesOrder);
-    if (updatePlanLocally) updatePlanLocally({ ...day, exercises: newExercisesOrder }, dayIndex);
+const handleDragEnd = async (event) => {
+  const { active, over } = event;
+  if (!over || active.id === over.id) return;
+  const oldIndex = exercises.findIndex(ex => (ex._id || ex.name) === active.id);
+  const newIndex = exercises.findIndex(ex => (ex._id || ex.name) === over.id);
+  const newExercisesOrder = arrayMove([...exercises], oldIndex, newIndex);
+  
+  setExercises(newExercisesOrder);
+  if (updatePlanLocally) updatePlanLocally({ ...day, exercises: newExercisesOrder }, dayIndex);
 
-    const hasInvalidIds = newExercisesOrder.some(ex => !ex._id || ex._id.toString().length > 20);
-    if (hasInvalidIds) return;
+  const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+  const hasInvalidIds = newExercisesOrder.some(ex => !ex._id || !isValidObjectId(ex._id.toString()));
+  
+  if (hasInvalidIds) {
+    console.warn("Reordenação cancelada: IDs de exercício inválidos ou temporários");
+    return;
+  }
 
-    try {
-      await api.put(`/workout-plans/${planId}/reorder-exercises`, {
-        dayName: day.name,
-        exercisesOrder: newExercisesOrder.map(ex => ex._id),
-      });
-    } catch (error) {
-      console.error('Erro ao reordenar exercícios:', error);
-    }
-  };
+  try {
+    await api.put(`/workout-plans/${planId}/reorder-exercises`, {
+      dayName: day.name,
+      exercisesOrder: newExercisesOrder.map(ex => ex._id),
+    });
+  } catch (error) {
+    console.error('Erro ao reordenar exercícios:', error);
+    // Reverte a ordem local em caso de falha
+    setExercises(exercises);
+    if (updatePlanLocally) updatePlanLocally({ ...day, exercises: exercises }, dayIndex);
+  }
+};
 
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-y-auto selection:bg-[#ff6600]/30 text-white pt-20 md:pt-20">
@@ -436,19 +459,19 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
           autoScroll={true}
         >
           <SortableContext
-            items={exercises.map((_, idx) => idx.toString())}
+            items={exercises.map((ex) => ex._id || ex.name)}
             strategy={verticalListSortingStrategy}
           >
             <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2">
               {exercises.map((ex, eIdx) => {
-                const checkKey = `${planId}-${dayIndex}-${eIdx}`;
+                const checkKey = `${planId}-${dayIndex}-${ex._id || ex.name}`;
                 const isCompleted = !!completedExercises[checkKey];
                 const DecorativeIcon = eIdx % 3 === 0 ? Dumbbell : eIdx % 3 === 1 ? Zap : Flame;
 
                 return (
                   <ExercicioSortableItem
                     key={ex._id || eIdx}
-                    id={eIdx.toString()}
+                    id={ex._id || ex.name}
                     isReorderMode={isReorderMode}
                   >
                     {({ isDragging, dragListeners }) => (

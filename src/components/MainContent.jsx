@@ -322,12 +322,15 @@ const handleDeleteExercise = async (planId, dayName, exerciseName) => {
   }
 };
 
-  const toggleCheck = (key) => {
-    setCompletedExercises((prev) => {
-      if (prev[key]) { const { [key]: removed, ...rest } = prev; return rest; }
-      return { ...prev, [key]: { completed: true, timestamp: Date.now() } };
-    });
-  };
+const toggleCheck = (key) => {
+  setCompletedExercises((prev) => {
+    if (prev[key]) {
+      const { [key]: removed, ...rest } = prev;
+      return rest;
+    }
+    return { ...prev, [key]: { completed: true, timestamp: Date.now() } };
+  });
+};
 
   const onClearDayExercises = (planId, dayIdx) => {
     setCompletedExercises((prev) => {
@@ -342,11 +345,9 @@ const handleDeleteExercise = async (planId, dayName, exerciseName) => {
   try {
     const planId = plan._id || plan.id;
     const entriesToLog = [];
-
-    // 1. Coletamos todos os exercícios marcados e incluímos o timestamp do clique
     plan.days.forEach((day, dIdx) => {
       day.exercises.forEach((ex, eIdx) => {
-        const key = `${planId}-${dIdx}-${eIdx}`;
+        const key = `${planId}-${dIdx}-${ex._id || ex.name}`;
         if (completedExercises[key]) {
           entriesToLog.push({
             name: ex.name,
@@ -546,17 +547,21 @@ const onResetSubmit = async (data) => {
     }, 150);
   };
 
-  const stats = useMemo(() => {
+const stats = useMemo(() => {
     const historyArray = Array.isArray(history) ? history : [];
     const maxWeight = historyArray.reduce((acc, log) => Math.max(acc, Number(log.weight) || 0), 0);
+    
     let sessionVolume = 0;
     let completedCount = 0;
     const allPlans = [...plans, ...generatedWorkouts];
-    Object.keys(completedExercises).forEach((key) => {
-      const [pId, dIdx, eIdx] = key.split('-');
-      const plan = allPlans.find((p) => (p._id || p.id) === pId);
-      if (plan && plan.days?.[dIdx]?.exercises?.[eIdx]) {
-        const ex = plan.days[dIdx].exercises[eIdx];
+   allPlans.forEach(plan => {
+  const pId = plan._id || plan.id;
+  plan.days?.forEach((day, dIdx) => {
+    day.exercises?.forEach(ex => {
+      // Criamos a chave usando a mesma lógica (ID ou Nome)
+      const key = `${pId}-${dIdx}-${ex._id || ex.name}`;
+      
+      if (completedExercises[key]) {
         const reps = parseInt(ex.reps) || 0;
         const sets = Number(ex.sets) || 1;
         const weight = Number(ex.weight) || 0;
@@ -564,6 +569,9 @@ const onResetSubmit = async (data) => {
         completedCount++;
       }
     });
+  });
+});
+
     return { maxWeight, sessionVolume, completedCount };
   }, [history, completedExercises, plans, generatedWorkouts]);
 
