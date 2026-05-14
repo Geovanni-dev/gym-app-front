@@ -284,8 +284,8 @@ const handleEditExercise = (planId, dayName, exerciseName, exerciseData, isGener
     useSensor(TouchSensor, { activationConstraint: { delay: 50, tolerance: 5 } })
   );
 
-  const hasCompletedInDay = () =>
-    exercises.some((_, exIdx) => !!completedExercises[`${planId}-${dayIndex}-${exIdx}`]);
+const hasCompletedInDay = () =>
+  exercises.some((ex) => !!completedExercises[`${planId}-${dayIndex}-${ex._id || ex.name}`]);
 
   // [FIX] Trava contra cliques múltiplos — libera só em caso de erro
   const handleFinishDayWorkout = async () => {
