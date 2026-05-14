@@ -28,10 +28,7 @@ A **API** foi desenvolvida com o objetivo de consolidar habilidades técnicas em
 ## 🖥️ Demonstração
 
 <p align="center">
-  <img src="./public/images/TELA-LOGIN.png" width="200" alt="Login" style="margin: 0 20px;" />
-  <img src="./public/images/TELA-INICIO.png" width="200" alt="Início" style="margin: 0 20px;" />
-  <img src="./public/images/TELA-EXERCICIO.png" width="200" alt="Treino" style="margin: 0 20px;" />
-  <img src="./public/images/TELA-HISTORICO.png" width="200" alt="Histórico" style="margin: 0 20px;" />
+  <img src="./public/images/capa.png" width="1500" alt="Super Frango Demo" />
 </p>
 
 ---
